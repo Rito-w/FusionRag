@@ -1,0 +1,60 @@
+{
+  "datasets": ["nfcorpus", "scifact", "trec-covid"],
+  "bm25": {
+    "k1": 1.2,
+    "b": 0.75
+  },
+  "dense": {
+    "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "batch_size": 32
+  },
+  "efficient_vector": {
+    "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "index_type": "hnsw",
+    "hnsw_m": 16,
+    "hnsw_ef_construction": 200,
+    "hnsw_ef_search": 128,
+    "auto_index_selection": true
+  },
+  "semantic_bm25": {
+    "semantic_model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "semantic_weight": 0.3,
+    "enable_query_expansion": true,
+    "query_expansion_terms": 3,
+    "enable_document_expansion": true,
+    "document_expansion_terms": 5
+  },
+  "graph": {
+    "use_model_relation_extractor": false
+  },
+  "cascade": {
+    "first_stage": "BM25",
+    "second_stage": "EfficientVector",
+    "first_stage_k": 100,
+    "rerank_all": false,
+    "min_first_stage_score": 0.1
+  },
+  "query_analyzer": {
+    "semantic_model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "spacy_model_name": "en_core_web_sm",
+    "keyword_query_threshold": 0.7,
+    "semantic_query_threshold": 0.6,
+    "entity_query_threshold": 0.5
+  },
+  "adaptive_router": {
+    "routing_strategy": "hybrid",
+    "model_type": "random_forest",
+    "available_fusion_methods": ["weighted_sum", "reciprocal_rank_fusion", "max_score"]
+  },
+  "adaptive_fusion": {
+    "default_method": "weighted_sum",
+    "available_methods": ["weighted_sum", "reciprocal_rank_fusion", "max_score", "min_rank", "score_normalization"],
+    "normalize_scores": true,
+    "rrf_k": 60
+  },
+  "evaluator": {
+    "metrics": ["precision", "recall", "mrr", "ndcg", "f1", "latency"],
+    "top_k_values": [5, 10, 20, 50],
+    "report_dir": "reports"
+  }
+}

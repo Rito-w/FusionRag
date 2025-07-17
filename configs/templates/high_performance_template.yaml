@@ -1,0 +1,78 @@
+"""
+FusionRAG 高性能配置文件
+针对提升检索指标进行优化
+"""
+
+# 检索器配置
+retrievers:
+  bm25:
+    enabled: true
+    k1: 1.5  # 增加词频敏感度
+    b: 0.75  # 文档长度归一化
+    top_k: 200  # 增加检索数量
+    
+  dense:
+    enabled: true
+    model_name: "sentence-transformers/all-mpnet-base-v2"  # 更强的模型
+    device: "cpu"
+    batch_size: 64
+    top_k: 200  # 增加检索数量
+    
+  graph:
+    enabled: true
+    mode: "neo4j"
+    neo4j_uri: "bolt://localhost:7687" 
+    neo4j_user: "neo4j"
+    neo4j_password: "fusionrag123"
+    entity_threshold: 3  # 提高实体质量阈值
+    max_walk_length: 3
+    min_entity_length: 3  # 最小实体长度
+    top_k: 100
+
+# 查询分类器
+classifier:
+  enabled: true
+  threshold: 0.3  # 降低阈值，更敏感的分类
+  classes: ["factual", "analytical", "procedural"]
+  adaptation_enabled: true
+  confidence_threshold: 0.5
+
+# 融合策略
+fusion:
+  method: "weighted"
+  weights:
+    bm25: 0.5    # 调整权重
+    dense: 0.35  # 增加密集检索权重  
+    graph: 0.15  # 降低图检索权重(质量待提升)
+  top_k: 50      # 增加最终结果数量
+  
+# 实体抽取优化
+entity_extraction:
+  min_entity_length: 3
+  max_entity_length: 15
+  entity_threshold: 3  # 实体最小频率
+  use_medical_patterns: true
+  filter_stopwords: true
+  use_pos_tagging: true  # 启用词性标注
+  
+# 评测配置
+evaluation:
+  metrics: ["recall@5", "recall@10", "recall@20", "ndcg@10", "ndcg@20", "map", "mrr"]
+  eval_size: 1000  # 扩大评测数据集
+  
+# 系统优化
+system:
+  cache_enabled: true
+  batch_processing: true
+  parallel_retrieval: true
+  log_level: "INFO"
+  
+# 数据集配置
+datasets:
+  nfcorpus:
+    doc_limit: 1000  # 扩大测试文档数
+    query_limit: 100  # 增加测试查询数
+    
+  trec_covid:
+    doc_limit: 2000
+    query_limit: 50

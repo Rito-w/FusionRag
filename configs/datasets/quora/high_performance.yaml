@@ -1,0 +1,56 @@
+classifier:
+  adaptation_enabled: true
+  classes:
+  - factual
+  - analytical
+  - procedural
+  enabled: true
+  threshold: 0.5
+data:
+  corpus_path: data/processed/quora_corpus.jsonl
+  output_dir: data/processed/
+  qrels_path: data/processed/quora_qrels.tsv
+  queries_path: data/processed/quora_queries.jsonl
+evaluation:
+  metrics:
+  - recall@5
+  - recall@10
+  - recall@20
+  - recall@50
+  - ndcg@10
+  - ndcg@20
+  - map
+  - mrr
+  output_path: checkpoints/logs/quora_high_performance_eval_results.json
+fusion:
+  method: weighted
+  top_k: 100
+  weights:
+    bm25: 0.5
+    dense: 0.5
+metadata:
+  created_at: '2025-07-16T00:00:00.000000'
+  dataset: quora
+  description: Quora数据集高性能配置测试
+  filename: quora_high_performance.yaml
+  template: high_performance
+retrievers:
+  bm25:
+    b: 0.75
+    enabled: true
+    index_path: checkpoints/retriever/quora_bm25_index.pkl
+    k1: 1.2
+    top_k: 300
+  dense:
+    batch_size: 32
+    embedding_dim: 768
+    enabled: true
+    index_path: checkpoints/retriever/quora_dense_index.faiss
+    model_name: sentence-transformers/all-mpnet-base-v2
+    top_k: 300
+system:
+  batch_size: 16
+  device: cpu
+  log_level: INFO
+  log_path: checkpoints/logs/quora_high_performance_system.log
+  num_threads: 8 

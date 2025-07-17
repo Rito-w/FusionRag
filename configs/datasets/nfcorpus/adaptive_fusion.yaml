@@ -1,0 +1,77 @@
+# 自适应融合配置 - 仅使用向量检索和BM25检索
+
+data:
+  corpus_path: "data/processed/nfcorpus_corpus.jsonl"
+  queries_path: "data/processed/nfcorpus_queries.jsonl"
+  qrels_path: "data/processed/nfcorpus_qrels.tsv"
+  output_dir: "data/processed/"
+
+retrievers:
+  bm25:
+    enabled: true
+    type: pyserini
+    index_dir: "checkpoints/retriever/nfcorpus_bm25_index"
+    fields: ["title", "text"]
+    k1: 0.82
+    b: 0.68
+    top_k: 1000
+
+  dense:
+    enabled: true
+    model_name: "sentence-transformers/all-mpnet-base-v2"
+    index_path: "checkpoints/retriever/nfcorpus_dense_index.faiss"
+    embedding_dim: 768
+    top_k: 1000
+    batch_size: 32
+    max_length: 512
+    normalize_embeddings: true
+
+  graph:
+    enabled: false  # 禁用图检索器
+
+# 查询分类器配置
+classifier:
+  enabled: true
+  threshold: 0.5
+  classes: ["factual", "analytical", "procedural"]
+  adaptation_enabled: true
+
+# 自适应融合配置
+fusion:
+  method: "adaptive"  # 使用自适应融合
+  adaptive_config:
+    default_method: "weighted_sum"
+    available_methods: 
+      - "weighted_sum"
+      - "reciprocal_rank_fusion"
+      - "max_score"
+      - "min_rank"
+      - "score_normalization"
+    rrf_k: 60
+    normalize_scores: true
+  weights:
+    bm25: 0.6
+    dense: 0.4
+  top_k: 100
+
+reranker:
+  enabled: false  # 暂时禁用重排序以加快测试
+
+evaluation:
+  metrics: ["recall@5", "recall@10", "ndcg@10", "map", "mrr"]
+  output_path: "checkpoints/logs/adaptive_fusion_eval_results.json"
+
+system:
+  device: "cpu"
+  batch_size: 16
+  num_threads: 4
+  log_level: "INFO"
+  log_path: "checkpoints/logs/adaptive_fusion_system.log"
+
+# 配置元数据
+metadata:
+  created_at: "2025-01-15T10:00:00"
+  dataset: "nfcorpus"
+  template: "adaptive_fusion"
+  description: "NFCorpus数据集自适应融合配置，仅使用向量检索和BM25检索"
+  filename: "adaptive_fusion.yaml"

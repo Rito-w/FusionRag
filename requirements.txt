@@ -1,0 +1,52 @@
+# FusionRAG系统核心依赖
+# 生产环境依赖 - 锁定版本确保稳定性
+
+# 核心依赖
+numpy==1.26.4
+pandas==2.0.3
+scikit-learn==1.3.0
+tqdm==4.65.0
+
+# 文本处理
+jieba==0.42.1
+rank-bm25==0.2.2
+
+# 向量化和相似度计算
+sentence-transformers>=2.4.0
+faiss-cpu>=1.8.0
+torch>=2.1.0
+transformers>=4.35.0
+
+# 图数据库
+neo4j==5.9.0
+
+# 数据处理
+PyYAML==6.0
+requests==2.31.0
+
+# 评测和可视化
+matplotlib==3.7.1
+seaborn==0.12.2
+
+# BEIR数据集
+beir==1.0.1
+
+# 可选的NLP依赖
+spacy>=3.4.0,<4.0.0
+nltk>=3.8.0,<4.0.0
+
+# 性能监控
+psutil==5.9.5
+memory-profiler==0.60.0
+
+# 现代RAG相关依赖
+openai>=1.0.0
+langchain>=0.1.0
+qdrant-client>=1.6.0
+pinecone-client>=2.2.0
+
+# 统计分析
+scipy>=1.11.0
+
+# 异步支持
+aiohttp>=3.8.0

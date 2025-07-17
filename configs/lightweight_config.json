@@ -1,0 +1,43 @@
+{
+  "datasets": ["nfcorpus"],
+  "include_semantic_bm25": false,
+  "bm25": {
+    "k1": 1.2,
+    "b": 0.75
+  },
+  "efficient_vector": {
+    "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "index_type": "hnsw",
+    "hnsw_m": 8,
+    "hnsw_ef_construction": 100,
+    "hnsw_ef_search": 64,
+    "batch_size": 8,
+    "auto_index_selection": true
+  },
+  "semantic_bm25": {
+    "semantic_model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "semantic_weight": 0.3,
+    "enable_query_expansion": false,
+    "enable_document_expansion": false,
+    "batch_size": 4
+  },
+  "query_analyzer": {
+    "semantic_model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "spacy_model_name": null,
+    "disable_ner": true,
+    "use_simple_features": true
+  },
+  "adaptive_router": {
+    "routing_strategy": "rule_based",
+    "use_simple_rules": true
+  },
+  "adaptive_fusion": {
+    "default_method": "weighted_sum",
+    "normalize_scores": true
+  },
+  "evaluator": {
+    "metrics": ["precision", "recall", "mrr", "ndcg", "latency"],
+    "top_k_values": [5, 10],
+    "report_dir": "reports"
+  }
+}

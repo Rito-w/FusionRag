@@ -1,0 +1,17 @@
+{
+  "description": "图检索器最优配置",
+  "config": {
+    "entity_threshold": 2,
+    "min_entity_length": 4,
+    "max_entity_length": 30,
+    "cooccurrence_window": 60,
+    "min_confidence": 0.25
+  },
+  "performance": {
+    "nodes": 659,
+    "edges": 6506,
+    "avg_degree": 19.745068285280727,
+    "build_time": 2.9434711933135986,
+    "avg_query_score": 0.4590362427650323
+  }
+}

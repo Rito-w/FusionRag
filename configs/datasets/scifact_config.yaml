@@ -1,0 +1,66 @@
+adaptive_fusion:
+  available_methods:
+  - weighted_sum
+  - reciprocal_rank_fusion
+  - max_score
+  - min_rank
+  - score_normalization
+  default_method: weighted_sum
+  normalize_scores: true
+data:
+  corpus_path: data/processed/scifact_corpus.jsonl
+  qrels_path: data/processed/scifact_qrels.tsv
+  queries_path: data/processed/scifact_queries.jsonl
+dataset: scifact
+evaluation:
+  k_values:
+  - 1
+  - 3
+  - 5
+  - 10
+  metrics:
+  - recall@5
+  - recall@10
+  - ndcg@10
+  - map
+  - mrr
+experiment:
+  max_queries: 30
+  output_dir: checkpoints/logs
+  save_intermediate: true
+fusion:
+  method: weighted_sum
+  rrf_k: 60
+  top_k: 10
+  weights:
+    bm25: 0.3
+    dense: 0.7
+metadata:
+  dataset: scifact
+query_analyzer:
+  entity_query_threshold: 0.5
+  keyword_query_threshold: 0.7
+  semantic_model_name: intfloat/e5-large-v2
+  semantic_query_threshold: 0.6
+  spacy_model_name: en_core_web_sm
+retrievers:
+  bm25:
+    b: 0.75
+    enabled: true
+    k1: 1.2
+    top_k: 20
+  dense:
+    batch_size: 32
+    enabled: true
+    index_type: hnsw
+    max_length: 512
+    model_name: intfloat/e5-large-v2
+    normalize_embeddings: true
+    top_k: 20
+  graph:
+    enabled: false
+system:
+  batch_size: 16
+  device: cpu
+  log_level: INFO
+  num_threads: 4

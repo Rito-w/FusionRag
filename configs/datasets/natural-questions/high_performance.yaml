@@ -1,0 +1,69 @@
+data:
+  corpus_path: "data/processed/natural-questions_corpus.jsonl"
+  queries_path: "data/processed/natural-questions_queries.jsonl"
+  qrels_path: "data/processed/natural-questions_qrels.tsv"
+  output_dir: "data/processed/"
+
+retrievers:
+  bm25:
+    enabled: true
+    type: pyserini
+    index_dir: "checkpoints/retriever/pyserini_bm25_nq_index"
+    k1: 0.82
+    b: 0.68
+    top_k: 5000
+  dense:
+    enabled: true
+    model_name: "BAAI/bge-large-en-v1.5"
+    index_path: "checkpoints/retriever/bge_large_en_v1.5_dense_index_nq.faiss"
+    embedding_dim: 1024
+    top_k: 5000
+    batch_size: 32
+    max_length: 512
+    normalize_embeddings: true
+  graph:
+    enabled: true
+    use_model_relation_extractor: true
+    index_path: "checkpoints/retriever/high_performance_graph_index_nq.pkl"
+    neo4j_uri: "bolt://localhost:7687"
+    neo4j_user: "neo4j"
+    neo4j_password: "fusionrag123"
+    database: "neo4j"
+    max_walk_length: 4
+    entity_threshold: 1
+    relation_types: ["cooccurrence", "similarity"]
+    top_k: 2000
+classifier:
+  enabled: true
+  threshold: 0.5
+  classes: ["factual", "analytical", "procedural"]
+  adaptation_enabled: true
+  min_samples: 10
+  performance_threshold: 0.1
+fusion:
+  method: "weighted"
+  weights:
+    bm25: 0.5
+    dense: 0.4
+    graph: 0.1
+  top_k: 2000
+  rrf_k: 60
+reranker:
+  enabled: true
+  model_name: "mixedbread-ai/mxbai-rerank-large-v1"
+  top_k: 1000
+evaluation:
+  metrics: ["recall@5", "recall@10", "recall@20", "recall@50", "ndcg@10", "ndcg@20", "map", "mrr"]
+  output_path: "checkpoints/logs/nq_high_performance_eval_results.json"
+system:
+  device: "cpu"
+  batch_size: 8
+  num_threads: 8
+  log_level: "INFO"
+  log_path: "checkpoints/logs/20250714_2300_nq_high_performance_system.log"
+metadata:
+  created_at: "2025-07-14T23:00:00"
+  dataset: "natural-questions"
+  template: "high_performance"
+  description: "Natural-Questions数据集高性能配置，使用BGE模型+智能路由+图检索"
+  filename: "20250714_2300_nq_high_performance.yaml" 

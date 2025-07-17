@@ -1,0 +1,44 @@
+{
+  "datasets": ["nfcorpus"],
+  "include_semantic_bm25": true,
+  "bm25": {
+    "k1": 1.2,
+    "b": 0.75
+  },
+  "efficient_vector": {
+    "model_name": "intfloat/e5-large-v2",
+    "index_type": "hnsw",
+    "hnsw_m": 16,
+    "hnsw_ef_construction": 200,
+    "hnsw_ef_search": 128,
+    "batch_size": 8,
+    "auto_index_selection": true
+  },
+  "semantic_bm25": {
+    "semantic_model_name": "intfloat/e5-large-v2",
+    "semantic_weight": 0.4,
+    "enable_query_expansion": true,
+    "enable_document_expansion": false,
+    "batch_size": 4
+  },
+  "query_analyzer": {
+    "semantic_model_name": "intfloat/e5-large-v2",
+    "spacy_model_name": null,
+    "disable_ner": true,
+    "use_simple_features": true
+  },
+  "adaptive_router": {
+    "routing_strategy": "rule_based",
+    "use_simple_rules": true
+  },
+  "adaptive_fusion": {
+    "default_method": "weighted_sum",
+    "normalize_scores": true,
+    "rrf_k": 60
+  },
+  "evaluator": {
+    "metrics": ["precision", "recall", "mrr", "ndcg", "f1", "latency"],
+    "top_k_values": [5, 10, 20],
+    "report_dir": "reports"
+  }
+}

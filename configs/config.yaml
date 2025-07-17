@@ -1,0 +1,112 @@
+# FusionRAG 系统配置文件
+
+# 数据配置
+data:
+  corpus_path: "data/processed/nfcorpus_corpus.jsonl"
+  queries_path: "data/processed/nfcorpus_queries.jsonl"
+  qrels_path: "data/processed/nfcorpus_qrels.tsv"
+  output_dir: "data/processed/"
+
+# 检索器配置
+retrievers:
+  bm25:
+    enabled: true
+    index_path: "checkpoints/retriever/bm25_index.pkl"
+    k1: 1.2
+    b: 0.75
+    top_k: 100
+    
+  dense:
+    enabled: true
+    model_name: "sentence-transformers/all-MiniLM-L6-v2"
+    index_path: "checkpoints/retriever/dense_index.faiss"
+    embedding_dim: 384
+    top_k: 100
+    
+  graph:
+    enabled: true
+    index_path: "checkpoints/retriever/graph_index.pkl"
+    neo4j_uri: "bolt://localhost:7687"
+    neo4j_user: "neo4j"
+    neo4j_password: "fusionrag123"
+    database: "neo4j"
+    max_walk_length: 3
+    entity_threshold: 2
+    relation_types: ["cooccurrence", "similarity"]
+    top_k: 50
+
+# 分类器配置
+classifier:
+  enabled: true
+  threshold: 0.5
+  classes: ["factual", "analytical", "procedural"]
+  adaptation_enabled: true
+  min_samples: 10
+  performance_threshold: 0.1
+
+# 融合与重排序配置
+fusion:
+  method: "weighted"  # linear, dynamic, rrf
+  weights:
+    bm25: 0.4
+    dense: 0.5
+    graph: 0.1
+  top_k: 20
+
+reranker:
+  enabled: false
+  model_path: "checkpoints/reranker/reranker.onnx"
+  top_k: 10
+
+# 评测配置
+evaluation:
+  metrics: ["recall@5", "recall@10", "ndcg@10", "map"]
+  output_path: "checkpoints/logs/eval_results.json"
+
+# LLM配置
+llm:
+  enabled: true
+  type: "openai"  # openai, huggingface, local
+  openai:
+    model: "gpt-3.5-turbo"
+    api_key: "${OPENAI_API_KEY}"
+    max_tokens: 1000
+    temperature: 0.7
+  huggingface:
+    model_name: "microsoft/DialoGPT-medium"
+    device: "cpu"
+
+# 反馈学习配置
+feedback_learning:
+  enabled: true
+  learning_rate: 0.01
+  min_feedback_count: 10
+  adaptation_threshold: 0.1
+  initial_weights:
+    bm25: 0.4
+    dense: 0.4
+    graph: 0.2
+
+# 向量数据库配置
+vector_db:
+  enabled: false
+  db_type: "qdrant"  # pinecone, qdrant, weaviate
+  qdrant:
+    host: "localhost"
+    port: 6333
+    collection_name: "fusionrag"
+  pinecone:
+    api_key: "${PINECONE_API_KEY}"
+    environment: "us-west1-gcp"
+    index_name: "fusionrag-index"
+
+# 系统配置
+system:
+  device: "cpu"
+  batch_size: 32
+  num_threads: 4
+  log_level: "INFO"
+  log_path: "checkpoints/logs/system.log"
+  enable_gpu: false
+  cache_enabled: true
+  cache_size: 1000

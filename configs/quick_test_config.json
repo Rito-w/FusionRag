@@ -1,0 +1,18 @@
+{
+  "datasets": ["nfcorpus"],
+  "include_semantic_bm25": false,
+  "bm25": {
+    "k1": 1.2,
+    "b": 0.75
+  },
+  "efficient_vector": {
+    "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "index_type": "flat",
+    "batch_size": 4
+  },
+  "evaluator": {
+    "metrics": ["precision", "recall", "mrr", "ndcg", "latency"],
+    "top_k_values": [5],
+    "report_dir": "reports"
+  }
+}
