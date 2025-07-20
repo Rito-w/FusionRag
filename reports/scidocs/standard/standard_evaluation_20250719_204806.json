@@ -1,0 +1,32 @@
+{
+  "dataset": "scidocs_standard",
+  "timestamp": "2025-07-19T20:48:06.678432",
+  "metrics": [
+    "precision",
+    "recall",
+    "mrr",
+    "ndcg",
+    "map",
+    "latency"
+  ],
+  "results": {
+    "BM25": {
+      "precision": 0.083,
+      "recall": 0.027712643678160922,
+      "mrr": 0.25999999999999995,
+      "ndcg": 0.1579132578581234,
+      "map": 0.0,
+      "latency": 459.4449853897095,
+      "latency_p95": 520.4614043235779
+    },
+    "EfficientVector": {
+      "precision": 0.09,
+      "recall": 0.03004597701149425,
+      "mrr": 0.34114682539682534,
+      "ndcg": 0.18749332845768824,
+      "map": 0.0,
+      "latency": 15.739552974700928,
+      "latency_p95": 22.55175113677978
+    }
+  }
+}

@@ -1,0 +1,440 @@
+{
+  "fiqa": {
+    "rrf_standard": {
+      "metrics": {
+        "precision": 0.05714285714285715,
+        "recall": 0.20238095238095236,
+        "mrr": 0.3174603174603175,
+        "ndcg": 0.1916012852006387
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_standard": 50
+        },
+        "query_type_distribution": {
+          "semantic": 38,
+          "keyword": 7,
+          "entity": 5
+        }
+      }
+    },
+    "rrf_optimized": {
+      "metrics": {
+        "precision": 0.05714285714285715,
+        "recall": 0.20238095238095236,
+        "mrr": 0.3174603174603175,
+        "ndcg": 0.1916012852006387
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_optimized": 50
+        },
+        "query_type_distribution": {
+          "semantic": 38,
+          "keyword": 7,
+          "entity": 5
+        }
+      }
+    },
+    "linear_equal": {
+      "metrics": {
+        "precision": 0.07142857142857142,
+        "recall": 0.23809523809523808,
+        "mrr": 0.3158730158730159,
+        "ndcg": 0.20691987690371785
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "linear_equal": 50
+        },
+        "query_type_distribution": {
+          "semantic": 38,
+          "keyword": 7,
+          "entity": 5
+        }
+      }
+    },
+    "linear_bm25_dominant": {
+      "metrics": {
+        "precision": 0.07142857142857142,
+        "recall": 0.23809523809523808,
+        "mrr": 0.3428571428571429,
+        "ndcg": 0.22073057326915332
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "linear_bm25_dominant": 50
+        },
+        "query_type_distribution": {
+          "semantic": 38,
+          "keyword": 7,
+          "entity": 5
+        }
+      }
+    },
+    "linear_vector_dominant": {
+      "metrics": {
+        "precision": 0.028571428571428574,
+        "recall": 0.11904761904761904,
+        "mrr": 0.05952380952380952,
+        "ndcg": 0.060073540474101676
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "linear_vector_dominant": 50
+        },
+        "query_type_distribution": {
+          "semantic": 38,
+          "keyword": 7,
+          "entity": 5
+        }
+      }
+    },
+    "adaptive_by_query_type": {
+      "metrics": {
+        "precision": 0.05714285714285715,
+        "recall": 0.20238095238095236,
+        "mrr": 0.11507936507936509,
+        "ndcg": 0.10821293760003216
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "adaptive_by_query_type": 50
+        },
+        "query_type_distribution": {
+          "semantic": 38,
+          "keyword": 7,
+          "entity": 5
+        }
+      }
+    },
+    "adaptive_by_length": {
+      "metrics": {
+        "precision": 0.028571428571428574,
+        "recall": 0.11904761904761904,
+        "mrr": 0.05952380952380952,
+        "ndcg": 0.060073540474101676
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "adaptive_by_length": 50
+        },
+        "query_type_distribution": {
+          "semantic": 38,
+          "keyword": 7,
+          "entity": 5
+        }
+      }
+    },
+    "max_score": {
+      "metrics": {
+        "precision": 0.07142857142857142,
+        "recall": 0.23809523809523808,
+        "mrr": 0.3158730158730159,
+        "ndcg": 0.20691987690371785
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "max_score": 50
+        },
+        "query_type_distribution": {
+          "semantic": 38,
+          "keyword": 7,
+          "entity": 5
+        }
+      }
+    }
+  },
+  "quora": {
+    "rrf_standard": {
+      "metrics": {
+        "precision": 0.09642857142857145,
+        "recall": 0.7529761904761905,
+        "mrr": 0.669047619047619,
+        "ndcg": 0.6623692276997962
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_standard": 50
+        },
+        "query_type_distribution": {
+          "semantic": 50
+        }
+      }
+    },
+    "rrf_optimized": {
+      "metrics": {
+        "precision": 0.09642857142857145,
+        "recall": 0.7529761904761905,
+        "mrr": 0.669047619047619,
+        "ndcg": 0.6623692276997962
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_optimized": 50
+        },
+        "query_type_distribution": {
+          "semantic": 50
+        }
+      }
+    },
+    "linear_equal": {
+      "metrics": {
+        "precision": 0.1035714285714286,
+        "recall": 0.8154761904761905,
+        "mrr": 0.6628968253968254,
+        "ndcg": 0.6740130978480049
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "linear_equal": 50
+        },
+        "query_type_distribution": {
+          "semantic": 50
+        }
+      }
+    },
+    "linear_bm25_dominant": {
+      "metrics": {
+        "precision": 0.1142857142857143,
+        "recall": 0.8690476190476192,
+        "mrr": 0.7174036281179138,
+        "ndcg": 0.7328274650921385
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "linear_bm25_dominant": 50
+        },
+        "query_type_distribution": {
+          "semantic": 50
+        }
+      }
+    },
+    "linear_vector_dominant": {
+      "metrics": {
+        "precision": 0.07142857142857144,
+        "recall": 0.6071428571428571,
+        "mrr": 0.12791950113378686,
+        "ndcg": 0.23319539889646315
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "linear_vector_dominant": 50
+        },
+        "query_type_distribution": {
+          "semantic": 50
+        }
+      }
+    },
+    "adaptive_by_query_type": {
+      "metrics": {
+        "precision": 0.0892857142857143,
+        "recall": 0.7351190476190476,
+        "mrr": 0.21982709750566892,
+        "ndcg": 0.3376987498595447
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "adaptive_by_query_type": 50
+        },
+        "query_type_distribution": {
+          "semantic": 50
+        }
+      }
+    },
+    "adaptive_by_length": {
+      "metrics": {
+        "precision": 0.08214285714285716,
+        "recall": 0.7142857142857143,
+        "mrr": 0.16303854875283447,
+        "ndcg": 0.2867694098788703
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "adaptive_by_length": 50
+        },
+        "query_type_distribution": {
+          "semantic": 50
+        }
+      }
+    },
+    "max_score": {
+      "metrics": {
+        "precision": 0.1035714285714286,
+        "recall": 0.8154761904761905,
+        "mrr": 0.6628968253968254,
+        "ndcg": 0.6740130978480049
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "max_score": 50
+        },
+        "query_type_distribution": {
+          "semantic": 50
+        }
+      }
+    }
+  },
+  "scidocs": {
+    "rrf_standard": {
+      "metrics": {
+        "precision": 0.11,
+        "recall": 0.03668965517241379,
+        "mrr": 0.2938571428571429,
+        "ndcg": 0.12462810297970421
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_standard": 50
+        },
+        "query_type_distribution": {
+          "entity": 39,
+          "keyword": 11
+        }
+      }
+    },
+    "rrf_optimized": {
+      "metrics": {
+        "precision": 0.11,
+        "recall": 0.03668965517241379,
+        "mrr": 0.2938571428571429,
+        "ndcg": 0.12495590488752172
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_optimized": 50
+        },
+        "query_type_distribution": {
+          "entity": 39,
+          "keyword": 11
+        }
+      }
+    },
+    "linear_equal": {
+      "metrics": {
+        "precision": 0.102,
+        "recall": 0.034,
+        "mrr": 0.2895238095238095,
+        "ndcg": 0.12093818185364462
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "linear_equal": 50
+        },
+        "query_type_distribution": {
+          "entity": 39,
+          "keyword": 11
+        }
+      }
+    },
+    "linear_bm25_dominant": {
+      "metrics": {
+        "precision": 0.1,
+        "recall": 0.03333333333333333,
+        "mrr": 0.29149206349206347,
+        "ndcg": 0.11877454984376476
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "linear_bm25_dominant": 50
+        },
+        "query_type_distribution": {
+          "entity": 39,
+          "keyword": 11
+        }
+      }
+    },
+    "linear_vector_dominant": {
+      "metrics": {
+        "precision": 0.10400000000000001,
+        "recall": 0.0346896551724138,
+        "mrr": 0.32572222222222225,
+        "ndcg": 0.1265816324455761
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "linear_vector_dominant": 50
+        },
+        "query_type_distribution": {
+          "entity": 39,
+          "keyword": 11
+        }
+      }
+    },
+    "adaptive_by_query_type": {
+      "metrics": {
+        "precision": 0.102,
+        "recall": 0.034,
+        "mrr": 0.27294444444444443,
+        "ndcg": 0.11781947365338358
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "adaptive_by_query_type": 50
+        },
+        "query_type_distribution": {
+          "entity": 39,
+          "keyword": 11
+        }
+      }
+    },
+    "adaptive_by_length": {
+      "metrics": {
+        "precision": 0.10399999999999998,
+        "recall": 0.03468965517241379,
+        "mrr": 0.31638888888888883,
+        "ndcg": 0.12670348951651966
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "adaptive_by_length": 50
+        },
+        "query_type_distribution": {
+          "entity": 39,
+          "keyword": 11
+        }
+      }
+    },
+    "max_score": {
+      "metrics": {
+        "precision": 0.096,
+        "recall": 0.03200000000000001,
+        "mrr": 0.2851666666666667,
+        "ndcg": 0.11853125071277708
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "max_score": 50
+        },
+        "query_type_distribution": {
+          "entity": 39,
+          "keyword": 11
+        }
+      }
+    }
+  }
+}

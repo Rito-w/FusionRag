@@ -1,0 +1,68 @@
+{
+  "fiqa": {
+    "metrics": {
+      "precision": 0.05555555555555555,
+      "recall": 0.21296296296296294,
+      "mrr": 0.26913580246913577,
+      "ndcg": 0.17537852324152967
+    },
+    "statistics": {
+      "total_queries": 100,
+      "strategy_usage": {
+        "rrf_semantic_long": 15,
+        "rrf_long_query": 29,
+        "rrf_keyword": 11,
+        "rrf_very_long": 31,
+        "rrf_entity": 5,
+        "rrf_semantic_short": 9
+      },
+      "query_type_distribution": {
+        "semantic": 75,
+        "keyword": 16,
+        "entity": 9
+      }
+    }
+  },
+  "quora": {
+    "metrics": {
+      "precision": 0.0983050847457627,
+      "recall": 0.733454398708636,
+      "mrr": 0.6698412698412699,
+      "ndcg": 0.650486787267245
+    },
+    "statistics": {
+      "total_queries": 100,
+      "strategy_usage": {
+        "rrf_long_query": 44,
+        "rrf_semantic_short": 10,
+        "rrf_very_long": 16,
+        "rrf_semantic_long": 30
+      },
+      "query_type_distribution": {
+        "semantic": 100
+      }
+    }
+  },
+  "scidocs": {
+    "metrics": {
+      "precision": 0.1,
+      "recall": 0.03339080459770114,
+      "mrr": 0.3334404761904761,
+      "ndcg": 0.12416577127440225
+    },
+    "statistics": {
+      "total_queries": 100,
+      "strategy_usage": {
+        "rrf_long_query": 41,
+        "rrf_very_long": 13,
+        "rrf_entity": 33,
+        "rrf_keyword": 13
+      },
+      "query_type_distribution": {
+        "entity": 75,
+        "keyword": 23,
+        "semantic": 2
+      }
+    }
+  }
+}

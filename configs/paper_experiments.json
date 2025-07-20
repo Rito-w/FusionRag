@@ -1,0 +1,128 @@
+{
+  "metadata": {
+    "name": "AAAI论文实验配置",
+    "description": "专门用于AAAI论文的完整实验配置，充分利用24GB 4090 GPU",
+    "created": "2025-07-19",
+    "datasets_count": 7,
+    "gpu_optimized": true
+  },
+  "datasets": [
+    "nfcorpus", 
+    "scifact", 
+    "fiqa", 
+    "arguana", 
+    "quora", 
+    "scidocs", 
+    "trec-covid"
+  ],
+  "include_semantic_bm25": false,
+  "bm25": {
+    "k1": 1.2,
+    "b": 0.75,
+    "use_cache": true,
+    "cache_dir": "checkpoints/retriever_cache"
+  },
+  "efficient_vector": {
+    "model_name": "models/models--intfloat--e5-large-v2/snapshots/f169b11e22de13617baa190a028a32f3493550b6",
+    "index_type": "hnsw",
+    "hnsw_m": 16,
+    "hnsw_ef_construction": 200,
+    "hnsw_ef_search": 128,
+    "batch_size": 64,
+    "auto_index_selection": true,
+    "use_local_model": true,
+    "use_gpu": true,
+    "max_seq_length": 512
+  },
+  "semantic_bm25": {
+    "semantic_model_name": "models/models--intfloat--e5-large-v2/snapshots/f169b11e22de13617baa190a028a32f3493550b6",
+    "semantic_weight": 0.3,
+    "enable_query_expansion": true,
+    "enable_document_expansion": false,
+    "batch_size": 32,
+    "use_local_model": true,
+    "use_gpu": true
+  },
+  "query_analyzer": {
+    "semantic_model_name": "models/models--intfloat--e5-large-v2/snapshots/f169b11e22de13617baa190a028a32f3493550b6",
+    "spacy_model_name": "en_core_web_sm",
+    "disable_ner": false,
+    "use_simple_features": false,
+    "use_local_model": true,
+    "use_gpu": true,
+    "query_types": ["factual", "analytical", "procedural", "hybrid"],
+    "classification_threshold": 0.6
+  },
+  "adaptive_router": {
+    "routing_strategy": "hybrid",
+    "use_simple_rules": false,
+    "enable_performance_feedback": true,
+    "update_frequency": 10,
+    "confidence_threshold": 0.7
+  },
+  "adaptive_fusion": {
+    "default_method": "weighted_sum",
+    "available_methods": [
+      "weighted_sum", 
+      "reciprocal_rank_fusion", 
+      "max_score", 
+      "min_rank", 
+      "score_normalization"
+    ],
+    "normalize_scores": true,
+    "rrf_k": 60,
+    "enable_dynamic_weights": true,
+    "weight_update_strategy": "performance_based"
+  },
+  "evaluator": {
+    "metrics": [
+      "precision", 
+      "recall", 
+      "mrr", 
+      "ndcg", 
+      "map", 
+      "latency"
+    ],
+    "top_k_values": [5, 10, 20],
+    "report_dir": "reports",
+    "enable_statistical_tests": true,
+    "significance_level": 0.05,
+    "enable_query_level_analysis": true
+  },
+  "experiment_settings": {
+    "use_full_datasets": true,
+    "random_seed": 42,
+    "num_runs": 1,
+    "parallel_processing": true,
+    "max_workers": 4,
+    "memory_limit_gb": 20,
+    "timeout_minutes": 60
+  },
+  "baseline_methods": {
+    "single_retrievers": ["BM25", "DenseVector", "SemanticBM25"],
+    "fusion_methods": ["RRF", "LinearWeighted", "EqualWeighted"],
+    "adaptive_methods": ["AdaptiveFusion"]
+  },
+  "ablation_study": {
+    "components": [
+      "query_classifier",
+      "adaptive_router", 
+      "dynamic_weights",
+      "performance_feedback"
+    ],
+    "variants": [
+      "full_method",
+      "no_query_classifier",
+      "no_adaptive_router",
+      "static_weights",
+      "no_performance_feedback"
+    ]
+  },
+  "analysis_settings": {
+    "query_type_analysis": true,
+    "parameter_sensitivity": true,
+    "efficiency_analysis": true,
+    "failure_case_analysis": true,
+    "statistical_significance": true
+  }
+}

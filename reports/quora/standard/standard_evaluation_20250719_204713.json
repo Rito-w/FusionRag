@@ -1,0 +1,32 @@
+{
+  "dataset": "quora_standard",
+  "timestamp": "2025-07-19T20:47:13.512770",
+  "metrics": [
+    "precision",
+    "recall",
+    "mrr",
+    "ndcg",
+    "map",
+    "latency"
+  ],
+  "results": {
+    "BM25": {
+      "precision": 0.068,
+      "recall": 0.8939285714285714,
+      "mrr": 0.4150833333333333,
+      "ndcg": 0.4185762776279534,
+      "map": 0.0,
+      "latency": 2767.8727412223816,
+      "latency_p95": 3697.355687618255
+    },
+    "EfficientVector": {
+      "precision": 0.075,
+      "recall": 0.9355952380952379,
+      "mrr": 0.48,
+      "ndcg": 0.4815229865755038,
+      "map": 0.0,
+      "latency": 18.52137327194214,
+      "latency_p95": 24.5603084564209
+    }
+  }
+}

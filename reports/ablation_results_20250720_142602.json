@@ -1,0 +1,238 @@
+{
+  "fiqa": {
+    "full": {
+      "metrics": {
+        "precision": 0.05714285714285715,
+        "recall": 0.20238095238095236,
+        "mrr": 0.3174603174603175,
+        "ndcg": 0.1916012852006387
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_semantic_long": 6,
+          "rrf_long_query": 19,
+          "rrf_keyword": 4,
+          "rrf_very_long": 14,
+          "rrf_entity": 4,
+          "rrf_semantic_short": 3
+        },
+        "query_type_distribution": {
+          "semantic": 38,
+          "keyword": 7,
+          "entity": 5
+        },
+        "ablation_type": "full"
+      }
+    },
+    "no_query_analyzer": {
+      "metrics": {
+        "precision": 0.05714285714285715,
+        "recall": 0.20238095238095236,
+        "mrr": 0.3174603174603175,
+        "ndcg": 0.1916012852006387
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_fixed": 50
+        },
+        "query_type_distribution": {},
+        "ablation_type": "no_query_analyzer"
+      }
+    },
+    "no_adaptive_routing": {
+      "metrics": {
+        "precision": 0.05714285714285715,
+        "recall": 0.20238095238095236,
+        "mrr": 0.3174603174603175,
+        "ndcg": 0.1916012852006387
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_no_routing": 50
+        },
+        "query_type_distribution": {
+          "semantic": 38,
+          "keyword": 7,
+          "entity": 5
+        },
+        "ablation_type": "no_adaptive_routing"
+      }
+    },
+    "static_weights": {
+      "metrics": {
+        "precision": 0.07142857142857142,
+        "recall": 0.23809523809523808,
+        "mrr": 0.3158730158730159,
+        "ndcg": 0.20691987690371785
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "weighted_static": 50
+        },
+        "query_type_distribution": {
+          "semantic": 38,
+          "keyword": 7,
+          "entity": 5
+        },
+        "ablation_type": "static_weights"
+      }
+    }
+  },
+  "quora": {
+    "full": {
+      "metrics": {
+        "precision": 0.09642857142857145,
+        "recall": 0.7529761904761905,
+        "mrr": 0.669047619047619,
+        "ndcg": 0.6623692276997962
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_long_query": 19,
+          "rrf_semantic_short": 6,
+          "rrf_very_long": 8,
+          "rrf_semantic_long": 17
+        },
+        "query_type_distribution": {
+          "semantic": 50
+        },
+        "ablation_type": "full"
+      }
+    },
+    "no_query_analyzer": {
+      "metrics": {
+        "precision": 0.09642857142857145,
+        "recall": 0.7529761904761905,
+        "mrr": 0.669047619047619,
+        "ndcg": 0.6623692276997962
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_fixed": 50
+        },
+        "query_type_distribution": {},
+        "ablation_type": "no_query_analyzer"
+      }
+    },
+    "no_adaptive_routing": {
+      "metrics": {
+        "precision": 0.09642857142857145,
+        "recall": 0.7529761904761905,
+        "mrr": 0.669047619047619,
+        "ndcg": 0.6623692276997962
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_no_routing": 50
+        },
+        "query_type_distribution": {
+          "semantic": 50
+        },
+        "ablation_type": "no_adaptive_routing"
+      }
+    },
+    "static_weights": {
+      "metrics": {
+        "precision": 0.1035714285714286,
+        "recall": 0.8154761904761905,
+        "mrr": 0.6628968253968254,
+        "ndcg": 0.6740130978480049
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "weighted_static": 50
+        },
+        "query_type_distribution": {
+          "semantic": 50
+        },
+        "ablation_type": "static_weights"
+      }
+    }
+  },
+  "scidocs": {
+    "full": {
+      "metrics": {
+        "precision": 0.11,
+        "recall": 0.03668965517241379,
+        "mrr": 0.2938571428571429,
+        "ndcg": 0.12462810297970421
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_long_query": 21,
+          "rrf_very_long": 5,
+          "rrf_entity": 19,
+          "rrf_keyword": 5
+        },
+        "query_type_distribution": {
+          "entity": 39,
+          "keyword": 11
+        },
+        "ablation_type": "full"
+      }
+    },
+    "no_query_analyzer": {
+      "metrics": {
+        "precision": 0.11,
+        "recall": 0.03668965517241379,
+        "mrr": 0.2938571428571429,
+        "ndcg": 0.12462810297970421
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_fixed": 50
+        },
+        "query_type_distribution": {},
+        "ablation_type": "no_query_analyzer"
+      }
+    },
+    "no_adaptive_routing": {
+      "metrics": {
+        "precision": 0.11,
+        "recall": 0.03668965517241379,
+        "mrr": 0.2938571428571429,
+        "ndcg": 0.12462810297970421
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "rrf_no_routing": 50
+        },
+        "query_type_distribution": {
+          "entity": 39,
+          "keyword": 11
+        },
+        "ablation_type": "no_adaptive_routing"
+      }
+    },
+    "static_weights": {
+      "metrics": {
+        "precision": 0.102,
+        "recall": 0.034,
+        "mrr": 0.2895238095238095,
+        "ndcg": 0.12093818185364462
+      },
+      "statistics": {
+        "total_queries": 50,
+        "strategy_usage": {
+          "weighted_static": 50
+        },
+        "query_type_distribution": {
+          "entity": 39,
+          "keyword": 11
+        },
+        "ablation_type": "static_weights"
+      }
+    }
+  }
+}

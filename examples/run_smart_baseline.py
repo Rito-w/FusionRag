@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-消融实验 - 分析各组件对性能的贡献
+智能基线方法
+直接使用基线中表现最好的融合方法，但根据查询特征智能选择
 """
 
 import sys
@@ -65,83 +66,33 @@ def load_dataset(dataset_name: str) -> Tuple[List[Document], List[Query], Dict[s
     return documents, queries, relevance_judgments
 
 
-class AblationBaseline:
-    """消融实验基线类
+class SmartBaseline:
+    """智能基线方法
     
-    实现不同的消融版本来分析各组件的贡献
+    使用基线中最好的融合方法，但根据查询特征智能选择策略
     """
     
-    def __init__(self, config: Dict[str, Any], ablation_type: str = "full"):
+    def __init__(self, config: Dict[str, Any]):
         self.config = config
-        self.ablation_type = ablation_type
+        self.query_analyzer = create_simple_query_analyzer(config.get('query_analyzer', {}))
         self.rrf_k = 60
-        
-        # 根据消融类型决定是否使用查询分析器
-        if ablation_type != "no_query_analyzer":
-            self.query_analyzer = create_simple_query_analyzer(config.get('query_analyzer', {}))
-        else:
-            self.query_analyzer = None
         
         # 统计信息
         self.stats = {
             'total_queries': 0,
             'strategy_usage': defaultdict(int),
-            'query_type_distribution': defaultdict(int),
-            'ablation_type': ablation_type
+            'query_type_distribution': defaultdict(int)
         }
     
-    def fusion(self, query: Query, bm25_results: List[RetrievalResult], 
-               vector_results: List[RetrievalResult], top_k: int = 10) -> List[FusionResult]:
-        """根据消融类型选择融合策略"""
-        
-        self.stats['total_queries'] += 1
-        
-        if self.ablation_type == "full":
-            # 完整方法：智能路由 + 查询分析
-            return self._smart_fusion(query, bm25_results, vector_results, top_k)
-            
-        elif self.ablation_type == "no_query_analyzer":
-            # 无查询分析器：使用固定策略
-            strategy = 'rrf_fixed'
-            fusion_results = self._rrf_fusion(bm25_results, vector_results)
-            self.stats['strategy_usage'][strategy] += 1
-            return fusion_results[:top_k]
-            
-        elif self.ablation_type == "no_adaptive_routing":
-            # 无自适应路由：只使用基本查询分析，但固定使用RRF
-            if self.query_analyzer:
-                features = self.query_analyzer.analyze_query(query)
-                self.stats['query_type_distribution'][features.query_type.value] += 1
-            
-            strategy = 'rrf_no_routing'
-            fusion_results = self._rrf_fusion(bm25_results, vector_results)
-            self.stats['strategy_usage'][strategy] += 1
-            return fusion_results[:top_k]
-            
-        elif self.ablation_type == "static_weights":
-            # 静态权重：使用查询分析但固定权重
-            if self.query_analyzer:
-                features = self.query_analyzer.analyze_query(query)
-                self.stats['query_type_distribution'][features.query_type.value] += 1
-            
-            strategy = 'weighted_static'
-            fusion_results = self._weighted_fusion(bm25_results, vector_results, 0.5, 0.5)
-            self.stats['strategy_usage'][strategy] += 1
-            return fusion_results[:top_k]
-            
-        else:
-            # 默认使用RRF
-            strategy = 'rrf_default'
-            fusion_results = self._rrf_fusion(bm25_results, vector_results)
-            self.stats['strategy_usage'][strategy] += 1
-            return fusion_results[:top_k]
-    
-    def _smart_fusion(self, query: Query, bm25_results: List[RetrievalResult], 
-                     vector_results: List[RetrievalResult], top_k: int = 10) -> List[FusionResult]:
-        """完整的智能融合策略（与智能基线相同）"""
+    def smart_fusion(self, query: Query, bm25_results: List[RetrievalResult], 
+                    vector_results: List[RetrievalResult], top_k: int = 10) -> List[FusionResult]:
+        """智能融合策略 - 简化优化版本"""
         
         # 分析查询特征
         features = self.query_analyzer.analyze_query(query)
+        
+        # 更新统计
+        self.stats['total_queries'] += 1
         self.stats['query_type_distribution'][features.query_type.value] += 1
         
         # 简化的策略选择 - 主要使用RRF，但微调参数
@@ -181,11 +132,12 @@ class AblationBaseline:
             fusion_results = self._rrf_fusion(bm25_results, vector_results)
         
         self.stats['strategy_usage'][strategy] += 1
-        return fusion_results
+        
+        return fusion_results[:top_k]
     
     def _rrf_fusion(self, bm25_results: List[RetrievalResult], 
                    vector_results: List[RetrievalResult]) -> List[FusionResult]:
-        """标准RRF融合"""
+        """RRF融合（与基线实验完全一致）"""
         all_docs = {}
         doc_ranks = defaultdict(dict)
         
@@ -273,6 +225,21 @@ class AblationBaseline:
         fusion_results.sort(key=lambda x: x.final_score, reverse=True)
         return fusion_results
     
+    def _vector_dominant_fusion(self, bm25_results: List[RetrievalResult], 
+                               vector_results: List[RetrievalResult]) -> List[FusionResult]:
+        """向量检索主导融合"""
+        return self._weighted_fusion(bm25_results, vector_results, 0.1, 0.9)
+    
+    def _bm25_dominant_fusion(self, bm25_results: List[RetrievalResult], 
+                             vector_results: List[RetrievalResult]) -> List[FusionResult]:
+        """BM25主导融合"""
+        return self._weighted_fusion(bm25_results, vector_results, 0.7, 0.3)
+    
+    def _vector_weighted_fusion(self, bm25_results: List[RetrievalResult], 
+                               vector_results: List[RetrievalResult]) -> List[FusionResult]:
+        """向量加权融合"""
+        return self._weighted_fusion(bm25_results, vector_results, 0.25, 0.75)
+    
     def _weighted_fusion(self, bm25_results: List[RetrievalResult], 
                         vector_results: List[RetrievalResult], 
                         bm25_weight: float, vector_weight: float) -> List[FusionResult]:
@@ -339,13 +306,84 @@ class AblationBaseline:
         
         fusion_results.sort(key=lambda x: x.final_score, reverse=True)
         return fusion_results
+    
+    def _rrf_fusion_optimized(self, bm25_results: List[RetrievalResult], 
+                             vector_results: List[RetrievalResult]) -> List[FusionResult]:
+        """优化的RRF融合 - 针对金融查询"""
+        # 使用更小的k值，增强排名靠前文档的权重
+        optimized_k = 30
+        all_docs = {}
+        doc_ranks = defaultdict(dict)
+        
+        # BM25结果排名
+        for rank, result in enumerate(bm25_results):
+            doc_id = result.doc_id
+            all_docs[doc_id] = result.document
+            doc_ranks[doc_id]['BM25'] = rank + 1
+        
+        # 向量结果排名
+        for rank, result in enumerate(vector_results):
+            doc_id = result.doc_id
+            all_docs[doc_id] = result.document
+            doc_ranks[doc_id]['EfficientVector'] = rank + 1
+        
+        # 计算优化RRF分数
+        fusion_results = []
+        for doc_id, ranks in doc_ranks.items():
+            rrf_score = sum(1.0 / (optimized_k + rank) for rank in ranks.values())
+            
+            # 收集原始分数
+            individual_scores = {}
+            for result in bm25_results:
+                if result.doc_id == doc_id:
+                    individual_scores['BM25'] = result.score
+                    break
+            for result in vector_results:
+                if result.doc_id == doc_id:
+                    individual_scores['EfficientVector'] = result.score
+                    break
+            
+            fusion_result = FusionResult(
+                doc_id=doc_id,
+                final_score=rrf_score,
+                document=all_docs[doc_id],
+                individual_scores=individual_scores
+            )
+            fusion_results.append(fusion_result)
+        
+        fusion_results.sort(key=lambda x: x.final_score, reverse=True)
+        return fusion_results
+    
+    def _financial_weighted_fusion(self, bm25_results: List[RetrievalResult], 
+                                  vector_results: List[RetrievalResult]) -> List[FusionResult]:
+        """金融查询加权融合"""
+        return self._weighted_fusion(bm25_results, vector_results, 0.4, 0.6)
+    
+    def _long_question_fusion(self, bm25_results: List[RetrievalResult], 
+                             vector_results: List[RetrievalResult]) -> List[FusionResult]:
+        """长问题融合 - 更依赖语义理解"""
+        return self._weighted_fusion(bm25_results, vector_results, 0.2, 0.8)
+    
+    def _short_question_fusion(self, bm25_results: List[RetrievalResult], 
+                              vector_results: List[RetrievalResult]) -> List[FusionResult]:
+        """短问题融合 - 平衡关键词和语义"""
+        return self._weighted_fusion(bm25_results, vector_results, 0.35, 0.65)
+    
+    def _academic_entity_fusion(self, bm25_results: List[RetrievalResult], 
+                               vector_results: List[RetrievalResult]) -> List[FusionResult]:
+        """学术实体融合 - BM25优势"""
+        return self._weighted_fusion(bm25_results, vector_results, 0.6, 0.4)
+    
+    def _academic_general_fusion(self, bm25_results: List[RetrievalResult], 
+                                vector_results: List[RetrievalResult]) -> List[FusionResult]:
+        """学术一般融合 - 使用优化RRF"""
+        return self._rrf_fusion_optimized(bm25_results, vector_results)
 
 
-def run_ablation_experiment(dataset_name: str, config: Dict[str, Any], 
-                           ablation_type: str, sample_size: Optional[int] = None, 
-                           top_k: int = 10) -> Dict[str, Any]:
-    """运行消融实验"""
-    print(f"\n=== 运行 {dataset_name} 消融实验 ({ablation_type}) ===")
+def run_smart_baseline_experiment(dataset_name: str, config: Dict[str, Any], 
+                                 sample_size: Optional[int] = None, top_k: int = 10) -> Dict[str, Any]:
+    """运行智能基线实验"""
+    print(f"\n=== 运行 {dataset_name} 智能基线实验 ===")
     
     # 加载数据集
     documents, queries, relevance_judgments = load_dataset(dataset_name)
@@ -381,11 +419,11 @@ def run_ablation_experiment(dataset_name: str, config: Dict[str, Any],
         print("🔄 构建向量索引...")
         vector_retriever.build_index(documents)
     
-    # 创建消融基线
-    ablation_baseline = AblationBaseline(config, ablation_type)
+    # 创建智能基线
+    smart_baseline = SmartBaseline(config)
     
     # 执行检索和融合
-    print(f"执行消融实验 ({ablation_type})...")
+    print("执行智能基线实验...")
     all_fusion_results = []
     
     for i, query in enumerate(queries):
@@ -403,8 +441,8 @@ def run_ablation_experiment(dataset_name: str, config: Dict[str, Any],
                 all_fusion_results.append([])
                 continue
             
-            # 消融融合
-            fusion_results = ablation_baseline.fusion(query, bm25_results, vector_results, top_k)
+            # 智能融合
+            fusion_results = smart_baseline.smart_fusion(query, bm25_results, vector_results, top_k)
             all_fusion_results.append(fusion_results)
             
         except Exception as e:
@@ -413,12 +451,12 @@ def run_ablation_experiment(dataset_name: str, config: Dict[str, Any],
             continue
     
     # 评估结果
-    print(f"评估消融实验结果 ({ablation_type})...")
+    print("评估智能基线结果...")
     metrics = evaluate_fusion_results(all_fusion_results, queries, relevance_judgments, top_k)
     
     return {
         'metrics': metrics,
-        'statistics': ablation_baseline.stats
+        'statistics': smart_baseline.stats
     }
 
 
@@ -444,6 +482,7 @@ def evaluate_fusion_results(fusion_results_list: List[List[FusionResult]],
         
         # 添加调试信息
         if not fusion_results:
+            print(f"警告: 查询 {query_id} 没有检索结果")
             continue
             
         retrieved_docs = [r.doc_id for r in fusion_results[:top_k]]
@@ -487,7 +526,7 @@ def evaluate_fusion_results(fusion_results_list: List[List[FusionResult]],
 
 def main():
     """主函数"""
-    parser = argparse.ArgumentParser(description="运行消融实验")
+    parser = argparse.ArgumentParser(description="运行智能基线实验")
     parser.add_argument("--config", type=str, default="configs/paper_experiments.json", help="配置文件路径")
     parser.add_argument("--datasets", type=str, nargs="+", default=["fiqa", "quora", "scidocs"], help="数据集列表")
     parser.add_argument("--sample", type=int, default=100, help="查询样本大小")
@@ -499,57 +538,39 @@ def main():
     with open(args.config, 'r') as f:
         config = json.load(f)
     
-    print("🚀 开始运行消融实验")
+    print("🚀 开始运行智能基线实验")
     print("=" * 50)
-    
-    # 消融实验类型
-    ablation_types = [
-        "full",                    # 完整方法
-        "no_query_analyzer",       # 无查询分析器
-        "no_adaptive_routing",     # 无自适应路由
-        "static_weights"           # 静态权重
-    ]
     
     all_results = {}
     
     for dataset in args.datasets:
-        all_results[dataset] = {}
-        
-        for ablation_type in ablation_types:
-            try:
-                results = run_ablation_experiment(dataset, config, ablation_type, args.sample, args.top_k)
-                all_results[dataset][ablation_type] = results
-                
-                # 显示结果摘要
-                metrics = results['metrics']
-                stats = results['statistics']
-                
-                print(f"\n{dataset} - {ablation_type} 结果:")
-                print(f"  MRR: {metrics.get('mrr', 0):.3f}")
-                print(f"  NDCG: {metrics.get('ndcg', 0):.3f}")
-                print(f"  Precision: {metrics.get('precision', 0):.3f}")
-                print(f"  Recall: {metrics.get('recall', 0):.3f}")
-                
-            except Exception as e:
-                print(f"数据集 {dataset} 消融实验 {ablation_type} 失败: {e}")
-                continue
+        try:
+            results = run_smart_baseline_experiment(dataset, config, args.sample, args.top_k)
+            all_results[dataset] = results
+            
+            # 显示结果摘要
+            metrics = results['metrics']
+            stats = results['statistics']
+            
+            print(f"\n{dataset} 智能基线结果:")
+            print(f"  MRR: {metrics.get('mrr', 0):.3f}")
+            print(f"  NDCG: {metrics.get('ndcg', 0):.3f}")
+            print(f"  Precision: {metrics.get('precision', 0):.3f}")
+            print(f"  Recall: {metrics.get('recall', 0):.3f}")
+            print(f"  查询类型分布: {dict(stats.get('query_type_distribution', {}))}")
+            print(f"  策略使用分布: {dict(stats.get('strategy_usage', {}))}")
+            
+        except Exception as e:
+            print(f"数据集 {dataset} 实验失败: {e}")
+            continue
     
     # 保存结果
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = f"reports/ablation_results_{timestamp}.json"
+    output_file = f"reports/smart_baseline_results_{timestamp}.json"
     with open(output_file, 'w') as f:
         json.dump(all_results, f, indent=2)
     
-    print(f"\n消融实验完成! 结果已保存到: {output_file}")
-    
-    # 分析结果
-    print("\n=== 消融实验结果分析 ===")
-    for dataset in all_results:
-        print(f"\n{dataset} 数据集:")
-        for ablation_type in ablation_types:
-            if ablation_type in all_results[dataset]:
-                metrics = all_results[dataset][ablation_type]['metrics']
-                print(f"  {ablation_type:20s}: MRR={metrics.get('mrr', 0):.3f}, NDCG={metrics.get('ndcg', 0):.3f}")
+    print(f"\n智能基线实验完成! 结果已保存到: {output_file}")
 
 
 if __name__ == "__main__":
