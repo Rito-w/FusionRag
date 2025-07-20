@@ -6,7 +6,7 @@
     "b": 0.75
   },
   "efficient_vector": {
-    "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "model_name": "models/models--intfloat--e5-large-v2",
     "index_type": "hnsw",
     "hnsw_m": 8,
     "hnsw_ef_construction": 100,
@@ -15,14 +15,14 @@
     "auto_index_selection": true
   },
   "semantic_bm25": {
-    "semantic_model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "semantic_model_name": "models/models--intfloat--e5-large-v2",
     "semantic_weight": 0.3,
     "enable_query_expansion": false,
     "enable_document_expansion": false,
     "batch_size": 4
   },
   "query_analyzer": {
-    "semantic_model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "semantic_model_name": "models/models--intfloat--e5-large-v2",
     "spacy_model_name": null,
     "disable_ner": true,
     "use_simple_features": true

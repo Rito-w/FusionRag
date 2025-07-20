@@ -52,8 +52,11 @@ Thumbs.db
 *.swo
 *~
 
-# 报告和结果文件
-reports/
+# 大型模型文件
+models/
+models/**/*
+
+# 其他结果文件
 results/
 
 # 其他临时文件

@@ -81,7 +81,7 @@ class QueryAnalyzer:
         self.model = None
         
         # NLP模型配置
-        self.spacy_model_name = self.config.get('spacy_model_name', 'zh_core_web_sm')
+        self.spacy_model_name = self.config.get('spacy_model_name', 'en_core_web_sm')  # 改为英文模型
         self.nlp = None
         
         # 查询类型阈值

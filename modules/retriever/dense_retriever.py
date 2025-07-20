@@ -121,16 +121,55 @@ class DenseRetriever(BaseRetriever):
         if not documents:
             return "unknown"
 
-        # 从第一个文档ID推断
-        first_doc_id = documents[0].doc_id
+        # 首先检查文档的metadata中是否有数据集信息
+        first_doc = documents[0]
+        if hasattr(first_doc, 'metadata') and first_doc.metadata:
+            if 'dataset' in first_doc.metadata:
+                dataset_name = first_doc.metadata['dataset']
+                print(f"📋 从metadata推断数据集名称: {dataset_name}")
+                return dataset_name
+
+        # 从文档ID推断
+        first_doc_id = first_doc.doc_id
+        print(f"🔍 从文档ID推断数据集: {first_doc_id}")
 
         if "MED-" in first_doc_id:
             return "nfcorpus"
         elif "covid" in first_doc_id.lower():
-            return "trec_covid"
+            return "trec-covid"
         elif "nq" in first_doc_id.lower():
             return "natural_questions"
+        elif first_doc_id.startswith("test-") and any(x in first_doc_id for x in ["pro", "con"]):
+            return "arguana"
+        elif first_doc_id.isdigit():
+            # 纯数字ID，可能是scifact, fiqa, quora等
+            if len(documents) > 1000:  # 根据数据集大小推断
+                if len(documents) > 100000:
+                    return "quora"  # quora有522k文档
+                elif len(documents) > 50000:
+                    return "fiqa"  # fiqa有57k文档
+                elif len(documents) > 20000:
+                    return "scidocs"  # scidocs有25k文档
+                else:
+                    return "scifact"  # scifact有5k文档
+            else:
+                return "scifact"
+        elif len(first_doc_id) == 40 and all(c in '0123456789abcdef' for c in first_doc_id):
+            # 40位十六进制哈希，可能是scidocs
+            if len(documents) > 20000:
+                return "scidocs"
+            else:
+                return "unknown"
+        elif len(first_doc_id) == 8 and first_doc_id.isalnum():
+            # 8位字母数字ID，可能是trec-covid
+            if len(documents) > 100000:
+                return "trec-covid"
+            else:
+                return "unknown"
+        elif len(documents) > 500000:
+            return "quora"  # quora是最大的数据集
         else:
+            print(f"⚠️ 无法推断数据集名称，文档ID: {first_doc_id}, 文档数量: {len(documents)}")
             return "unknown"
 
     def _calculate_documents_hash(self, documents: List[Document]) -> str:

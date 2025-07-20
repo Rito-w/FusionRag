@@ -83,7 +83,7 @@ def create_retrievers(config: Dict[str, Any] = None, lightweight: bool = False) 
         vector_config = config.get('efficient_vector', {})
         # 优化批处理大小以减少内存使用
         vector_config['batch_size'] = min(vector_config.get('batch_size', 32), 16)
-        retrievers["EfficientVector"] = EfficientVectorIndex(vector_config)
+        retrievers["EfficientVector"] = EfficientVectorIndex("EfficientVector", vector_config)
         
         # 语义增强BM25（可选，因为内存占用较大）
         if config.get('include_semantic_bm25', True):
@@ -117,15 +117,44 @@ def run_standard_experiment(dataset_name: str, config: Dict[str, Any] = None,
     print("创建检索器...")
     retrievers = create_retrievers(config, lightweight=lightweight)
     
-    # 构建索引
+    # 构建索引（支持缓存）
     print("构建索引...")
     for name, retriever in retrievers.items():
         print(f"构建 {name} 索引...")
         start_time = time.time()
-        retriever.build_index(documents)
+
+        # 尝试加载缓存的索引
+        cache_dir = Path("checkpoints/retriever_cache")
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        cache_path = cache_dir / f"{name.lower()}_{dataset_name}_index.pkl"
+
+        loaded_from_cache = False
+        if cache_path.exists() and hasattr(retriever, 'load_index'):
+            try:
+                print(f"🔍 尝试加载 {name} 缓存索引: {cache_path}")
+                retriever.load_index(str(cache_path))
+                loaded_from_cache = True
+                print(f"✅ {name} 索引从缓存加载成功")
+            except Exception as e:
+                print(f"⚠️ {name} 缓存加载失败: {e}")
+                loaded_from_cache = False
+
+        # 如果缓存加载失败，重新构建索引
+        if not loaded_from_cache:
+            print(f"🔄 构建 {name} 索引...")
+            retriever.build_index(documents)
+
+            # 保存索引到缓存
+            if hasattr(retriever, 'save_index'):
+                try:
+                    retriever.save_index(str(cache_path))
+                    print(f"💾 {name} 索引已缓存到: {cache_path}")
+                except Exception as e:
+                    print(f"⚠️ {name} 索引缓存失败: {e}")
+
         end_time = time.time()
-        print(f"{name} 索引构建完成，耗时: {end_time - start_time:.2f}秒")
-        
+        print(f"{name} 索引准备完成，耗时: {end_time - start_time:.2f}秒")
+
         # 强制垃圾回收以释放内存
         import gc
         gc.collect()

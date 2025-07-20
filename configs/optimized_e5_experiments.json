@@ -1,12 +1,12 @@
 {
-  "datasets": ["nfcorpus", "scifact"],
+  "datasets": ["nfcorpus", "scifact", "fiqa", "arguana"],
   "include_semantic_bm25": true,
   "bm25": {
     "k1": 1.2,
     "b": 0.75
   },
   "efficient_vector": {
-    "model_name": "intfloat/e5-large-v2",
+    "model_name": "models/models--intfloat--e5-large-v2",
     "index_type": "hnsw",
     "hnsw_m": 16,
     "hnsw_ef_construction": 200,
@@ -15,7 +15,7 @@
     "use_model_cache": true
   },
   "semantic_bm25": {
-    "semantic_model_name": "intfloat/e5-large-v2",
+    "semantic_model_name": "models/models--intfloat--e5-large-v2",
     "semantic_weight": 0.4,
     "enable_query_expansion": true,
     "query_expansion_terms": 3,
@@ -24,7 +24,7 @@
     "use_model_cache": true
   },
   "query_analyzer": {
-    "semantic_model_name": "intfloat/e5-large-v2",
+    "semantic_model_name": "models/models--intfloat--e5-large-v2",
     "spacy_model_name": null,
     "disable_ner": true,
     "use_simple_features": true

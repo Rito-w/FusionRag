@@ -65,7 +65,7 @@ class AdaptiveHybridIndex(BaseRetriever):
         
         # 高效向量检索器
         vector_config = retrievers_config.get('efficient_vector', {})
-        self.retrievers['efficient_vector'] = EfficientVectorIndex(config=vector_config)
+        self.retrievers['efficient_vector'] = EfficientVectorIndex("efficient_vector", vector_config)
         
         # 语义增强BM25检索器
         bm25_config = retrievers_config.get('semantic_bm25', {})

@@ -76,7 +76,7 @@ def create_retrievers(config: Dict[str, Any] = None) -> Dict[str, Any]:
     
     retrievers = {
         "BM25": BM25Retriever(config.get('bm25', {})),
-        "EfficientVector": EfficientVectorIndex(config.get('efficient_vector', {})),
+        "EfficientVector": EfficientVectorIndex("EfficientVector", config.get('efficient_vector', {})),
         "SemanticBM25": SemanticBM25(config.get('semantic_bm25', {})),
     }
     
