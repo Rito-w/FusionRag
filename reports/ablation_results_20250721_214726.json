@@ -1,0 +1,245 @@
+{
+  "fiqa": {
+    "full": {
+      "metrics": {
+        "precision": 0.05500000000000001,
+        "recall": 0.2022619047619047,
+        "mrr": 0.27825396825396825,
+        "ndcg": 0.1911629242049382
+      },
+      "statistics": {
+        "total_queries": 200,
+        "strategy_usage": {
+          "rrf_semantic_long": 29,
+          "rrf_long_query": 71,
+          "rrf_keyword": 17,
+          "rrf_very_long": 59,
+          "rrf_entity": 9,
+          "rrf_semantic_short": 15
+        },
+        "query_type_distribution": {
+          "semantic": 156,
+          "keyword": 27,
+          "entity": 17
+        },
+        "ablation_type": "full"
+      }
+    },
+    "no_query_analyzer": {
+      "metrics": {
+        "precision": 0.05500000000000001,
+        "recall": 0.2022619047619047,
+        "mrr": 0.27825396825396825,
+        "ndcg": 0.1911629242049382
+      },
+      "statistics": {
+        "total_queries": 200,
+        "strategy_usage": {
+          "rrf_fixed": 200
+        },
+        "query_type_distribution": {},
+        "ablation_type": "no_query_analyzer"
+      }
+    },
+    "no_adaptive_routing": {
+      "metrics": {
+        "precision": 0.05500000000000001,
+        "recall": 0.2022619047619047,
+        "mrr": 0.27825396825396825,
+        "ndcg": 0.1911629242049382
+      },
+      "statistics": {
+        "total_queries": 200,
+        "strategy_usage": {
+          "rrf_no_routing": 200
+        },
+        "query_type_distribution": {
+          "semantic": 156,
+          "keyword": 27,
+          "entity": 17
+        },
+        "ablation_type": "no_adaptive_routing"
+      }
+    },
+    "static_weights": {
+      "metrics": {
+        "precision": 0.06000000000000001,
+        "recall": 0.2147619047619047,
+        "mrr": 0.27325396825396825,
+        "ndcg": 0.19294056182644034
+      },
+      "statistics": {
+        "total_queries": 200,
+        "strategy_usage": {
+          "weighted_static": 200
+        },
+        "query_type_distribution": {
+          "semantic": 156,
+          "keyword": 27,
+          "entity": 17
+        },
+        "ablation_type": "static_weights"
+      }
+    }
+  },
+  "quora": {
+    "full": {
+      "metrics": {
+        "precision": 0.1015748031496063,
+        "recall": 0.7777465316835395,
+        "mrr": 0.7019622547181601,
+        "ndcg": 0.6903980463722207
+      },
+      "statistics": {
+        "total_queries": 200,
+        "strategy_usage": {
+          "rrf_long_query": 73,
+          "rrf_semantic_short": 29,
+          "rrf_very_long": 33,
+          "rrf_semantic_long": 56,
+          "rrf_entity": 9
+        },
+        "query_type_distribution": {
+          "semantic": 191,
+          "entity": 9
+        },
+        "ablation_type": "full"
+      }
+    },
+    "no_query_analyzer": {
+      "metrics": {
+        "precision": 0.1015748031496063,
+        "recall": 0.7777465316835395,
+        "mrr": 0.7019622547181601,
+        "ndcg": 0.6903980463722207
+      },
+      "statistics": {
+        "total_queries": 200,
+        "strategy_usage": {
+          "rrf_fixed": 200
+        },
+        "query_type_distribution": {},
+        "ablation_type": "no_query_analyzer"
+      }
+    },
+    "no_adaptive_routing": {
+      "metrics": {
+        "precision": 0.1015748031496063,
+        "recall": 0.7777465316835395,
+        "mrr": 0.7019622547181601,
+        "ndcg": 0.6903980463722207
+      },
+      "statistics": {
+        "total_queries": 200,
+        "strategy_usage": {
+          "rrf_no_routing": 200
+        },
+        "query_type_distribution": {
+          "semantic": 191,
+          "entity": 9
+        },
+        "ablation_type": "no_adaptive_routing"
+      }
+    },
+    "static_weights": {
+      "metrics": {
+        "precision": 0.10393700787401575,
+        "recall": 0.7921822272215974,
+        "mrr": 0.6997250343707037,
+        "ndcg": 0.692909817775239
+      },
+      "statistics": {
+        "total_queries": 200,
+        "strategy_usage": {
+          "weighted_static": 200
+        },
+        "query_type_distribution": {
+          "semantic": 191,
+          "entity": 9
+        },
+        "ablation_type": "static_weights"
+      }
+    }
+  },
+  "scidocs": {
+    "full": {
+      "metrics": {
+        "precision": 0.09300000000000001,
+        "recall": 0.03103448275862069,
+        "mrr": 0.3186150793650793,
+        "ndcg": 0.11460276149558796
+      },
+      "statistics": {
+        "total_queries": 200,
+        "strategy_usage": {
+          "rrf_long_query": 84,
+          "rrf_very_long": 34,
+          "rrf_entity": 58,
+          "rrf_keyword": 24
+        },
+        "query_type_distribution": {
+          "entity": 147,
+          "keyword": 51,
+          "semantic": 2
+        },
+        "ablation_type": "full"
+      }
+    },
+    "no_query_analyzer": {
+      "metrics": {
+        "precision": 0.09300000000000001,
+        "recall": 0.03103448275862069,
+        "mrr": 0.31919841269841265,
+        "ndcg": 0.11471277333280014
+      },
+      "statistics": {
+        "total_queries": 200,
+        "strategy_usage": {
+          "rrf_fixed": 200
+        },
+        "query_type_distribution": {},
+        "ablation_type": "no_query_analyzer"
+      }
+    },
+    "no_adaptive_routing": {
+      "metrics": {
+        "precision": 0.09300000000000001,
+        "recall": 0.03103448275862069,
+        "mrr": 0.31919841269841265,
+        "ndcg": 0.11471277333280014
+      },
+      "statistics": {
+        "total_queries": 200,
+        "strategy_usage": {
+          "rrf_no_routing": 200
+        },
+        "query_type_distribution": {
+          "entity": 147,
+          "keyword": 51,
+          "semantic": 2
+        },
+        "ablation_type": "no_adaptive_routing"
+      }
+    },
+    "static_weights": {
+      "metrics": {
+        "precision": 0.0895,
+        "recall": 0.02985632183908046,
+        "mrr": 0.3227103174603175,
+        "ndcg": 0.1136055688254701
+      },
+      "statistics": {
+        "total_queries": 200,
+        "strategy_usage": {
+          "weighted_static": 200
+        },
+        "query_type_distribution": {
+          "entity": 147,
+          "keyword": 51,
+          "semantic": 2
+        },
+        "ablation_type": "static_weights"
+      }
+    }
+  }
+}
