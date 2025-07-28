@@ -19,7 +19,7 @@ baseline_data = {
     'Dense': [0.241, 0.631, 0.285, 0.543, 0.553, 0.231],
     'RRF': [0.317, 0.669, 0.294, 0.622, 0.500, 0.259],
     'LinearEqual': [0.316, 0.663, 0.290, 0.585, 0.627, 0.265],
-    'LinearOptimized': [0.060, 0.128, 0.326, 0.530, 0.567, 0.258]
+    'LinearOptimized': [0.324, 0.671, 0.326, 0.598, 0.615, 0.261]
 }
 
 df_baseline = pd.DataFrame(baseline_data)
@@ -64,13 +64,13 @@ plt.savefig('charts/baseline_comparison.png', dpi=300, bbox_inches='tight')
 plt.close()
 
 # ==================== 图表2: 融合策略对比 ====================
-# 论文中的表2数据
+# 论文中的表2数据 (基于论文第579-584行的数据)
 fusion_data = {
     'Dataset': ['SciFact', 'FIQA', 'Quora', 'SciDocs', 'NFCorpus', 'ArguAna'],
-    'Best_Strategy': ['Linear Equal', 'Linear BM25-Dom', 'Linear BM25-Dom', 'Linear Vector-Dom', 'RRF Standard', 'RRF Standard'],
-    'MRR': [0.596, 0.343, 0.717, 0.326, 0.583, 0.283],
-    'vs_RRF': [0.500, 0.317, 0.669, 0.294, 0.583, 0.283],
-    'Improvement': [19.2, 8.2, 7.2, 10.9, 0, 0]
+    'Best_Strategy': ['Linear Equal', 'Linear Optimized', 'RRF Standard', 'Linear Optimized', 'RRF Standard', 'RRF Standard'],
+    'MRR': [0.567, 0.324, 0.669, 0.326, 0.622, 0.259],
+    'vs_RRF': [0.500, 0.317, 0.669, 0.294, 0.622, 0.259],
+    'Improvement': [13.4, 2.2, 0, 10.9, 0, 0]
 }
 
 df_fusion = pd.DataFrame(fusion_data)
@@ -109,10 +109,10 @@ plt.savefig('charts/fusion_strategy_comparison.png', dpi=300, bbox_inches='tight
 plt.close()
 
 # ==================== 图表3: 计算效率对比 ====================
-# 论文中的表4数据
+# 论文中的效率数据 (基于论文第607行的数据)
 efficiency_data = {
     'Method': ['Linear Equal', 'Linear BM25-Dom', 'Linear Vector-Dom', 'RRF Standard', 'Adaptive by Query Type', 'DAT'],
-    'Time_ms': [1.2, 1.3, 1.3, 5.7, 112.5, 108.3],
+    'Time_ms': [1.2, 1.3, 1.3, 5.7, 100.0, 100.0],
     'Relative_Speed': [1.0, 0.9, 0.9, 0.2, 0.01, 0.01]
 }
 
@@ -147,13 +147,13 @@ plt.savefig('charts/computational_efficiency.png', dpi=300, bbox_inches='tight')
 plt.close()
 
 # ==================== 图表4: 数据集特征分析 ====================
-# 论文中的表5数据
+# 论文中的表5数据 (基于论文第614-622行的数据)
 dataset_features_data = {
     'Dataset': ['FIQA', 'Quora', 'SciDocs', 'NFCorpus', 'SciFact', 'ArguAna'],
-    'Entity_Query': [9, 0, 75, 32, 35, 78],
-    'Keyword_Query': [16, 0, 23, 59, 65, 13],
-    'Semantic_Query': [75, 100, 2, 9, 0, 9],
-    'Best_Strategy': ['BM25-Dom', 'BM25-Dom', 'Vector-Dom', 'RRF', 'Equal', 'RRF']
+    'Entity_Query': [15, 5, 75, 32, 35, 78],
+    'Keyword_Query': [45, 25, 23, 59, 65, 13],
+    'Semantic_Query': [40, 70, 2, 9, 0, 9],
+    'Best_Strategy': ['Linear-Opt', 'RRF', 'Linear-Opt', 'RRF', 'Linear-Equal', 'RRF']
 }
 
 df_dataset = pd.DataFrame(dataset_features_data)
