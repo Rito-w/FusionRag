@@ -1,0 +1,211 @@
+<mxfile host="65bd71144e">
+    <diagram id="FusionStrategyComparison" name="Fusion Strategy Comparison">
+        <mxGraphModel dx="1422" dy="796" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <!-- Title -->
+                <mxCell id="title" value="Simple vs Complex Fusion Strategy Comparison" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="450" y="30" width="500" height="30" as="geometry"/>
+                </mxCell>
+                
+                <!-- Simple Strategy Side -->
+                <mxCell id="simple_title" value="Simple Fusion Strategy" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#2E86AB;" vertex="1" parent="1">
+                    <mxGeometry x="200" y="80" width="200" height="30" as="geometry"/>
+                </mxCell>
+                
+                <!-- Simple Flow -->
+                <mxCell id="simple_query" value="Query Input" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FD;strokeColor=#2E86AB;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="130" width="120" height="40" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="simple_bm25" value="BM25&#xa;Retrieval" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B8E6B8;strokeColor=#2E86AB;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="160" y="210" width="80" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="simple_dense" value="Dense&#xa;Retrieval" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B8E6B8;strokeColor=#2E86AB;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="320" y="210" width="80" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="simple_fusion" value="Linear Combination&#xa;Score = w₁×S₁ + w₂×S₂" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#87CEEB;strokeColor=#2E86AB;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="210" y="300" width="180" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="simple_rank" value="Rank by Score" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#2E86AB;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="380" width="120" height="40" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="simple_result" value="Final Results" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E68C;strokeColor=#2E86AB;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="450" width="120" height="40" as="geometry"/>
+                </mxCell>
+                
+                <!-- Complex Strategy Side -->
+                <mxCell id="complex_title" value="Complex Fusion Strategy" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#A23B72;" vertex="1" parent="1">
+                    <mxGeometry x="900" y="80" width="200" height="30" as="geometry"/>
+                </mxCell>
+                
+                <!-- Complex Flow -->
+                <mxCell id="complex_query" value="Query Input" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FD;strokeColor=#A23B72;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="940" y="130" width="120" height="40" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="complex_analysis" value="Query Analysis&#xa;(Type Classification)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDA0DD;strokeColor=#A23B72;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="940" y="190" width="120" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="complex_bm25" value="BM25&#xa;Retrieval" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B8E6B8;strokeColor=#A23B72;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="860" y="270" width="80" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="complex_dense" value="Dense&#xa;Retrieval" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B8E6B8;strokeColor=#A23B72;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="1020" y="270" width="80" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="complex_routing" value="Adaptive Routing&#xa;(Strategy Selection)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDA0DD;strokeColor=#A23B72;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="940" y="340" width="120" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="complex_weighting" value="Dynamic Weighting&#xa;(Context-aware)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDA0DD;strokeColor=#A23B72;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="940" y="410" width="120" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="complex_result" value="Final Results" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E68C;strokeColor=#A23B72;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="940" y="480" width="120" height="40" as="geometry"/>
+                </mxCell>
+                
+                <!-- Simple Flow Arrows -->
+                <mxCell id="s_arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2E86AB;" edge="1" parent="1" source="simple_query" target="simple_bm25">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="s_arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2E86AB;" edge="1" parent="1" source="simple_query" target="simple_dense">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="s_arrow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2E86AB;" edge="1" parent="1" source="simple_bm25" target="simple_fusion">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="s_arrow4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2E86AB;" edge="1" parent="1" source="simple_dense" target="simple_fusion">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="s_arrow5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2E86AB;" edge="1" parent="1" source="simple_fusion" target="simple_rank">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="s_arrow6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2E86AB;" edge="1" parent="1" source="simple_rank" target="simple_result">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- Complex Flow Arrows -->
+                <mxCell id="c_arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#A23B72;" edge="1" parent="1" source="complex_query" target="complex_analysis">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="c_arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#A23B72;" edge="1" parent="1" source="complex_analysis" target="complex_bm25">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="c_arrow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#A23B72;" edge="1" parent="1" source="complex_analysis" target="complex_dense">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="c_arrow4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#A23B72;" edge="1" parent="1" source="complex_bm25" target="complex_routing">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="c_arrow5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#A23B72;" edge="1" parent="1" source="complex_dense" target="complex_routing">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="c_arrow6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#A23B72;" edge="1" parent="1" source="complex_routing" target="complex_weighting">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="c_arrow7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#A23B72;" edge="1" parent="1" source="complex_weighting" target="complex_result">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- VS Symbol -->
+                <mxCell id="vs_circle" value="VS" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#FFFFFF;strokeColor=#2F4F4F;strokeWidth=3;fontSize=24;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="650" y="300" width="80" height="80" as="geometry"/>
+                </mxCell>
+                
+                <!-- Comparison Table -->
+                <mxCell id="comparison_title" value="Performance &amp; Efficiency Comparison" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="500" y="550" width="300" height="30" as="geometry"/>
+                </mxCell>
+                
+                <!-- Table Background -->
+                <mxCell id="table_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#2F4F4F;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="350" y="590" width="600" height="200" as="geometry"/>
+                </mxCell>
+                
+                <!-- Table Headers -->
+                <mxCell id="header_metric" value="Metric" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="420" y="610" width="80" height="30" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="header_simple" value="Simple Methods" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#2E86AB;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="610" width="120" height="30" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="header_complex" value="Complex Methods" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#A23B72;" vertex="1" parent="1">
+                    <mxGeometry x="660" y="610" width="120" height="30" as="geometry"/>
+                </mxCell>
+                
+                <!-- Table Rows -->
+                <mxCell id="row1_metric" value="Parameters" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="420" y="650" width="80" height="25" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="row1_simple" value="≤ 3 (weights only)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="650" width="120" height="25" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="row1_complex" value="> 3 (weights + thresholds)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="660" y="650" width="120" height="25" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="row2_metric" value="Latency" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="420" y="685" width="80" height="25" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="row2_simple" value="1.2-1.3 ms/query" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#2E86AB;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="685" width="120" height="25" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="row2_complex" value="45-120 ms/query" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="660" y="685" width="120" height="25" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="row3_metric" value="Performance" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="420" y="720" width="80" height="25" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="row3_simple" value="2/6 datasets better" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="720" width="120" height="25" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="row3_complex" value="3/6 datasets better" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#A23B72;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="660" y="720" width="120" height="25" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="row4_metric" value="Complexity" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="420" y="755" width="80" height="25" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="row4_simple" value="O(n) linear" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#2E86AB;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="755" width="120" height="25" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="row4_complex" value="O(n²) quadratic" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="660" y="755" width="120" height="25" as="geometry"/>
+                </mxCell>
+                
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

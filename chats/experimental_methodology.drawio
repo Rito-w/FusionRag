@@ -1,0 +1,166 @@
+<mxfile host="65bd71144e">
+    <diagram id="ExperimentalMethodology" name="Experimental Methodology">
+        <mxGraphModel dx="1422" dy="796" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1000" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <!-- Title -->
+                <mxCell id="title" value="Experimental Methodology: Simple vs Complex Fusion Methods" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="300" y="30" width="600" height="30" as="geometry"/>
+                </mxCell>
+                
+                <!-- Dataset Selection -->
+                <mxCell id="dataset_title" value="1. Dataset Selection" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#2F4F4F;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="90" width="150" height="30" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="beir_datasets" value="BEIR Benchmark Datasets" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FD;strokeColor=#2F4F4F;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="130" width="200" height="40" as="geometry"/>
+                </mxCell>
+                
+                <!-- Individual Datasets -->
+                <mxCell id="scifact" value="SciFact" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B8E6B8;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="200" width="70" height="30" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="fiqa" value="FIQA" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B8E6B8;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="130" y="200" width="70" height="30" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="quora" value="Quora" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B8E6B8;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="210" y="200" width="70" height="30" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="scidocs" value="SciDocs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B8E6B8;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="290" y="200" width="70" height="30" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="nfcorpus" value="NFCorpus" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B8E6B8;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="370" y="200" width="70" height="30" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="arguana" value="ArguAna" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B8E6B8;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="450" y="200" width="70" height="30" as="geometry"/>
+                </mxCell>
+                
+                <!-- Retriever Setup -->
+                <mxCell id="retriever_title" value="2. Retriever Setup" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#2F4F4F;" vertex="1" parent="1">
+                    <mxGeometry x="600" y="90" width="150" height="30" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="bm25_setup" value="BM25 (Sparse)&#xa;k₁=1.2, b=0.75" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="600" y="140" width="120" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="e5_setup" value="E5-large-v2 (Dense)&#xa;768-dim embeddings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="750" y="140" width="120" height="50" as="geometry"/>
+                </mxCell>
+                
+                <!-- Fusion Methods -->
+                <mxCell id="fusion_title" value="3. Fusion Methods Implementation" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#2F4F4F;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="280" width="250" height="30" as="geometry"/>
+                </mxCell>
+                
+                <!-- Simple Methods -->
+                <mxCell id="simple_methods_title" value="Simple Methods" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#2E86AB;" vertex="1" parent="1">
+                    <mxGeometry x="150" y="320" width="120" height="20" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="linear_equal_method" value="Linear Equal&#xa;w₁ = w₂ = 0.5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#87CEEB;strokeColor=#2E86AB;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="350" width="100" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="linear_opt_method" value="Linear Optimized&#xa;Grid Search" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#87CEEB;strokeColor=#2E86AB;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="350" width="100" height="50" as="geometry"/>
+                </mxCell>
+                
+                <!-- Complex Methods -->
+                <mxCell id="complex_methods_title" value="Complex Methods" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#A23B72;" vertex="1" parent="1">
+                    <mxGeometry x="650" y="320" width="120" height="20" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="rrf_method" value="RRF Standard&#xa;k = 60" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDA0DD;strokeColor=#A23B72;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="600" y="350" width="100" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="adaptive_method" value="Adaptive Fusion&#xa;Query Analysis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDA0DD;strokeColor=#A23B72;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="720" y="350" width="100" height="50" as="geometry"/>
+                </mxCell>
+                
+                <!-- Experimental Protocol -->
+                <mxCell id="protocol_title" value="4. Experimental Protocol" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#2F4F4F;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="450" width="200" height="30" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="protocol_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#2F4F4F;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="490" width="800" height="120" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="protocol_text1" value="• 5 repeated experiments with different random seeds (42, 123, 456, 789, 1024)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="120" y="500" width="500" height="20" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="protocol_text2" value="• Grid search for linear weights: [0.1, 0.2, ..., 0.9]" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="120" y="525" width="400" height="20" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="protocol_text3" value="• RRF parameter k ∈ {10, 20, 30, 60, 100}" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="120" y="550" width="300" height="20" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="protocol_text4" value="• Statistical significance testing: paired t-test (α = 0.05)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="120" y="575" width="400" height="20" as="geometry"/>
+                </mxCell>
+                
+                <!-- Evaluation Metrics -->
+                <mxCell id="metrics_title" value="5. Evaluation Metrics" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#2F4F4F;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="650" width="150" height="30" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="mrr_metric" value="MRR&#xa;(Mean Reciprocal Rank)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E68C;strokeColor=#2F4F4F;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="690" width="120" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="ndcg_metric" value="NDCG@10&#xa;(Normalized DCG)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E68C;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="690" width="120" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="latency_metric" value="Latency&#xa;(ms per query)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E68C;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="380" y="690" width="120" height="50" as="geometry"/>
+                </mxCell>
+                
+                <!-- Results Summary -->
+                <mxCell id="results_title" value="6. Key Findings" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#2F4F4F;" vertex="1" parent="1">
+                    <mxGeometry x="600" y="650" width="120" height="30" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="finding1" value="✓ Simple methods significantly better&#xa;   on 2/6 datasets (SciFact, SciDocs)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#4CAF50;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="600" y="690" width="180" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="finding2" value="⚡ 80× faster execution&#xa;   (1.3ms vs 100ms per query)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFECB3;strokeColor=#FF9800;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="600" y="760" width="180" height="50" as="geometry"/>
+                </mxCell>
+                
+                <!-- Arrows connecting sections -->
+                <mxCell id="arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2F4F4F;" edge="1" parent="1" source="beir_datasets" target="linear_equal_method">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2F4F4F;" edge="1" parent="1" source="beir_datasets" target="rrf_method">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="arrow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2F4F4F;" edge="1" parent="1" source="linear_equal_method" target="mrr_metric">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="arrow4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2F4F4F;" edge="1" parent="1" source="rrf_method" target="latency_metric">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

@@ -1,0 +1,126 @@
+<mxfile host="65bd71144e">
+    <diagram id="MultiRetrieverArchitecture" name="Multi-Retriever System Architecture">
+        <mxGraphModel dx="1422" dy="796" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="800" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <!-- Title -->
+                <mxCell id="title" value="Multi-Retriever Fusion System Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="400" y="30" width="400" height="30" as="geometry"/>
+                </mxCell>
+                
+                <!-- Input Layer -->
+                <mxCell id="query_input" value="User Query" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FD;strokeColor=#2F4F4F;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="100" width="160" height="50" as="geometry"/>
+                </mxCell>
+                
+                <!-- Retriever Layer -->
+                <mxCell id="bm25_retriever" value="BM25 Retriever&#xa;(Sparse)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B8E6B8;strokeColor=#2F4F4F;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="200" y="220" width="140" height="70" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="dense_retriever" value="E5-large-v2&#xa;(Dense)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B8E6B8;strokeColor=#2F4F4F;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="860" y="220" width="140" height="70" as="geometry"/>
+                </mxCell>
+                
+                <!-- Fusion Strategy Layer -->
+                <mxCell id="fusion_title" value="Fusion Strategies" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="340" width="160" height="30" as="geometry"/>
+                </mxCell>
+                
+                <!-- Simple Methods -->
+                <mxCell id="simple_label" value="Simple Methods" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#2E86AB;" vertex="1" parent="1">
+                    <mxGeometry x="150" y="380" width="120" height="20" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="linear_equal" value="Linear Equal&#xa;w₁ = w₂ = 0.5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#87CEEB;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="80" y="410" width="120" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="linear_optimized" value="Linear Optimized&#xa;Grid Search" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#87CEEB;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="410" width="120" height="50" as="geometry"/>
+                </mxCell>
+                
+                <!-- Complex Methods -->
+                <mxCell id="complex_label" value="Complex Methods" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#A23B72;" vertex="1" parent="1">
+                    <mxGeometry x="860" y="380" width="120" height="20" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="rrf_standard" value="RRF Standard&#xa;k = 60" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDA0DD;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="800" y="410" width="120" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="adaptive_fusion" value="Adaptive Fusion&#xa;Query Analysis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDA0DD;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="940" y="410" width="120" height="50" as="geometry"/>
+                </mxCell>
+                
+                <!-- Output Layer -->
+                <mxCell id="ranked_results" value="Ranked Results" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E68C;strokeColor=#2F4F4F;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="550" width="160" height="50" as="geometry"/>
+                </mxCell>
+                
+                <!-- Arrows from Query to Retrievers -->
+                <mxCell id="arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2F4F4F;" edge="1" parent="1" source="query_input" target="bm25_retriever">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2F4F4F;" edge="1" parent="1" source="query_input" target="dense_retriever">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- Arrows from Retrievers to Fusion Methods -->
+                <mxCell id="arrow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#2F4F4F;" edge="1" parent="1" source="bm25_retriever" target="linear_equal">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="arrow4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#2F4F4F;" edge="1" parent="1" source="bm25_retriever" target="linear_optimized">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="arrow5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#2F4F4F;" edge="1" parent="1" source="dense_retriever" target="rrf_standard">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="arrow6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#2F4F4F;" edge="1" parent="1" source="dense_retriever" target="adaptive_fusion">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- Arrows from Fusion Methods to Output -->
+                <mxCell id="arrow7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#2F4F4F;" edge="1" parent="1" source="linear_equal" target="ranked_results">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="arrow8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#2F4F4F;" edge="1" parent="1" source="linear_optimized" target="ranked_results">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="arrow9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#2F4F4F;" edge="1" parent="1" source="rrf_standard" target="ranked_results">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="arrow10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#2F4F4F;" edge="1" parent="1" source="adaptive_fusion" target="ranked_results">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- Legend -->
+                <mxCell id="legend_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#2F4F4F;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="650" width="300" height="100" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="legend_title" value="Legend" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="180" y="660" width="40" height="20" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="legend_simple" value="Simple Methods" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#87CEEB;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="70" y="690" width="100" height="25" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="legend_complex" value="Complex Methods" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDA0DD;strokeColor=#2F4F4F;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="230" y="690" width="100" height="25" as="geometry"/>
+                </mxCell>
+                
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
