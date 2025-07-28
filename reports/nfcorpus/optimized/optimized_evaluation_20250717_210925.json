@@ -1,0 +1,29 @@
+{
+  "dataset": "nfcorpus_optimized",
+  "timestamp": "2025-07-17T21:09:25.759188",
+  "metrics": [
+    "precision",
+    "recall",
+    "mrr",
+    "ndcg",
+    "latency"
+  ],
+  "results": {
+    "BM25": {
+      "precision": 0.04,
+      "recall": 0.8177884615384615,
+      "mrr": 0.12,
+      "ndcg": 0.04480300279758385,
+      "latency": 26.885294914245605,
+      "latency_p95": 28.90080213546753
+    },
+    "EfficientVector": {
+      "precision": 0.01,
+      "recall": 0.80625,
+      "mrr": 0.1,
+      "ndcg": 0.022009176629808017,
+      "latency": 27.280116081237793,
+      "latency_p95": 55.10003566741941
+    }
+  }
+}

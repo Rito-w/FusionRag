@@ -1,0 +1,375 @@
+Title: COS-Mix: Cosine Similarity and Distance Fusion for Improved Information Retrieval
+arXiv ID: 2406.00638
+Score: 0.9909
+Total Pages: 10
+Extraction Time: 2025-06-21 01:03:08
+================================================================================
+
+
+--- Page 1 ---
+COS-Mix: Cosine Similarity and Distance Fusion for
+Improved Information Retrieval
+Kush Juvekar1and Anupam Purwar2∗
+1https://gihub.com/Koosh0610 , Ahmedabad, India
+2https://anupam-purwar.github.io/page/ , Delhi, India1
+1,2Both authors contributed equally to this research.
+*Corresponding author: Anupam Purwar, anupam.aiml@gmail.com
+June 2024
+Abstract
+This study proposes a novel hybrid retrieval strategy for Retrieval-Augmented Generation (RAG)
+that integrates cosine similarity and cosine distance measures to improve retrieval performance, par-
+ticularly for sparse data. The traditional cosine similarity measure is widely used to capture the sim-
+ilarity between vectors in high-dimensional spaces. However, it has been shown that this measure can
+yield arbitrary results in certain scenarios. To address this limitation, we incorporate cosine distance
+measures to provide a complementary perspective by quantifying the dissimilarity between vectors.
+Our approach is experimented on proprietary data, unlike recent publications that have used open-
+source datasets. The proposed method demonstrates enhanced retrieval performance and provides a
+more comprehensive understanding of the semantic relationships between documents or items. This
+hybrid strategy offers a promising solution for efficiently and accurately retrieving relevant informa-
+tion in knowledge-intensive applications, leveraging techniques such as BM25 (sparse) retrieval , vector
+(Dense) retrieval, and cosine distance based retrieval to facilitate efficent information retrieval.
+Keywords : Large Language Models, Retrieval Augmented Generation, Information Retrieval, GPT,
+Algorithm.
+1 Introduction
+Large Language Models (LLMs) have emerged as transformative technologies with excellent performance
+on a variety of tasks. With the increasing size of LLMs, they can function as very effective knowledge
+warehouses [1], with facts embedded within their parameters, and models can be improved further through
+fine-tuning on domain-specific knowledge. However fine-tuning is a difficult task with vast amounts of
+data [2]. A different method, first developed in open domain question answering systems [3], involves orga-
+nizing vast amounts of text into smaller sections (paragraphs) and storing them in a distinct information
+retrieval system. This system retrieves relevant information, which is then provided to the LLM along-
+side the question for context. Researchers have also attempted using keywords to augment information re-
+trieval [4] with reported reduction in latency and cost of retrieval [4]. This approach simplifies the process
+of supplying a system with up-to-date knowledge in a specific domain, while also facilitating easy under-
+standing of where the information comes from. In contrast, the inherent knowledge of LLMs is complex
+and challenging to trace back to its origin [5].
+Nevertheless, existing retrieval-augmented approaches also have flaws. Most practices in retrieval aug-
+mented generation or RAG, use vector similarity as semantic similarity, but it has been shown that co-
+sine similarity of learned embeddings can yield arbitrary results [6]. In this study, we propose a hybrid
+1arXiv:2406.00638v1  [cs.IR]  2 Jun 2024
+
+--- Page 2 ---
+Figure 1: COS-Mix LLM Interface
+retrieval strategy that integrates cosine similarity and cosine distance measures to enhance retrieval perfor-
+mance. Traditional cosine similarity measures have been widely utilized to capture the similarity between
+vectors in high-dimensional spaces. However, in scenarios where the similarity measure fails to adequately
+capture the semantic relationship between documents or items, cosine distance provides a complementary
+perspective by quantifying the dissimilarity between vectors. We demonstrate how this approach improves
+retrieval specifically for sparse data.
+Our proposed method towards RAG is experimented on proprietary data, unlike more recent publications
+[7–9] which have used open-source datasets like QuALITY [10],MedQA [11], US SEC Filings etc.
+2 Methodology
+2.1 Data Processing
+The HTML pages used in the study and experiments came from https://i-venture.org . A web crawler
+was set up to methodically obtain all HTML pages, using libraries like requests, re, urllib, BeautifulSoup,
+collections, and HTML parsing tools. Upon recovery, the HTML pages were converted to text files. Fol-
+lowing that, a variety of data preparation techniques were used to remove unnecessary information such as
+headers and footers, ensuring that the focus remained on the primary textual content.
+2.2 Vectorization
+The analyzed text files were divided into manageable pieces and then transformed into embeddings us-
+ing the OpenAI embedding model text-embedding-ada-002 . The size of those manageable pieces were
+optimized so as to achieve higher score on metrics discussed in 2.4. During this procedure, entities were
+extracted for use as metadata in question answering [12]. The generated embedding vectors were system-
+atically stored for further analysis.
+2
+
+--- Page 3 ---
+2.3 Retrieval
+Leveraging the Language Model (LLM) capabilities, user queries were addressed by invoking the assistance
+of the pre-trained language model, GPT-3.5-TURBO . In instances where the LLM failed to provide
+satisfactory responses based on contextual information(similarity search), the system seamlessly transi-
+tioned to a distance-based approach for query resolution. For RAG, we use a hybrid retriever composed of
+BM25 retriever coupled with traditional vector retriever and then the retrieved chunks were reordered [13].
+BM25 is a widely used information retrieval technique that employs a probabilistic model to rank doc-
+uments based on the frequency and distribution of query terms within them [14]. The chunks retrieved
+using distance approach are re-ranked with the help flashrank library [15].
+To facilitate the transition between the similarity-based and distance-based approaches, a validation prompt
+was utilized. This prompt, designed to evaluate the adequacy of responses generated by the initial ap-
+proach, ensured a seamless and effective switch between methodologies based on the user’s query require-
+ments. Following is the prompt employed:
+Validating Prompt
+"You are an intelligent bot designed to assist users on an organization’s
+website by answering their queries. You’ll be given a user’s question and
+an associated answer. Your task is to determine if the provided answer
+effectively resolves the query. If the answer is unsatisfactory, return 0.
+Query: {query}
+Answer: {answer}
+Your Feedback:"
+2.4 Evaluation
+We evaluated our augmented-RAG pipeline on a variety of metrics and compared it with two open source
+datasets [16,17]. The evolution of Natural Language Processing (NLP) has transitioned from classical met-
+rics like ROUGE , and METEOR [18] to more nuanced metrics [19]. A common issue in evaluating RAG
+is the unavailability of ground truths. We use answers generated by GPT-4-TURBO as ground truths as
+it has been demonstrated that LLMs like GPT-4-TURBO are over 80% in agreement with humans and
+hence can be used as a judge for evaluating a smaller model’s output [20]. The output generated has been
+evaluated on the following nuanced metrics alongside the classical methods:
+Contextual Precision : This metric measures your RAG pipeline’s retriever by evaluating whether nodes
+in your retrieval context that are relevant to the given query are ranked higher than irrelevant ones.
+Contextual Recall : This metric measures the quality of the RAG pipeline’s retriever by evaluating the
+extent to which the retrieval context aligns with the ground truth.
+Contextual Relevancy : This metric measures the quality of the RAG pipeline’s retriever by evaluating
+the overall relevance of the information presented in your retrieval context for a given query.
+Answer Relevancy : The answer relevancy metric measures the quality of the RAG pipeline’s generator
+by evaluating how relevant the actual output of LLM is compared to the provided query.
+Faithfulness : This metric measures the quality of your RAG pipeline’s generator by evaluating whether
+the actual output factually aligns with the contents of your retrieval context.
+3
+
+--- Page 4 ---
+3 RESULTS AND DISCUSSION
+3.1 Limitations of RAG
+Recent findings [21] show that optimal choice of retrieval method and LLM is task-dependent and choice
+of retrieval method often impacts performance more than scaling LLM size. While the hybrid retrieval
+performs better on the proprietary dataset across almost all metrics (Table 1), it still performs poorly on
+contextual relevancy across all datasets. On an average, more than half of the context retrieved is not rele-
+vant to the user query or that the information is sparse meaning only few chunks contain relevant informa-
+tion. Besides, many times there are instances where the LLM fails to answer user queries even when the
+information to generate the answer is in the retrieved context.
+CLASSICAL METRICS
+METRICS NFCorpus SciFact Proprietary Dataset
+Precision 0.55 0.60 0.77
+Recall 0.40 0.39 0.63
+F-Score 0.44 0.44 0.68
+METEOR 0.38 0.40 0.66
+NUANCED METRICS
+METRICS NFCorpus Scifact Proprietary Data
+Contextual Recall 0.51 0.46 0.86
+Contextual Precision 0.83 0.80 0.98
+Contextual Relevancy 0.40 0.43 0.60
+Answer Relevancy 0.87 0.90 1
+Faithfulness 0.94 0.95 0.90
+Table 1: Comprehensive overview classical and nuanced metrics for Hybrid Retrieval. All values are re-
+ported on average.
+3.2 Efficacy of Distance Approach
+As discussed in Section 3.1, classical RAG based on hybrid retriever fails to answer many questions with
+sparse information even after varying the chunk size and top-k values. However, the usage of distance ap-
+proach in information retrieval augments the classical RAG and LLM is able to respond to such questions
+with accurate answers every time, as shown in Table 2. Thus, distance approach augmented RAG per-
+forms without the need to use a more advanced LLM with higher context window and thereby saving cost
+(All responses in Table 2 are generated using GPT-3.5-TURBO).
+Table 2: Efficacy of Distance Approach: Answers and Response Time
+S.NO User Query and Answers Response Time (s)
+1. What is the TRICOR Batch 4 program?
+Hybrid Retrieval : I’m sorry, but the information provided in the context
+does not contain details about the TRICOR Batch 4 program. If you have
+any other questions or need information on a different topic, feel free to
+ask!8.165937
+Continued on next page
+4
+
+--- Page 5 ---
+S.NO User Query and Answers Response Time (s)
+Distance Approach : The TRICOR Batch 4 program is a flagship
+entrepreneurship program in collaboration with the Tribal Cooperative
+Finance Corporation Ltd (TRICOR) under the Telangana Government’s
+Tribal Welfare Department.4.632708
+2. How does TRICOR support tribal entrepreneurs?
+Hybrid Retrieval : I’m sorry, but the information provided in the context
+does not contain details about how TRICOR supports tribal entrepreneurs.
+If you have any other questions or need information on a different topic,
+feel free to ask!5.847167
+Distance Approach : TRICOR supports tribal entrepreneurs
+through capacity-building sessions and other resources.3.824327
+3. What is Atal Catalysts @ ISB 2.0?
+Hybrid Retrieval : I’m sorry, but the information provided in the context
+does not include details about the Atal Catalyst @ ISB. If you have any
+other questions or need information on a different topic, feel free to ask!7.982479
+Distance Approach : Atal Catalysts @ ISB 2.0 is a mentorship program in
+partnership with Atal Innovation Mission (AIM), NITI Aayog.4.338906
+4. Who is the CEO of DLabs?
+Hybrid Retrieval : The CEO of DLabs is not explicitly mentioned in
+the provided excerpts. However, based on the information available, the
+positions mentioned in the documents related to I-Venture @ ISB are:
+Assistant Program Manager at AIC ISB
+Executive Admin & Operations at AIC ISB
+If you have any specific questions regarding these positions or any other
+information related to I-Venture @ ISB, feel free to ask!7.726001
+Distance Approach : Saumya Kumar is the CEO of DLabs at the Indian
+School of Business (ISB).4.143123
+5. Who is the assistant program manager at AIC ISB?
+Continued on next page
+5
+
+--- Page 6 ---
+S.NO User Query and Answers Response Time (s)
+Hybrid Retrieval : The Assistant Program Manager at AIC ISB is
+responsible for assisting the program manager in designing, promoting,
+and managing the AIC ISB incubation/acceleration programs. Here are
+some details about the Assistant Program Manager position at AIC ISB:
+Roles and Responsibilities:
+Assistant Program Managers in the new programs within AIC incubation,
+acceleration, and corporate innovation verticals
+Supporting end-to-end management of programs along with stakeholder
+management
+Engaging proactively with the startup ecosystem in India
+Developing and managing a pipeline of mentors, industry experts, and
+advisors for AIC across diverse industries
+Working closely with ISB and its faculty members to leverage their subject
+matter expertise..................................9.692360
+Distance Approach : The assistant program manager at AIC ISB is
+Saitejeswara Reddy.9.280980
+The above examples in Table 2, demonstrate that how distance approach can effectively answer questions
+with no compromise in response time. For example, the answer from hybrid retrieval in the 4thquestion
+fails to answer who the CEO of D-Labs is but mentions that it has information about the Assistant Pro-
+gram Manager at AIC ISB. However upon asking that question we see that it doesn’t answer the ques-
+tion but just describes the role. On the other hand, using the distance approach we are able to retrieve
+the most relevant context and then the LLM is able to generate the answer successfully.
+4 Proposed Algorithm
+The proposed algorithm helps address the problem of time spent in information retrieval of sparse infor-
+mation during inference from the a large corpus of chunks T. It solves for this by identifying a priori all
+chunks which correspond to sparse information and then, creating a sub-set of these chunks such that
+S⊆T. Rest of the chunks form the set Rsuch that R⊆TThus, one does not have to sequentially
+search all the text chunks to identify the most relevant chunks when the hybrid retrieval fails in retriev-
+ing relevant context. In this case, the algorithm switches to the distance approach and searches in the set
+of sparse chunks ( S) only, thereby reducing the time to retrieve compared to searching for all the chunks.
+6
+
+--- Page 7 ---
+Part 1: Create subset Sfrom corpus T::
+Require: Corpus Tconsisting of chunks
+Ensure: Subset Swith sparse information chunks, subset Rwith non-sparse information chunks
+1:Initialize S← ∅
+2:Initialize R← ∅
+3:foreach chunk c∈Tdo
+4:isSparse ←identifySparseInformation (c,T) {Check if information in coccurs only in c}
+5:ifisSparse then
+6: S←S∪ {c}{Add chunk cto subset S}
+7:else
+8: R←R∪ {c}{Add chunk cto subset R}
+9:end if
+10:end for
+11:Function identifySparseInformation (chunk,corpus)
+12:Initialize unique ←True
+13:foreachotherChunk ∈corpus do
+14: ifotherChunk ̸=chunk then
+15: ifinformation in chunkis found in otherChunk then
+16: unique ←False
+17: break
+18: end if
+19: end if
+20:end for
+21:return unique
+Part 2: During Inference::
+Require: User query Q, hybrid retriever H, large language model LLM, subsets of chunks RandSfrom
+total chunks T
+Ensure: Satisfactory answer to the user query
+1:chunks R←H.retrieve (R, Q ){Retrieve information from subset R}
+2:initial_response ←LLM.generate (chunks R){Generate initial response}
+3:validation ←LLM.validate (Q, initial _response ){Validate response}
+4:ifvalidation is satisfactory then
+5:Display initial_response
+6:else
+7:chunks S←H.retrieve (S, Q ){Retrieve information from subset S}
+8:final_response ←LLM.generate (chunks S){Generate final response}
+9:Display final_response
+10:end if
+By creating a small subset out of large corpus T, we avoid latency involved in calculating distance between
+embedding vectors during inference time.
+5 Conclusion
+There have been many methods to improve retrieval in recent publications [22] making information re-
+trieval one of the most active areas of research in Information Theory. Our experiments demonstrate that
+RAG over proprietary datasets is far more challenging than open source datasets prepared for evaluation
+as it fails to provide satisfactory answers for sparse information. However, enterprises cannot afford to
+have an information retrieval solution which prevents LLMs from providing the correct response genera-
+tion. This is where the distance approach can complement information retrieval of classical thereby allow-
+7
+
+--- Page 8 ---
+ing one to explore the full potential of LLMs in generating quality answers every time. We would like put
+forward our findings in the following key points:
+•The experiment demonstrates that Retrieval-Augmented Generation (RAG) on proprietary datasets
+poses significant challenges compared to open-source datasets.
+•Classical RAG with hybrid retrieval often fail to provide satisfactory responses when dealing with
+sparse information, impacting the efficiency and reliability of information retrieval.
+•A distance-based approach is proposed to complement hybrid retrieval, enhancing the overall re-
+trieval process by focusing on sparse chunks of information.
+•Experiments confirm that distance approach does not compromise on quality of responses in scenar-
+ios where answers generated by LLM using context pulled using hybrid retrieval fail.
+•The findings suggest that integrating the distance approach into classical RAG can unlock the full
+potential of Large Language Models (LLMs), ensuring accurate and efficient information retrieval for
+enterprise specific data.
+Acknowledgement
+The authors thank I-Venture at Indian School of Business for infrastructural support toward this work.
+Authors are extremely grateful to Prof. Bhagwan Chowdhry, Faculty Director (I-Venture at ISB) for his
+continued encouragement and support to carry out this research.
+References
+[1] F. Petroni, T. Rocktäschel, P. Lewis, A. Bakhtin, Y. Wu, A. H. Miller, and S. Riedel, “Language mod-
+els as knowledge bases?” 2019.
+[2] P. Lewis, E. Perez, A. Piktus, F. Petroni, V. Karpukhin, N. Goyal, H. Küttler, M. Lewis, W.-t. Yih,
+T. Rocktäschel, S. Riedel, and D. Kiela, “Retrieval-augmented generation for knowledge-intensive nlp
+tasks,” in Proceedings of the 34th International Conference on Neural Information Processing Sys-
+tems, ser. NIPS ’20. Red Hook, NY, USA: Curran Associates Inc., 2020.
+[3] D. Chen, A. Fisch, J. Weston, and A. Bordes, “Reading Wikipedia to answer open-domain questions,” in
+Proceedings of the 55th Annual Meeting of the Association for Computational Linguistics (Volume 1:
+Long Papers) , R. Barzilay and M.-Y. Kan, Eds. Vancouver, Canada: Association for Computational
+Linguistics, Jul. 2017, pp. 1870–1879. [Online]. Available: https://aclanthology.org/P17-1171
+[4] A. Purwar and R. Sundar, “Keyword augmented retrieval: Novel framework for information retrieval
+integrated with speech interface,” in Proceedings of the Third International Conference on AI-ML
+Systems, ser. AIMLSystems ’23. New York, NY, USA: Association for Computing Machinery, 2024.
+[Online]. Available: https://doi.org/10.1145/3639856.3639916
+[5] E. Akyurek, T. Bolukbasi, F. Liu, B. Xiong, I. Tenney, J. Andreas, and K. Guu, “Towards
+tracing knowledge in language models back to the training data,” in Findings of the Association for
+Computational Linguistics: EMNLP 2022 , Y. Goldberg, Z. Kozareva, and Y. Zhang, Eds. Abu
+Dhabi, United Arab Emirates: Association for Computational Linguistics, Dec. 2022, pp. 2429–2446.
+[Online]. Available: https://aclanthology.org/2022.findings-emnlp.180
+[6] H. Steck, C. Ekanadham, and N. Kallus, “Is cosine-similarity of embeddings really about
+similarity?” in Companion Proceedings of the ACM on Web Conference 2024 , ser. WWW ’24. New
+York, NY, USA: Association for Computing Machinery, 2024, p. 887–890. [Online]. Available:
+https://doi.org/10.1145/3589335.3651526
+8
+
+--- Page 9 ---
+[7] B. J. Gutiérrez, Y. Shu, Y. Gu, M. Yasunaga, and Y. Su, “Hipporag: Neurobiologically inspired long-
+term memory for large language models,” 2024. [Online]. Available: https://arxiv.org/abs/2405.14831
+[8] S.-Q. Yan, J.-C. Gu, Y. Zhu, and Z.-H. Ling, “Corrective retrieval augmented generation,” 2024.
+[Online]. Available: https://arxiv.org/abs/2401.15884
+[9] S. Jeong, J. Baek, S. Cho, S. J. Hwang, and J. C. Park, “Adaptive-rag: Learning to adapt
+retrieval-augmented large language models through question complexity,” 2024. [Online]. Available:
+https://arxiv.org/abs/2403.14403
+[10] R. Y. Pang, A. Parrish, N. Joshi, N. Nangia, J. Phang, A. Chen, V. Padmakumar, J. Ma,
+J. Thompson, H. He, and S. Bowman, “QuALITY: Question answering with long input texts,
+yes!” in Proceedings of the 2022 Conference of the North American Chapter of the Association for
+Computational Linguistics: Human Language Technologies , M. Carpuat, M.-C. de Marneffe, and I. V.
+Meza Ruiz, Eds. Seattle, United States: Association for Computational Linguistics, Jul. 2022, pp.
+5336–5358. [Online]. Available: https://aclanthology.org/2022.naacl-main.391
+[11] D. Jin, E. Pan, N. Oufattole, W.-H. Weng, H. Fang, and P. Szolovits, “What disease does this patient
+have? a large-scale open domain question answering dataset from medical exams,” Applied Sciences ,
+vol. 11, no. 14, 2021. [Online]. Available: https://www.mdpi.com/2076-3417/11/14/6421
+[12] T. Aarsen, “Spanmarker.” [Online]. Available: https://github.com/tomaarsen/SpanMarkerNER
+[13] N. F. Liu, K. Lin, J. Hewitt, A. Paranjape, M. Bevilacqua, F. Petroni, and P. Liang,
+“Lost in the middle: How language models use long contexts,” Transactions of the
+Association for Computational Linguistics , vol. 12, pp. 157–173, 2023. [Online]. Available:
+https://api.semanticscholar.org/CorpusID:259360665
+[14] S. Robertson and H. Zaragoza, “The probabilistic relevance framework: Bm25 and
+beyond,” Found. Trends Inf. Retr. , vol. 3, no. 4, p. 333–389, apr 2009. [Online]. Available:
+https://doi.org/10.1561/1500000019
+[15] P. Damodaran, “FlashRank, Lightest and Fastest 2nd Stage Reranker for search pipelines.” Dec. 2023.
+[Online]. Available: https://github.com/PrithivirajDamodaran/FlashRank
+[16] V. Boteva, D. Gholipour, A. Sokolov, and S. Riezler, “A full-text learning to rank dataset
+for medical information retrieval,” in Advances in Information Retrieval , N. Ferro, F. Crestani,
+M.-F. Moens, J. Mothe, F. Silvestri, G. M. Di Nunzio, C. Hauff, and G. Silvello,
+Eds. Cham: Springer International Publishing, 2016, pp. 716–722. [Online]. Available:
+https://link.springer.com/chapter/10.1007/978-3-319-30671-1_58
+[17] D. Wadden, S. Lin, K. Lo, L. L. Wang, M. van Zuylen, A. Cohan, and H. Hajishirzi,
+“Fact or fiction: Verifying scientific claims,” in Proceedings of the 2020 Conference on Empirical
+Methods in Natural Language Processing (EMNLP) , B. Webber, T. Cohn, Y. He, and Y. Liu, Eds.
+Online: Association for Computational Linguistics, Nov. 2020, pp. 7534–7550. [Online]. Available:
+https://aclanthology.org/2020.emnlp-main.609
+[18] S. Banerjee and A. Lavie, “METEOR: An automatic metric for MT evaluation with improved
+correlation with human judgments,” in Proceedings of the ACL Workshop on Intrinsic and Extrinsic
+Evaluation Measures for Machine Translation and/or Summarization , J. Goldstein, A. Lavie, C.-Y.
+Lin, and C. Voss, Eds. Ann Arbor, Michigan: Association for Computational Linguistics, Jun. 2005,
+pp. 65–72. [Online]. Available: https://aclanthology.org/W05-0909
+[19] C. AI, “Deepeval: The llm evaluation framework,” https://github.com/confident-ai/deepeval, 2024.
+[20] L. Zheng, W.-L. Chiang, Y. Sheng, S. Zhuang, Z. Wu, Y. Zhuang, Z. Lin, Z. Li, D. Li, E. P. Xing,
+H. Zhang, J. Gonzalez, and I. Stoica, “Judging llm-as-a-judge with mt-bench and chatbot arena,” ArXiv,
+vol. abs/2306.05685, 2023. [Online]. Available: https://api.semanticscholar.org/CorpusID:259129398
+9
+
+--- Page 10 ---
+[21] G. Guinet, B. Omidvar-Tehrani, A. Deoras, and L. Callot, “Automated evaluation of
+retrieval-augmented language models with task-specific exam generation,” 2024. [Online]. Available:
+https://arxiv.org/abs/2405.13622
+[22] K. A. Hambarde and H. Proença, “Information retrieval: Recent advances and beyond,” IEEE Access ,
+vol. 11, pp. 76581–76604, 2023. [Online]. Available: https://ieeexplore.ieee.org/document/10184013
+10

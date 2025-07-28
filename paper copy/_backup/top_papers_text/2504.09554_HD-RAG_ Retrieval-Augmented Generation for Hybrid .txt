@@ -1,0 +1,1114 @@
+HD-RAG: Retrieval-Augmented Generation for Hybrid
+Documents Containing Text and Hierarchical Tables
+Chi Zhang∗
+chi_zhang@bit.edu.cn
+Beijing Institute of Technology
+Beijing, ChinaQiyang Chen∗
+qiyangchen@bit.edu.cn
+Beijing Institute of Technology
+Beijing, China
+Abstract
+With the rapid advancement of large language models (LLMs),
+Retrieval-Augmented Generation (RAG) effectively combines LLMs’
+generative capabilities with external retrieval-based information.
+The Hybrid Document RAG task aims to integrate textual and
+hierarchical tabular data for more comprehensive retrieval and gen-
+eration in complex scenarios. However, there is no existing dataset
+specifically designed for this task that includes both text and tabular
+data. Additionally, existing methods struggle to retrieve relevant
+tabular data and integrate it with text. Semantic similarity-based
+retrieval lacks accuracy, while table-specific methods fail to handle
+complex hierarchical structures effectively. Furthermore, the QA
+task requires complex reasoning and calculations, further compli-
+cating the challenge. In this paper, we propose a new large-scale
+dataset, DocRAGLib, specifically designed for the question answer-
+ing (QA) task scenario under Hybrid Document RAG. To tackle
+these challenges, we introduce HD-RAG, a novel framework that
+incorporates a row-and-column level (RCL) table representation,
+employs a two-stage process combining ensemble and LLM-based
+retrieval, and integrates RECAP, which is designed for multi-step
+reasoning and complex calculations in Document-QA tasks. We con-
+duct comprehensive experiments with DocRAGLib, showing that
+HD-RAG outperforms existing baselines in both retrieval accuracy
+and QA performance, demonstrating its effectiveness.
+CCS Concepts
+•Information systems →Information retrieval ;•Computing
+methodologies→Natural language generation .
+Keywords
+Information Retrieval, Question Answering, Retrieval-Argument
+Generation
+1 Introduction
+With the rapid development of large language models (LLMs)[ 13,
+19], Retrieval-Augmented Generation (RAG) has emerged as an
+effective strategy that combines the generative power of LLMs with
+external retrieval-based information. Recent research has extended
+the application of RAG to various scenarios, including knowledge
+graph[ 16,23], database[ 2], and multi-modal data[ 14,31]. However,
+research on the Hybrid Document RAG remains in its nascent stages.
+Hybrid Document RAG aims to combine both textual and tabular
+data with the power of LLMs for more comprehensive retrieval
+and generation. In real-world applications, Hybrid Document RAG
+∗These authors contributed equally to this work.
+[…abbreviate…]
+The primary affiliated company transactions for FES during 
+the three years ended December 31, 2013 are as follows:[…abbreviate…]
+The following table summarizes, by currency, the contractual 
+amounts of the company's foreign currency forward 
+contracts for continuing operations.Retrieval Corresponding DocumentQuestion
+If the growth rate observed in the previous year continues , 
+what will be the sum of Total Buy and Revenues of 
+Electric Sales to Affiliates for 2014 ?
+Buy Sell Buy Sell
+Euro $- $2.2 $- $1.5
+Canadian dollar - 35.4 - 18.9
+Mexican peso 11.2 - 10.9 -
+Total $11.2 $37.6 $10.9 $20.42013 2012 December 31
+ (dollars in millions)
+Category 2013 2012 2011
+Revenues:
+   Electric sales to affiliates $652 $515 $752
+   Other 6 16 80
+Interest Expense:
+   Interest expense to affiliates 4 10 8
+   Interest expense to FE 6 1 1(in millions)
+[abbreviate some rows]
+Hierarchical Header
+Hierarchical Header
+Answer: 836.45
+Calculation:  𝟏𝟏.𝟐×𝟏 +𝟏𝟏.𝟐−𝟏𝟎.𝟗
+𝟏𝟎.𝟗 + 𝟔𝟓𝟐 ×𝟏 +𝟔𝟓𝟐 −𝟓𝟏𝟓
+𝟓𝟏𝟓
+Retrieval from 
+Documen t Repo
+=𝟖𝟑𝟔 .𝟒𝟓Figure 1: An Example of Hybrid Document RAG Task
+proves valuable in scenarios like document management and finan-
+cial analysis, where it efficiently retrieves and synthesizes relevant
+information from large, complex documents.
+In this paper, we focus on the question answering(QA) task
+based on Hybrid Document RAG. The task involves retrieving the
+most relevant documents from extensive document repositories
+based on a specific question and generating the corresponding
+answer. However, it is challenging due to the complexity and scale
+of real-world document repositories, which often contain numerousarXiv:2504.09554v1  [cs.IR]  13 Apr 2025
+Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Chi Zhang and Qiyang Chen
+indistinguishable documents with intricate structures. For example,
+Statistics Canada1offers thousands of statistical reports across
+subjects, including 1,761 on "Labour" and 1,132 on "Population and
+demography", with semantically similar content often combining
+textual descriptions and hierarchical tables.
+Some novel RAG techniques [ 3,11,12,20] have been explored to
+improve retrieval accuracy by enhancing RAG frameworks. While
+effective in text-based tasks, these methods often fail to capture
+the critical table information within retrieved documents. Other
+table-focused RAG techniques[ 2,9,16,17] lack seamless integration
+of table data with text, resulting in incomplete representations and
+difficulty handling complex hierarchical structures. As shown in
+Figure 1, when retrieval relies on the hierarchical structure of a table,
+such methods often break down the complex structure, leading to in-
+formation loss and a reduced ability to capture critical relationships
+within the data. Additionally, while well-established document-
+based QA methods[ 18,25,26] have demonstrated relatively high
+accuracy, they still struggle with complex QA tasks involving hy-
+brid documents with long text and hierarchical tables[ 30]. Overall,
+although existing methods have provided preliminary solutions for
+QA tasks under Hybrid Document RAG, achieving more precise
+retrieval and QA still faces numerous challenges.
+Challenge 1: There is no existing dataset specifically designed
+for the Hybrid Document RAG task that includes both text and
+tabular data. Furthermore, the dataset requires thorough cleaning
+to resolve inconsistencies and ensure uniformity across various
+document types, formats, and structures.
+Challenge 2: Hybrid Documents consist of a large amount of
+both complex tabular and textual data. The primary challenge lies
+in how to represent the structured data within these documents. As
+shown in Figure 1, the key terms " Total Buy " and " Revenues of Elec-
+tric Sales " are strongly linked to the hierarchical structure within
+the Hybrid Document, and the information contained within tables
+is dense, highlighting the challenge of representing structured data
+in such documents. Therefore, the representation must accurately
+capture the document’s structure while preserving key informa-
+tion, even within complex hierarchical relationships. Additionally,
+the presence of both tabular and text data in Hybrid Documents
+complicates the task of integrating these heterogeneous data types
+into a unified and effective representation for retrieval and QA.
+Challenge 3: The challenge with traditional semantic similarity-
+based retrieval methods lies in their inability to ensure both the
+accuracy and completeness of the retrieved information for complex
+QA tasks in Hybrid Document RAG. These methods often return
+text chunks that, while semantically related to the question, may
+not provide valid evidence for reasoning. For example, as shown
+in Figure 1, a semantic similarity-based retrieval method might
+retrieve documents focused on information from 2014, while the
+relevant historical data pertains to 2012 and 2013.
+Challenge 4: Hybrid Document QA often requires integrating
+information from text and table modalities, necessitating the ability
+to process and reason across tabular and textual data to answer
+complex questions accurately. It requires aligning information from
+multiple data sources to ensure relevance between text and table
+data. As shown in Figure 1, the process involves intricate reasoning,
+1https://www.statcan.gc.cawhere the year " 2014" leads to the use of data from " 2013" and " 2012",
+followed by six steps of calculations to generate the correct answer.
+To address the above challenges in Hybrid Document RAG and
+downstream QA task, we propose the DocRAGLib dataset and HD-
+RAG framework. Specifically, DocRAGLib consists of a document
+repository with 2,178 documents, each of which combines text
+and hierarchical tables, as well as 4,468 QA pairs. DocRAGLib is
+collected from reliable sources and cleaned to ensure consistency
+across document types and formats, making it suitable for Hybrid
+Document RAG task. To the best of our knowledge, DocRAGLib
+is the first dataset designed for solving the QA scenario under the
+Hybrid Document RAG task.
+HD-RAG framework consists of three modules: Corpus Con-
+struction Module, Retrieval Module, and QA Inference Module.
+Specifically, the Corpus Construction Module employs a hierarchi-
+cal row-and-column-level (H-RCL) table summarization method to
+capture the structure and content of complex tables. It generates
+representations that preserve table structures and are optimized for
+retrieval, addressing the challenge of effectively representing table
+information in hybrid documents. The Retrieval Module overcomes
+the limitations of relying solely on semantic similarity retrieval
+by adopting a two-stage approach. The ensemble retrieval stage
+combines BM25 with the semantic understanding of embedding
+retrieval to filter candidate documents. Then LLM-based retrieval
+utilizes the contextual reasoning ability of LLMs to identify the most
+relevant document, improving the accuracy and comprehensive-
+ness of retrieval. The QA inference Module introduces the RECAP
+method, which decomposes complex reasoning into sub-tasks and
+leverages external calculators to manage mathematical operations
+during the reasoning process. HD-RAG enhances answer accuracy
+and effectively addresses the challenges of multi-step reasoning
+and complex calculations in hybrid documents.
+In summary, our main contributions are as follows:
+•We propose a new large-scale dataset, DocRAGLib, specifi-
+cally designed for the QA task scenario under Hybrid Docu-
+ment RAG. This dataset provides a high-quality benchmark
+for complex retrieval and QA tasks.
+•We design the HD-RAG framework, which consists of three
+components: the Corpus Construction Module, the Retrieval
+Module, and the QA Inference Module. The framework first
+effectively represents hierarchical tables in documents using
+an H-RCL table summarization method. It then enhances re-
+trieval accuracy by combining a two-stage retrieval strategy
+and finally improves QA accuracy with the RECAP method,
+providing an efficient and precise solution for QA tasks under
+the Hybrid Document RAG scenario.
+•We conduct extensive experiments to validate the superior
+performance of the HD-RAG framework in retrieval and
+QA tasks compared to baseline methods. Ablation studies
+confirm the effectiveness of each module, and sensitivity
+analysis demonstrates the framework’s robustness across
+different corpus sizes.
+2 Related Work
+In this section, we present an overview of relevant research from
+two perspectives: RAG and Document QA.
+HD-RAG: Retrieval-Augmented Generation for Hybrid Documents Containing Text and Hierarchical Tables Conference acronym ’XX, June 03–05, 2018, Woodstock, NY
+2.1 RAG
+RAG has significantly enhanced language models, particularly in
+knowledge-intensive tasks involving document data. This section
+presents existing work from two main aspects: advancements in
+RAG techniques[ 1,3,7,11,12,20,21,27] and its applications across
+different modalities[2, 9, 10, 16, 17].
+Advancements in RAG techniques aim to improve retrieval accu-
+racy, efficiency, and robustness in knowledge-intensive tasks. Izac-
+ard et al. [ 12] use knowledge distillation to train retrievers without
+annotated query-document pairs, relying on reader model atten-
+tion for synthetic labels, though it depends on the reader model’s
+quality. RETRO [ 3] combines document chunks retrieved by lo-
+cal similarity with preceding tokens in auto-regressive models but
+faces challenges with long documents. DAPR [ 20] addresses this by
+integrating hybrid retrieval with BM25 and contextualized passage
+representations for long document passages. Open-RAG[ 11] im-
+proves multi-hop reasoning and retrieval accuracy by transforming
+dense LLMs into the parameter-efficient sparse mixture of expert
+models. However, these methods primarily focus on text-based
+RAG, with limited progress in handling mixed modalities, which
+pose unique retrieval and reasoning challenges.
+Recent advancements in RAG have extended to multimodal data
+beyond text. TAG[ 2] and ERATTA[ 17] introduce RAG frameworks
+for table-structured data. Chen et al.[ 4] propose a method combin-
+ing join relationship discovery and mixed-integer programming-
+based re-ranking for table retrieval. RAGTrans[ 9] integrates textual
+and multimedia information for enhanced representation and re-
+trieval. KRAGEN[ 16] introduces a knowledge graph-enhanced RAG
+framework that uses graph-based retrieval to improve factual con-
+sistency and reasoning in biomedical problems. MRAG-Bench [ 10]
+focuses on vision-centric RAG, highlighting cases where visual
+knowledge outperforms textual information, especially for vision-
+language models. However, none of these approaches address RAG
+for the combined modality of tables and text within documents, a
+gap that HD-RAG specifically addresses.
+2.2 Document QA
+Document QA refers to the task of extracting or generating answers
+based on the content of a given document. This section reviews ex-
+isting approaches to Document QA from two primary perspectives:
+methods leveraging pre-trained language models[ 6,8,28,29,32]
+and methods utilizing LLM[5, 15, 18, 24, 30].
+In Document QA, pre-trained NLP models are fine-tuned to pro-
+cess document-question pairs, enabling them to extract information
+or generate answers based on the content. HybridQA[ 6] and TAT-
+QA[32] apply QA tasks to text-table hybrid documents, but their
+tables are typically flat. HiTab[ 8] focuses on hierarchical table-based
+QA tasks but struggles with hybrid data combining text and hierar-
+chical tables. Zhao et al.[ 29] introduce the MultiHiertt benchmark,
+containing both text and hierarchical tables and propose MT2Net
+for this task. MT2Net extracts facts from hybrid documents and per-
+forms reasoning, but it has high content requirements and depends
+heavily on table cell descriptions for accurate reasoning. NAPG[ 28]
+outperforms MT2Net on MultiHiertt, yet existing NLP models still
+face challenges with multi-step reasoning, especially in complex
+mathematical computations.Table 1: Statistical Analysis of the DocRAGLib Dataset
+Indicator Value
+Total Document Number 2,178
+Avg. Word Number per Document 1,453.05
+Avg. Table Number per Document 3.85
+Documents with >2 Tables 1,932 (88.71%)
+Total QA Pairs Number 4,468
+Train/Dev/Test 2,990/502/976
+Classification by Evidence Source
+Text Only 403 (9.02%)
+Table Only 2,269 (50.78%)
+Both Text and Table 1,796 (40.20%)
+Answer Characteristics
+Decimal Places≥3 1,532 (34.29%)
+Numerical Values >10,000 865 (19.36%)
+Numerical Values >100,000 181 (4.05%)
+With the emergence of advanced LLMs, several studies apply
+them to question-answering tasks with hybrid documents. Luo
+et al. [ 15] introduce the HRoT strategy for text-table hybrid QA,
+achieving better results than existing pre-trained NLP models on
+the MultiHiertt dataset. Srivastava et al. [ 18] propose EEDP, de-
+signed for semi-structured documents, and compare it with other
+prompting methods (such as CoT[ 24] and PoT[ 5]) across various
+QA datasets. Zhao et al. [ 30] evaluate the numerical reasoning abili-
+ties of 27 LLMs using CoT and PoT on text-table hybrid documents.
+Despite the progress of advanced prompting strategies in guiding
+LLMs for hybrid document QA, there remains room for improve-
+ment compared to human performance, highlighting the need for
+more efficient prompting techniques.
+3 Preliminary
+In this section, we formally define the Hybrid Document RAG
+task and detail the collection, processing, and cleaning procedures
+for our dataset, DocRAGLib.
+3.1 Task Definition
+In this section, we formally define key concepts and the Hybrid
+Document RAG task in our paper.
+•Document Corpus : A comprehensive collection of docu-
+ments C={𝐷1,𝐷2,...,𝐷|C|}where each document 𝐷𝑖∈C
+consists of multiple text segments P={𝑃1,𝑃2,...,𝑃|P|}and
+several complex hierarchical tables T={𝑇1,𝑇2,...,𝑇|T|},
+referred to as semi-structured data . Each hierarchical table
+is defined as a tuple 𝑇={𝐻𝑙,𝐻𝑡,𝑑}, where𝐻𝑙denotes the
+hierarchical structure of the rows in table 𝑇,𝐻𝑡denotes the
+hierarchical structure of the columns in table 𝑇, and𝑑de-
+notes the data entries of the table 𝑇, organized according to
+the hierarchical relationships defined by 𝐻𝑙and𝐻𝑡.
+•Question : A question 𝑄posed by the user, for which there
+exists a unique highly relevant document 𝐷∗∈Cin the
+corpus.
+Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Chi Zhang and Qiyang Chen
+Given a question 𝑄and a document corpus C, our task is to
+retrieve the most relevant document 𝐷∗and generate a compre-
+hensive answer 𝐴based on the information contained within 𝐷∗.
+Formally, the Hybrid Document RAG task can be described by
+the following function:
+𝐴=F(𝑄,C)=Inference(𝑄,Retrieve(𝑄,C)) (1)
+where Retrieve(𝑄,C)is the function that retrieves the most relevant
+document𝐷∗∈Cbased on the question 𝑄, and Inference(𝑄,𝐷∗)
+is the generation function that returns a accurate answer 𝐴by
+leveraging the information contained within 𝐷∗.
+3.2 Dataset
+To advance research in the Hybrid Document RAG task, we
+introduce the DocRAGLib dataset, containing 2,178 documents
+with a combination of text and tables, along with 4,468 QA pairs
+designed based on the content of these documents. Existing datasets
+are predominantly tailored for single-document RAG tasks, limiting
+their applicability to scenarios requiring the processing of large-
+scale and complex document corpora. DocRAGLib aims to address
+this limitation by providing a comprehensive dataset specifically
+designed for multi-document RAG tasks, thereby facilitating more
+extensive exploration of potential applications in related domains.
+3.2.1 Data Collection. The documents of DocRAGLib are derived
+from two sources: the existing public single-document QA dataset
+and web-scraped text-table hybrid data. First, we collect infor-
+mation from the publicly available single-document QA dataset
+MultiHiertt[ 29], which is designed for single-document QA tasks.
+Each document in MultiHiertt comprises textual content and hi-
+erarchical tables, with an average of 3.89 tables per document. In
+addition, we scrape contextual information related to the tables by
+utilizing the webpage links provided in another available single-
+table QA dataset HiTab[ 8], and then reconstruct hybrid documents
+containing both text and tables.
+3.2.2 Data Cleaning. The raw data consists of hybrid documents
+and QA pairs. This section outlines the data cleaning process, fo-
+cusing on the strategies to refine both documents and QA pairs.
+For document refinement, we reduce noise in table contexts from
+web pages, such as irregular delimiters and unrelated sentences.
+This is achieved through manual cleaning: (1) reformatting irregular
+delimiters and (2) removing irrelevant text. To ensure clarity in the
+QA pairs, we resolve ambiguities where multiple documents may
+answer the same question. First, we apply rule-based filtering to
+select candidate documents. Then, we use GPT-3.5 Turbo and GPT-
+4o to evaluate each document’s relevance to the question by pairing
+it with the question and inputting it into the LLM. We track the
+filtered documents in each round, and if the remaining candidates
+are below a threshold, the question is considered specific, and the
+QA pair is retained. This process eliminates ambiguous questions,
+ensuring dataset quality.
+3.2.3 Data Statistics. After the data collection and cleaning process,
+2,178 hybrid documents and 4,468 QA pairs were obtained. To
+enable further exploration of pre-trained model-based methods for
+the Hybrid Document RAG task, the 4,468 QA pairs were split into
+three subsets: train (2,990 QA pairs), dev (502 QA pairs), and test(976 QA pairs). To ensure consistency, the 2,178 hybrid documents
+were merged into a single collection, without further division.
+As shown in Table 1, statistical analysis of the DocRAGLib
+dataset reveals that: (1) The average textual length of each doc-
+ument is 1,453.05 words, and the average number of tables is 3.85,
+with 88.71% of documents containing at least two tables. (2) The QA
+pairs are categorized by evidence source: 9.02% of questions rely
+solely on text, 50.78% on tables, and 40.20% on both. Additionally,
+we analyze the numerical scale and precision of answers in the
+DocRAGLib dataset. Specifically, 19.36% of answers contain values
+exceeding 10,000, 4.05% exceed 100,000, and 34.29% are decimals
+with more than three significant digits. These statistics highlight
+the complexity and diversity of the dataset, offering a challenging
+benchmark for future research.
+4 Methodology
+To address this problem, we introduce HD-RAG , a framework de-
+signed for the Hybrid Document RAG Task. As depicted in Figure 2,
+our HD-RAG framework comprises three modules: the Corpus
+Construction Module, the Retrieval Module, and the QA Inference
+Module. The following sections show a detailed introduction to the
+three modules of our HD-RAG framework.
+4.1 Corpus Construction Module
+The Corpus Construction Module focuses on creating effective rep-
+resentations of hybrid documents, capturing both lengthy text and
+complex hierarchical tables to optimize retrieval performance. A
+traditional approach, the Table Level Summary, involves provid-
+ing the table’s schema to the LLM and summarizing it. However,
+it oversimplifies the table, leading to the loss of key information
+and ignoring important structural details. To effectively represent
+Hybrid Documents, the Corpus Construction Module introduces
+a row-and-column-level(RCL) table summary to represent tables.
+Additionally, leveraging the hierarchical structure of the tables, we
+extend this RCL table summary to capture the nested relationships
+and dependencies within the table data, ensuring a more compre-
+hensive representation.
+To better understand the proposed RCL table summary, we first
+introduce some basic concepts related to table structure and paths.
+For a hierarchical table, we define the table as 𝑇={𝐻𝑡,𝐻𝑙,𝑑},
+where𝐻𝑡represents the top-level headers, 𝐻𝑙represents the left-
+level headers, and 𝑑represents the data cells. Specifically, we can
+define:
+(
+𝐻𝑡={𝐻𝑘
+𝑡|𝑘=1,...,𝐾𝑡}
+𝐻𝑙={𝐻𝑘
+𝑙|𝑘=1,...,𝐾𝑙}(2)
+, where𝐾𝑡denotes the number of hierarchical levels in the top
+headers and 𝐾𝑙denotes the number of hierarchical levels in the left
+headers.
+For each hierarchical level in the top and left headers, we define:
+(
+𝐻𝑘
+𝑡={ℎ𝑘
+𝑡(𝑗)|𝑗is the index of the header at this level }
+𝐻𝑘
+𝑙={ℎ𝑘
+𝑙(𝑖)|𝑖is the index of the header at this level }(3)
+HD-RAG: Retrieval-Augmented Generation for Hybrid Documents Containing Text and Hierarchical Tables Conference acronym ’XX, June 03–05, 2018, Woodstock, NY
+(a) Corpus Construction ModuleHybrid Documents 
+Text Description
+Hierarchical Tables
+Text Chunk 1
+Text Chunk 2
+Text Chunk n…
+Table Level summary 1
+…Table Level summary 2
+Table Level summary n
+H-RCL summary 1
+…H-RCL summary 2
+H-RCL summary n
+with structure info
+Embedding Corpus BM25 CorpusEmbedding & BM25
+Public CorpusCandidate        
+Merging
+(b) Retrieval ModuleBM25 
+Retrieval
+Embedding 
+RetrievalBM25
+Corpus
+Embedding
+CorpusTop M
+Doc
+Top N
+ DocTop K
+ Doc
+Question
+Vector
+LLM-based Retrieval Stage
+Question
+(c) QA Inference ModuleRECAP Method
+The final answer is XXXEnsemble Retrieval Stage1
+2
+All Top K Doc 
+retain only the 
+chunks highly 
+relevant to the 
+question.
+Target
+Hybrid
+DocSelect D* from 
+Top K DocExtract Relevant DataPerform Logical ReasoningLLM AnswerProvide Final Answer 
+Calc Answer
+Analyze Question Type
+Figure 2: The Overview of our HD-RAG Framework
+,whereℎ𝑘
+𝑡(𝑗)represents the header at level 𝑘in the top header
+hierarchy, while ℎ𝑘
+𝑙(𝑖)represents the header at level 𝑘in the left
+header hierarchy. As shown in Figure 3, these headers form multi-
+level paths used to locate specific data cells within the table. To
+pinpoint a particular data cell 𝑑𝑖𝑗, we define the paths from both the
+left and top headers, 𝑃𝑙(𝑖)and𝑃𝑡(𝑗), respectively, which together
+uniquely identify the location of the data cell:
+(
+𝑃𝑙(𝑖)=ℎ1
+𝑙(𝑖1)→ℎ2
+𝑙(𝑖2)→···→ℎ𝐾𝑙
+𝑙(𝑖𝐾𝑙)
+𝑃𝑡(𝑗)=ℎ1
+𝑡(𝑗1)→ℎ2
+𝑡(𝑗2)→···→ℎ𝐾𝑡
+𝑡(𝑗𝐾𝑡)(4)
+These paths capture the hierarchical relationships between the
+cells in the table, allowing us to pinpoint any data cell 𝑑𝑖𝑗by refer-
+encing the corresponding paths in the left and top headers.
+Below, we provide a detailed formal definition of the proposed
+RCL table summary, outlining its structure and how it incorporates
+hierarchical relationships for enhanced table representation.
+4.1.1 General RCL Table Summary. In the case of a general table,
+where multi-level hierarchies and complex relationships within
+the table are not considered, we summarize each row and column
+independently. By disregarding the hierarchical structure, the table
+is reduced to a flat, 1-level representation, where both the top and
+left headers are flattened.
+Formally, when the hierarchical structure is ignored, 𝐻𝑡and𝐻𝑙
+are reduced to:
+𝐻𝑡={ℎ𝑡(1),ℎ𝑡(2),...,ℎ𝑡(𝑛)|𝑛is the number of columns }
+𝐻𝑙={ℎ𝑙(1),ℎ𝑙(2),...,ℎ𝑙(𝑚)|𝑚is the number of rows }(5)
+Similarly, the paths simplify to 𝑃𝑙(𝑖)=ℎ𝑙(𝑖)and𝑃𝑡(𝑗)=ℎ𝑡(𝑗).
+In this generalized case, each row is represented by a left header,
+and each column is represented by a top header. To summarize the
+table at the general row and column level, we flatten the table’s
+hierarchical structure and treat it as a single level. Specifically,
+for each row and column, the general RCL table summary can be
+𝐻𝑡
+A B C A B C
+Ⅰ
+Ⅱ
+Ⅲ
+Ⅳ
+Ⅴ
+Ⅵ① ②
+1
+2
+𝐻𝑙𝐻𝑡1
+𝐻𝑡2
+𝐻𝑙1𝑃𝑙(3)=ℎ𝑙11→ℎ𝑙2(3)
+𝑃𝑡(2)=ℎ𝑡11→ℎ𝑡2(2)
+𝐻𝑙2𝑆𝑟𝑜𝑤(ℎ𝑙2(3))
+Row Summary
+*Table shows 2 -VI of ①-A,B,C and ②-A,B,C 
+* Provided to the LLM for refinement, generating the final summary.Figure 3: The Path and Hierarchical Levels in the Table. The
+H-RCL Table Summary Relies on the Structure and Paths of
+Hierarchical Table
+formulated as:
+ 
+𝑆row{ℎ𝑙(𝑖)}=LLM(𝑓row(ℎ𝑙(𝑖),𝑛Ø
+𝑗=1ℎ𝑡(𝑗)))
+𝑆col{ℎ𝑡(𝑗)}=LLM(𝑓col(ℎ𝑡(𝑗),𝑚Ø
+𝑖=1ℎ𝑙(𝑖)))(6)
+, where𝑓rowand𝑓colrepresent the general RCL summary functions
+for the rows and columns respectively. These summaries condense
+the information in each row and column, providing a simpler, more
+manageable representation of the table’s contents for the retrieval
+stage.
+4.1.2 H-RCL Table Summary. Hierarchical tables contain multiple
+levels of headers that form a complex hierarchy, adding depth and
+richness to the data. In this context, we extend the General RCL
+table summary to handle multi-level structures, which capture the
+intricate dependencies between the table’s headers and data more
+effectively.
+Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Chi Zhang and Qiyang Chen
+We propose an H-RCL table summary that preserves the nested
+relationships between rows and columns by leveraging the hierar-
+chical paths of both top and left headers, as shown in Eq. 3 and Eq. 4.
+In the following, we provide a formal definition of the hierarchical
+row and column summaries:
+ 
+𝑆row(ℎ𝑘
+𝑙(𝑖))=LLM(𝑓row(𝑃𝑘
+𝑙(𝑖),𝑛Ø
+𝑗=1𝑃𝐾𝑡
+𝑡(𝑗)))
+𝑆col(ℎ𝑘
+𝑡(𝑗))=LLM(𝑓col(𝑃𝑘
+𝑡(𝑗),𝑚Ø
+𝑖=1𝑃𝐾𝑙
+𝑙(𝑖)))(7)
+The row-level summaries 𝑆rowcapture the dependencies within
+the left headers, while the column-level summaries 𝑆colreflect the
+relationships within the top headers. As shown in Figure 3, the 𝑆row
+aggregates information from both the left and top headers at their
+respective hierarchical levels. After aggregation, the information is
+provided to the LLM for refinement to generate the final summary
+while preserving the complex relationships within the table’s struc-
+ture. These summaries jointly represent the hierarchical structure
+of the table. The overall table summary is defined as:
+𝑆table=Ø
+𝑖,𝑘𝑆row(ℎ𝑘
+𝑙(𝑖))∪Ø
+𝑗,𝑘𝑆col(ℎ𝑘
+𝑡(𝑗)) (8)
+By combining both row and column summaries, the table sum-
+mary𝑆table offers a comprehensive representation of the hierar-
+chical table, effectively maintaining the nested structure of the
+data.
+4.1.3 Passage Processing. In addition to processing tables, we also
+address the handling of text passages within the Hybrid Document.
+In this module, we focus on processing the passage at the sentence
+level, dividing the passage into individual sentences and construct-
+ing the corpus. We segment the passage at the sentence level to
+enable more effective handling of textual data, ensuring that rel-
+evant information is preserved and structured for retrieval and
+QA.
+4.2 Retrieval Module
+The Retrieval Module is designed to identify the most relevant docu-
+ment𝐷∗from the Document Corpus for a given question. It consists
+of two key stages: Ensemble retrieval and LLM-based retrieval. The
+ensemble retrieval stage combines BM25 and embedding-based re-
+trieval to balance keyword matching with semantic understanding.
+BM25 captures exact term relevance, while embedding-based re-
+trieval ensures deeper semantic alignment, enabling the retrieval
+of a comprehensive set of top- 𝑘candidate documents. Specifi-
+cally, we utilize two different types of corpora for the ensemble
+retrieval stage, tailored to align with the underlying mechanisms
+of embedding-based and BM25-based approaches. The ensemble
+retrieval stage conducts a coarse-grained filtering of documents
+across the entire document corpus, ensuring that the candidate
+documents provided to the LLM remain within its maximum input
+length constraints. The LLM-based retrieval performs fine-grained
+logical reasoning tailored to the specific question and selected can-
+didate documents, leveraging the contextual reasoning capabilities
+of the LLM to prioritize documents most relevant to the question.
+This approach ensures high precision in the final output.The Ensemble Retrieval Stage. The ensemble retrieval stage is
+designed to generate a robust set of top- 𝑘candidate documents by
+combining the complementary strengths of BM25 and embedding-
+based retrieval methods. Below, we detail the three key components
+of this stage: BM25 retrieval, embedding-based retrieval, and candi-
+date merging. (1) BM25 Retrieval. We use BM25 to rank chunks
+from the BM25 corpus based on their relevance to a given question
+𝑄. Each chunk corresponds to a specific section of its document.
+BM25 emphasizes exact keyword matches and considers term fre-
+quency within a chunk while normalizing for document length to
+ensure fair comparisons. By prioritizing terms that are frequent in
+the chunk but rare across the corpus, BM25 effectively retrieves
+the top-𝑛candidate documents that are most aligned with the
+question. As RCL corpus construction method tends to repeatedly
+aggregate keywords from tables into multiple index entries, and
+BM25 regards terms frequently appearing across multiple entries
+as common words lacking distinctiveness, we use the corpus con-
+structed with the Table-Level method for retrieval at this stage. (2)
+Embedding-based Retrieval. Simultaneously, embedding-based
+retrieval identifies the top- 𝑚candidate documents from the embed-
+ding corpus by computing semantic similarity between the question
+𝑄and each chunk. Both the question and chunks are represented
+as dense vectors generated by the text-embedding-3-large model .
+The embedding-based retrieval method captures semantic nuances
+and retrieves chunks that may not share explicit terms with the
+question but are contextually relevant. In this retrieval stage, we
+utilize the corpus constructed using the H-RCL method, ensuring
+that the embedding model can more precisely capture information
+semantically similar to the question within hierarchical tables. (3)
+Candidate Merging. After retrieving the top- 𝑛candidates from
+BM25 and top- 𝑚from embedding-based retrieval, the two sets are
+merged into a final top- 𝑘set with duplicates removed. This ap-
+proach combines the strengths of both methods, ensuring a diverse
+and semantically rich candidate pool.
+The ensemble approach combines the strengths of BM25 and
+embedding-based retrieval to create a diverse candidate document
+set. BM25 ensures accurate keyword-based matches, while embedding-
+based retrieval adds semantic depth and flexibility. By merging, the
+ensemble retrieval stage provides high recall and relevance, laying
+a strong foundation for the subsequent LLM-based retrieval stage.
+The LLM-based Retrieval Stage. After the preceding Ensemble
+Retrieval Stage, the Retrieval Module extracts the top- 𝑘candidate
+documents from the original document corpus that are most similar
+to the question. To further filter out the target document that is most
+relevant to the question, we introduce LLM as an expert in similarity
+analysis. Specifically, each question alongside its corresponding
+candidate documents is presented to the LLM, which is tasked with
+determining the single document most relevant to the question.
+However, since each document is typically lengthy, simultaneously
+inputting the top- 𝑘documents into the LLM often exceeds the
+model’s maximum input token limit. Moreover, the target document
+may contain a large amount of irrelevant information, which can
+reduce the LLM’s accuracy when processing the entire content. To
+mitigate these challenges, we design the input space by setting a
+variable filtering threshold, Θ, and selecting the top- Θinformation
+chunks most similar to the question from all documents. These
+HD-RAG: Retrieval-Augmented Generation for Hybrid Documents Containing Text and Hierarchical Tables Conference acronym ’XX, June 03–05, 2018, Woodstock, NY
+selected chunks are then consolidated into a single collection:
+𝑆=SelectTop(𝑄,𝐷,Θ) (9)
+where𝑄represents the original question. 𝐷denotes the set of
+all documents. Θis the filtering threshold. 𝑆represents the set of
+selected information chunks.
+Subsequently, for each document 𝐷𝑖in the top-𝑘documents,
+only the information belonging to this collection is retained, and
+the filtered information is recombined into a "new document" 𝐷′
+𝑖
+to replace the original document:
+𝐷′
+𝑖=Recombine(𝑆,𝐷𝑖) (10)
+Finally, we input the question content 𝑄and its corresponding
+top-𝑘new documents{𝐷′
+1,𝐷′
+2,...,𝐷′
+𝑘}into the LLM for similarity
+analysis, thereby selecting the most relevant document 𝐷∗among
+the top-𝑘documents.
+4.3 QA Inference Module
+The QA Inference Module is designed to perform QA based on the
+most relevant document 𝐷∗provided by the Retrieval Module. Al-
+though LLMs demonstrate strong performance in natural language
+understanding, performing QA on hybrid documents remains a chal-
+lenging task. To more accurately extract relevant information from
+hybrid documents and leverage the information to answer the ques-
+tions, we introduce a novel prompting strategy for hybrid document
+QA called RECAP (Restate, Extract, Compute, Answer, Present),
+inspired by prompt strategies such as CoT[ 24] and EEDP[ 18] that
+involve step-by-step analytical reasoning, as well as PoT[ 5] which
+generates executable programs to solve complex mathematical op-
+erations.
+Formally, the QA Inference Module can be represented as:
+𝐴=Inference(𝑄,𝐷∗) (11)
+where𝐴is the final answer produced by the RECAP strategy.
+The specific steps of RECAP are as follows: (1) Restate the Ques-
+tion: Clearly restate what the question is asking and analyze the
+question type; (2) Extract Relevant Data: Extract and list all in-
+formation from the hybrid document that is directly relevant to
+the question; (3) Compute the Answer: Use the extracted relevant
+data to compute the answer; Perform any necessary calculations
+or logical reasoning step by step; (4) Answer the Question: For the
+computed answer, provide a clear response in a fixed format; (5)
+Present Calculate Formula: For calculation-based questions, provide
+the complete calculation formulas used to derive the final result,
+based on the reasoning steps outlined above.
+Specifically, the LLM performs multi-step reasoning in the first
+four steps of RECAP and provides one answer, while the calculator
+computes another answer based on the formula provided in the
+fifth step. We employ a rule-based approach to select the more
+appropriate answer from the two, depending on the question type,
+as the final answer. Since RECAP’s logical reasoning and formula
+abstraction are derived from a unified reasoning path, it offers su-
+perior token efficiency compared to methods like Self-Consistency
+[22], which rely on generating multiple reasoning paths5 Experiment
+In this section, we present the experimental evaluation of HD-RAG.
+We first introduce the baselines and evaluation metrics employed
+in our experiments. We then perform a comprehensive set of exper-
+iments to evaluate the effectiveness of HD-RAG. Additionally, we
+conduct ablation studies to investigate the contributions of individ-
+ual components. Finally, we present a case study to demonstrate
+the applicability of HD-RAG to the real-world scenario.
+5.1 Experimental Setup
+5.1.1 Baselines. We divide our approach into two modules and
+compare each with different types of baselines: Retrieval and QA.
+For Retrieval, we select the following baselines:
+•Standard RAG : The basic RAG framework retrieves docu-
+ments using dense similarity search with embeddings from
+pre-trained models like DPR, without table-specific optimiza-
+tions.
+•LangChain : LangChain’s semi-structured cookbook pro-
+vides a retrieval pipeline for tables and text, summarizing
+them with LLMs for similarity-based retrieval.
+•SelfRAG [1]: SelfRAG enhances LLMs by dynamically re-
+trieving relevant passages and using reflection tokens to
+evaluate and refine outputs, integrating self-reflection to
+assess both retrieved passages and its responses.
+•Table Retrieval [4]: It enhances table-specific retrieval by
+incorporating join relationship discovery and using a mixed-
+integer programming-based re-ranking approach to optimize
+table-query and table-table relevance.
+For QA, we select the following baselines:
+•Direct : A straightforward approach where the model gen-
+erates answers directly without intermediate reasoning or
+structured explanation.
+•COT [24]: A reasoning framework that enhances the perfor-
+mance of LLMs by generating intermediate reasoning steps
+before providing the final answer, enabling better handling
+of complex queries.
+•EEDP [18]: A multi-step framework that systematically breaks
+down the reasoning process, involving explanation, refine-
+ment, and decision-making phases to improve answer accu-
+racy.
+•POT [5]: An approach that separates reasoning from compu-
+tation involves prompting the LLM to generate a structured
+program outlining the logical steps of the thought process.
+The final solution is then obtained by executing this gener-
+ated program using an external calculating tool, ensuring
+precise and reliable results.
+•RECAP w/o Calc : For numerical calculation problems, in-
+stead of using external computational functions to perform
+numerical reasoning based on formulas, we directly take the
+results of LLM reasoning as the final answer to the problem.
+5.1.2 Metrics. We evaluate the performance of both Retrieval and
+QA modules using two key metrics:
+•Hit@K assesses the retrieval module by measuring the pro-
+portion of questions for which the correct document is re-
+trieved within the top-K results.
+Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Chi Zhang and Qiyang Chen
+•Exact Match (EM) evaluates the Inference module by calcu-
+lating the percentage of exact matches between predictions
+and ground truth answers.
+5.1.3 Experimental Details. For table representation, we use GPT-
+4o for corpus construction, and embeddings are generated using
+OpenAI’s text-embedding-large-3 model2. In the Retrieval module,
+we employ GPT-4o for the final LLM-based retrieval operation. For
+the QA baselines, the number of examples for all prompt strategies
+was uniformly set to 1. Additionally, we utilize GPT-4o, GPT-4o
+mini, alongside four open-source large LLMs available on hugging
+face3: Qwen2.5-32B-Instruct, Qwen2.5-7B-Instruct, and Mistral-
+Nemo-Instruct-2407, Llama-3.1-8B-Instruct.
+5.2 Experimental Result
+In this section, we present the experimental results obtained by in-
+tegrating the three modules of HD-RAG into the overall pipeline for
+the Hybrid Document RAG task. The three modules, Corpus Con-
+struction, Retrieval, and QA Inference, work together to effectively
+process hybrid documents combining table and text data.
+In the Corpus Construction Module, we evaluate the impact of
+three table summary levels on the performance of the Retrieval
+and QA modules: the traditional Table Level Summary and our
+proposed General and H-RCL Table Summaries.
+As shown in Table 2, the performance evaluation demonstrates
+the improvements in both the Retrieval and QA tasks as we progress
+from the Table Level Summary to the more complex General and
+H-RCL Table Summaries. The H-RCL Table Summary achieves the
+highest scores in both HiT@1 and EM, with a significant improve-
+ment of 47% in HiT@1 and 28% in EM compared to the basic Table
+Level Summary. The improvement highlights the effectiveness of
+the H-RCL in both the Retrieval and QA phases.
+The General RCL provides a clearer representation of rows
+and columns, reducing ambiguity and improving retrieval accuracy,
+which enhances QA performance by retrieving more relevant docu-
+ments. The H-RCL further improves this by capturing multi-level
+table structures and incorporating row and column path informa-
+tion, boosting both retrieval accuracy and QA’s ability to interpret
+complex table structures for more precise answers.
+Overall, H-RCL Table Summary improves retrieval and QA per-
+formance by better representing and utilizing the inherent structure
+within the tables, whether through finer granularity and multi-level
+hierarchical relationships in H-RCL.
+Table 2: Performance Evaluation of HD-RAG with Different
+Table Summary Level
+Corpus Construction Retrieval Module QA Module
+Table Summary Level HiT@1 EM
+Table Level 0.3627±0.0046 0.2383±0.0047
+General RCL 0.3984±0.0092 0.2625±0.0069
+H-RCL 0.5320±0.0067 0.3166±0.0062
+2platform.openai.com/docs/guides/embeddings
+3https://huggingface.co5.3 Comparison with Baselines
+In this section, we present a comprehensive analysis of HD-RAG
+compared to baseline methods across the Retrieval and QA modules,
+with evaluations conducted on the DocRAGLib dataset to showcase
+its effectiveness.
+5.3.1 Retrieval Comparison with Baselines. Table 3 presents the
+experimental results of the Retrieval Module in HD-RAG and all
+baseline methods.
+Table 3: Comparison of HD-RAG Retrieval Performance with
+Various Baselines
+HiT@K
+Method K=1 K=3 K=5 K=10
+Standard RAG 0.0159 0.0339 0.0538 0.1255
+LangChain 0.2390 0.4104 0.4821 0.5219
+Self-RAG 0.2829 0.4502 0.5000 0.5598
+Table Retrieval 0.3705 0.5299 0.5996 0.6494
+HD-RAG(GPT-4o) 0.5410 0.7244 0.7603 0.8689
+Standard RAG performs the worst, as it struggles to effectively
+handle both text and tables, resulting in noisy and irrelevant re-
+trieval. LangChain improves performance upon this by performing
+coarse-grained summarization of tables and text, enhancing re-
+trieval results. Self-RAG dynamically retrieves relevant passages
+and uses reflection tokens for self-assessment, refining outputs and
+outperforming LangChain. Table Retrieval targets tables within doc-
+uments, employing join relationship discovery and a programming-
+based re-ranking approach to achieve second-best results for K=3,
+5, and 10.
+Our method, HD-RAG, consistently outperforms all baseline
+methods by utilizing fine-grained row- and column-level table sum-
+marization and text decomposition tailored for hybrid documents.
+Specifically, HD-RAG achieves a Hit@1 score of 0.5188, showing a
+40% improvement over the next-best method, Table Retrieval.
+5.3.2 Document-QA Comparison with Baselines. In this phase of
+the document-based QA experiment, the focus is on answer reason-
+ing based on the unique document for each question, excluding the
+document retrieval process.
+The experimental results of RECAP and baseline methods on
+the DocRAGLib dataset are shown in Table 4. Six LLMs are used
+for the experiments, with the EM metric as the evaluation crite-
+rion. To ensure fairness, LLM output formats are constrained, and
+evaluation mechanisms are tailored to the answer types in the
+dataset. Among the baseline methods, PoT performs best, mainly
+due to its program-execution logic that improves the accuracy of
+calculation-based questions in the DocRAGLib dataset. However,
+RECAP outperforms PoT in EM across all six LLMs, demonstrating
+its superiority. Furthermore, RECAP with external formula calcula-
+tion improves EM by 0.15 on GPT-4o compared to RECAP w/o Calc.
+RECAP enhances calculation-based question accuracy by reasoning
+through external calculation functions, reducing output instability
+compared to program-generated methods like PoT.
+HD-RAG: Retrieval-Augmented Generation for Hybrid Documents Containing Text and Hierarchical Tables Conference acronym ’XX, June 03–05, 2018, Woodstock, NY
+Table 4: Comparison of RECAP in HD-RAG Document-QA Performance with Various Baselines
+Models
+Method GPT-4o GPT-4o mini Qwen2.5-32B Qwen2.5-7B Mistral-Nemo-2407 LLama3.1-7B
+Direct 0.3534 0.2355 0.2180 0.0802 0.1003 0.1579
+CoT 0.4687 0.3684 0.4837 0.3158 0.2506 0.2531
+EEDP 0.4737 0.3759 0.4862 0.2857 0.2757 0.2080
+PoT 0.6190 0.5564 0.5589 0.3784 0.3409 0.2932
+RECAP(w/o Calc) 0.4937 0.4010 0.5163 0.2957 0.2732 0.2306
+RECAP 0.6466 0.5815 0.6416 0.4536 0.4411 0.4060
+280500 1000 1500 2178
+Number of Documents0.30.40.50.60.7Hit@1
+280500 1000 1500 2178
+Number of Documents0.40.50.60.70.8Hit@3
+280500 1000 1500 2178
+Number of Documents0.50.60.70.8Hit@5
+280500 1000 1500 2178
+Number of Documents0.50.60.70.8Hit@10
+Langchain Self-RAG Table Retrieval HD-RAG(GPT-4o)
+Figure 4: Sensitivity Analysis of Retrieval Performance across
+Different Corpus Sizes.
+5.4 Sensitive Analysis
+In this section, we assess the robustness and scalability of HD-RAG
+by analyzing its retrieval performance compared to baseline meth-
+ods across different document corpus sizes. For this experiment, we
+selected 809 questions corresponding to a minimum of 280 docu-
+ments. We then progressively expanded the document corpus to
+500, 1000, 1500, and 2178 documents and conducted experiments
+at each stage. We compare HD-RAG with the retrieval baseline
+methods to examine the impact of document corpus size on the
+Hit@K performance. As the document corpus grows, Hit@K scores
+typically decline. We analyze the sensitivity of retrieval methods
+to the growth in corpus size, focusing on how HD-RAG performs
+under varying scales of data. Due to the inherently low Hit@K per-
+formance of the Standard RAG retrieval results, we do not include it
+in this section for further analysis. Instead, we focus on comparing
+HD-RAG with the other baseline methods.
+As shown in Figure 4, among all the retrieval methods, our
+retrieval approach exhibits the smallest decrease in Hit@K per-
+formance (K=1,3,5,10) as the corpus size increases. While other
+methods experience a sharper decline in performance, HD-RAG
+maintains a relatively stable accuracy even with a larger document
+corpus. The minimal drop in performance suggests that HD-RAG
+is more robust and scalable, effectively handling the increased com-
+plexity and size of the document set while preserving retrieval
+precision.5.5 Ablation Study
+To investigate the effectiveness of each key component in HD-RAG,
+we conduct the ablation study using DocRAGLib dataset. We design
+the following variants of HD-RAG: (1) HD-RAG w/o Ensemble
+Retrieval: In this variant, we replace Ensemble Retrieval by us-
+ing only Embeddings model and BM25, respectively, to retrieve
+candidate documents from the Document Corpus; (2) HD-RAG
+w/o Ensemble & LLM-based Retrieval: Since Ensemble Retrieval
+combines multiple methods to enhance candidate document selec-
+tion, using Ensemble Retrieval alone does not directly retrieve the
+most relevant documents. In this variant, we replace the combined
+process with individual retrieval methods, using only the Embed-
+dings model and BM25 to retrieve documents directly from the
+Document Corpus; (3) HD-RAG w/o Calc: In this variant, we re-
+move the use of an external calculator for computational questions
+and rely solely on RECAP to perform answer reasoning based on
+the most relevant retrieved documents.
+Table 5: Ablation Study Result of HD-RAG
+Variants HiT@1 EM
+Ours (HD-RAG) 0.5410 0.3238
+- w/o Ensemble Retrieval
+only Embedding (3-large) 0.4734 0.2777
+only BM25 0.3545 0.2100
+- w/o Ensemble & LLM-based Retrieval
+only Embedding (3-large) 0.2787 0.2131
+only BM25 0.1557 0.1311
+- w/o Calc of RECAP 0.5410 0.2838
+Table 5 shows the results of our ablation study. Comparing HD-
+RAG with w/o Ensemble Retrieval, we found that replacing En-
+semble Retrieval with either Embedding or BM25 significantly de-
+creased Hit@1, with Embedding outperforming BM25 due to the
+dataset’s need for deep semantic alignment. When comparing w/o
+Ensemble Retrieval with w/o Ensemble & LLM-based Retrieval, the
+introduction of LLM-based Retrieval improved Hit@1 by 0.19 and
+0.20 for Embedding and BM25, respectively, enhancing QA accuracy.
+This shows that our two-stage retrieval method is more effective
+than single-stage methods. Lastly, w/o Calc results confirm that
+RECAP’s use of an external calculator significantly improves EM
+score in HD-RAG.
+Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Chi Zhang and Qiyang Chen
+6 Conclusion
+In this paper, we propose the DocRAGLib and HD-RAG framework
+for the Hybrid Document RAG task in QA. DocRAGLib is the first
+large-scale dataset designed specifically for QA within the Hybrid
+Document RAG task. To address the challenges of DocRAGLib,
+HD-RAG framework introduces an H-RCL table representation,
+enhances retrieval with an approach combining ensemble and LLM-
+based retrieval, and incorporates the RECAP method for complex
+computational QA tasks. Extensive experiments show that HD-RAG
+outperforms existing baselines, achieving significant improvements
+in both retrieval and QA accuracy.
+References
+[1]Akari Asai, Zeqiu Wu, Yizhong Wang, Avirup Sil, and Hannaneh Hajishirzi.
+2024. Self-RAG: Learning to Retrieve, Generate, and Critique through Self-
+Reflection. In The Twelfth International Conference on Learning Representations .
+https://openreview.net/forum?id=hSyW5go0v8
+[2]Asim Biswal, Liana Patel, Siddarth Jha, Amog Kamsetty, Shu Liu, Joseph E Gon-
+zalez, Carlos Guestrin, and Matei Zaharia. 2024. Text2sql is not enough: Unifying
+ai and databases with tag. arXiv preprint arXiv:2408.14717 (2024).
+[3]Sebastian Borgeaud, Arthur Mensch, Jordan Hoffmann, Trevor Cai, Eliza Ruther-
+ford, Katie Millican, George Bm Van Den Driessche, Jean-Baptiste Lespiau, Bog-
+dan Damoc, Aidan Clark, et al .2022. Improving language models by retrieving
+from trillions of tokens. In International conference on machine learning . PMLR,
+2206–2240.
+[4]Peter Baile Chen, Yi Zhang, and Dan Roth. 2024. Is Table Retrieval a Solved
+Problem? Exploring Join-Aware Multi-Table Retrieval. In Proceedings of the 62nd
+Annual Meeting of the Association for Computational Linguistics . Association for
+Computational Linguistics, Bangkok, Thailand, 2687–2699. https://doi.org/10.
+18653/v1/2024.acl-long.148
+[5]Wenhu Chen, Xueguang Ma, Xinyi Wang, and William W. Cohen. 2023. Pro-
+gram of Thoughts Prompting: Disentangling Computation from Reasoning for
+Numerical Reasoning Tasks. Trans. Mach. Learn. Res. 2023 (2023). https:
+//openreview.net/forum?id=YfZ4ZPt8zd
+[6]Wenhu Chen, Hanwen Zha, Zhiyu Chen, Wenhan Xiong, Hong Wang, and
+William Yang Wang. 2020. HybridQA: A Dataset of Multi-Hop Question An-
+swering over Tabular and Textual Data. In Findings of the Association for Com-
+putational Linguistics: EMNLP 2020 . Association for Computational Linguistics,
+Online, 1026–1036. https://doi.org/10.18653/v1/2020.findings-emnlp.91
+[7]Sitao Cheng, Ziyuan Zhuang, Yong Xu, Fangkai Yang, Chaoyun Zhang, Xiaoting
+Qin, Xiang Huang, Ling Chen, Qingwei Lin, Dongmei Zhang, Saravan Rajmohan,
+and Qi Zhang. 2024. Call Me When Necessary: LLMs can Efficiently and Faith-
+fully Reason over Structured Environments. In Findings of the Association for
+Computational Linguistics: ACL 2024 . Association for Computational Linguistics,
+Bangkok, Thailand, 4275–4295. https://doi.org/10.18653/v1/2024.findings-acl.254
+[8]Zhoujun Cheng, Haoyu Dong, Zhiruo Wang, Ran Jia, Jiaqi Guo, Yan Gao, Shi Han,
+Jian-Guang Lou, and Dongmei Zhang. 2022. HiTab: A Hierarchical Table Dataset
+for Question Answering and Natural Language Generation. In Proceedings of the
+60th Annual Meeting of the Association for Computational Linguistics . Association
+for Computational Linguistics, Dublin, Ireland, 1094–1110. https://doi.org/10.
+18653/v1/2022.acl-long.78
+[9]Zhangtao Cheng, Jienan Zhang, Xovee Xu, Goce Trajcevski, Ting Zhong, and
+Fan Zhou. 2024. Retrieval-augmented hypergraph for multimodal social media
+popularity prediction. In Proceedings of the 30th ACM SIGKDD Conference on
+Knowledge Discovery and Data Mining . 445–455.
+[10] Wenbo Hu, Jia-Chen Gu, Zi-Yi Dou, Mohsen Fayyaz, Pan Lu, Kai-Wei Chang,
+and Nanyun Peng. 2024. MRAG-Bench: Vision-Centric Evaluation for Retrieval-
+Augmented Multimodal Models. arXiv preprint arXiv:2410.08182 (2024).
+[11] Shayekh Bin Islam, Md Asib Rahman, K S M Tozammel Hossain, Enamul
+Hoque, Shafiq Joty, and Md Rizwan Parvez. 2024. Open-RAG: Enhanced Re-
+trieval Augmented Reasoning with Open-Source Large Language Models. In
+Findings of the Association for Computational Linguistics: EMNLP 2024 . As-
+sociation for Computational Linguistics, Miami, Florida, USA, 14231–14244.
+https://doi.org/10.18653/v1/2024.findings-emnlp.831
+[12] Gautier Izacard and Edouard Grave. 2021. Distilling Knowledge from Reader to
+Retriever for Question Answering. In The 9th International Conference on Learning
+Representations . https://openreview.net/forum?id=NTEz-6wysdb
+[13] Albert Q. Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford, De-
+vendra Singh Chaplot, Diego de las Casas, Florian Bressand, Gianna Lengyel,
+Guillaume Lample, Lucile Saulnier, Lélio Renard Lavaud, Marie-Anne Lachaux,
+Pierre Stock, Teven Le Scao, Thibaut Lavril, Thomas Wang, Timothée Lacroix,
+and William El Sayed. 2023. Mistral 7B. arXiv:2310.06825 [cs.CL] https://arxiv.org/abs/2310.06825
+[14] Weizhe Lin, Jingbiao Mei, Jinghong Chen, and Bill Byrne. 2024. PreFLMR: Scaling
+Up Fine-Grained Late-Interaction Multi-modal Retrievers. In Proceedings of the
+62nd Annual Meeting of the Association for Computational Linguistics , Lun-Wei
+Ku, Andre Martins, and Vivek Srikumar (Eds.). Association for Computational
+Linguistics, Bangkok, Thailand, 5294–5316. https://doi.org/10.18653/v1/2024.acl-
+long.289
+[15] Tongxu Luo, Fangyu Lei, Jiahe Lei, Weihao Liu, Shihu He, Jun Zhao, and Kang
+Liu. 2023. Hrot: Hybrid prompt strategy and retrieval of thought for table-text
+hybrid question answering. arXiv preprint arXiv:2309.12669 (2023).
+[16] Nicholas Matsumoto, Jay Moran, Hyunjun Choi, Miguel E Hernandez, Mythreye
+Venkatesan, Paul Wang, and Jason H Moore. 2024. KRAGEN: a knowledge graph-
+enhanced RAG framework for biomedical problem solving using large language
+models. Bioinformatics 40, 6 (2024).
+[17] Sohini Roychowdhury, Marko Krema, Anvar Mahammad, Brian Moore, Arijit
+Mukherjee, and Punit Prakashchandra. 2024. ERATTA: Extreme RAG for Table
+To Answers with Large Language Models. arXiv preprint arXiv:2405.03963 (2024).
+[18] Pragya Srivastava, Manuj Malik, Vivek Gupta, Tanuja Ganu, and Dan Roth. 2024.
+Evaluating LLMs’ Mathematical Reasoning in Financial Document Question
+Answering. In Findings of the Association for Computational Linguistics: ACL
+2024. Association for Computational Linguistics, Bangkok, Thailand, 3853–3878.
+https://doi.org/10.18653/v1/2024.findings-acl.231
+[19] Hugo Touvron, Louis Martin, Kevin Stone, Peter Albert, Amjad Almahairi, Yas-
+mine Babaei, Nikolay Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhos-
+ale, et al .2023. Llama 2: Open Foundation and Fine-Tuned Chat Models. arXiv
+e-prints (2023), arXiv–2307.
+[20] Kexin Wang, Nils Reimers, and Iryna Gurevych. 2024. DAPR: A Benchmark on
+Document-Aware Passage Retrieval. In Proceedings of the 62nd Annual Meeting
+of the Association for Computational Linguistics . Association for Computational
+Linguistics, Bangkok, Thailand, 4313–4330. https://doi.org/10.18653/v1/2024.acl-
+long.236
+[21] Liang Wang, Nan Yang, and Furu Wei. 2023. Query2doc: Query Expansion with
+Large Language Models. In Proceedings of the 2023 Conference on Empirical Meth-
+ods in Natural Language Processing . Association for Computational Linguistics,
+Singapore, 9414–9423. https://doi.org/10.18653/v1/2023.emnlp-main.585
+[22] Xuezhi Wang, Jason Wei, Dale Schuurmans, Quoc V Le, Ed H Chi, Sharan Narang,
+Aakanksha Chowdhery, and Denny Zhou. [n. d.]. Self-Consistency Improves
+Chain of Thought Reasoning in Language Models. In The Eleventh International
+Conference on Learning Representations .
+[23] Yu Wang, Nedim Lipka, Ryan A. Rossi, Alexa F. Siu, Ruiyi Zhang, and Tyler Derr.
+2024. Knowledge Graph Prompting for Multi-Document Question Answering.
+InThirty-Eighth AAAI Conference on Artificial Intelligence, AAAI 2024, Thirty-
+Sixth Conference on Innovative Applications of Artificial Intelligence, IAAI 2024,
+Fourteenth Symposium on Educational Advances in Artificial Intelligence, EAAI
+2014, February 20-27, 2024, Vancouver, Canada . AAAI Press, 19206–19214. https:
+//doi.org/10.1609/AAAI.V38I17.29889
+[24] Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Brian Ichter, Fei
+Xia, Ed H. Chi, Quoc V. Le, and Denny Zhou. 2024. Chain-of-thought prompting
+elicits reasoning in large language models (NIPS ’22) . Curran Associates Inc., Red
+Hook, NY, USA, Article 1800, 14 pages.
+[25] Jian Wu, Yicheng Xu, Yan Gao, Jian-Guang Lou, Börje Karlsson, and Manabu
+Okumura. 2023. TACR: A Table Alignment-based Cell Selection Method for
+HybridQA. In Findings of the Association for Computational Linguistics: ACL
+2023, Toronto, Canada, July 9-14, 2023 . Association for Computational Linguistics,
+6535–6549. https://doi.org/10.18653/V1/2023.FINDINGS-ACL.409
+[26] Zirui Wu and Yansong Feng. 2024. ProTrix: Building Models for Planning and
+Reasoning over Tables with Sentence Context. In Findings of the Association
+for Computational Linguistics: EMNLP 2024 , Yaser Al-Onaizan, Mohit Bansal,
+and Yun-Nung Chen (Eds.). Association for Computational Linguistics, Miami,
+Florida, USA, 4378–4406. https://doi.org/10.18653/v1/2024.findings-emnlp.253
+[27] Shi-Qi Yan, Jia-Chen Gu, Yun Zhu, and Zhen-Hua Ling. 2024. Corrective retrieval
+augmented generation. arXiv preprint arXiv:2401.15884 (2024).
+[28] Tengxun Zhang, Hongfei Xu, Josef van Genabith, Deyi Xiong, and Hongying
+Zan. 2023. NAPG: Non-Autoregressive Program Generation for Hybrid Tabular-
+Textual Question Answering. In Natural Language Processing and Chinese Com-
+puting: 12th National CCF Conference, NLPCC 2023, Foshan, China, October 12–15,
+2023, Proceedings, Part I (Foshan, China). Springer-Verlag, Berlin, Heidelberg,
+591–603. https://doi.org/10.1007/978-3-031-44693-1_46
+[29] Yilun Zhao, Yunxiang Li, Chenying Li, and Rui Zhang. 2022. MultiHiertt: Nu-
+merical Reasoning over Multi Hierarchical Tabular and Textual Data. In Pro-
+ceedings of the 60th Annual Meeting of the Association for Computational Lin-
+guistic . Association for Computational Linguistics, Dublin, Ireland, 6588–6600.
+https://doi.org/10.18653/v1/2022.acl-long.454
+[30] Yilun Zhao, Yitao Long, Hongjun Liu, Ryo Kamoi, Linyong Nan, Lyuhao Chen,
+Yixin Liu, Xiangru Tang, Rui Zhang, and Arman Cohan. 2024. DocMath-Eval:
+Evaluating Math Reasoning Capabilities of LLMs in Understanding Long and
+Specialized Documents. In Proceedings of the 62nd Annual Meeting of the Associ-
+ation for Computational Linguistics . Association for Computational Linguistics,
+HD-RAG: Retrieval-Augmented Generation for Hybrid Documents Containing Text and Hierarchical Tables Conference acronym ’XX, June 03–05, 2018, Woodstock, NY
+Bangkok, Thailand, 16103–16120. https://doi.org/10.18653/v1/2024.acl-long.852
+[31] Ting Zhong, Jian Lang, Yifan Zhang, Zhangtao Cheng, Kunpeng Zhang, and
+Fan Zhou. 2024. Predicting Micro-video Popularity via Multi-modal Retrieval
+Augmentation. In Proceedings of the 47th International ACM SIGIR Conference on
+Research and Development in Information Retrieval, SIGIR 2024, Washington DC,
+USA, July 14-18, 2024 . ACM, 2579–2583. https://doi.org/10.1145/3626772.3657929[32] Fengbin Zhu, Wenqiang Lei, Youcheng Huang, Chao Wang, Shuo Zhang,
+Jiancheng Lv, Fuli Feng, and Tat-Seng Chua. 2021. TAT-QA: A Question An-
+swering Benchmark on a Hybrid of Tabular and Textual Content in Finance.
+InProceedings of the 59th Annual Meeting of the Association for Computa-
+tional Linguistics and the 11th International Joint Conference on Natural Lan-
+guage Processing . Association for Computational Linguistics, Online, 3277–3287.
+https://doi.org/10.18653/v1/2021.acl-long.254

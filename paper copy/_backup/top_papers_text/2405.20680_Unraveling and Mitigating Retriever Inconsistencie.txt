@@ -1,0 +1,1431 @@
+Unraveling and Mitigating Retriever Inconsistencies in
+Retrieval-Augmented Large Language Models
+Mingda Li1Xinyu Li1Yifan Chen1Wenfeng Xuan2Weinan Zhang1*
+1Research Center for Social Computing and Information Retrieval
+Harbin Institute of Technology, China
+2XVERSE Technology Inc., China
+{mdli, xyli, yfchen, wnzhang}@ir.hit.edu.cn
+{johnxuan}@xverse.cn
+Abstract
+Although Retrieval-Augmented Large Lan-
+guage Models (RALMs) demonstrate their su-
+periority in terms of factuality, they do not
+consistently outperform the original retrieval-
+free Language Models (LMs). Our experi-
+ments reveal that this example-level perfor-
+mance inconsistency exists not only between
+retrieval-augmented and retrieval-free LM but
+also among different retrievers. To understand
+this phenomenon, we investigate the degenera-
+tion behavior of RALMs and theoretically de-
+compose it into four categories. Further analy-
+sis based on our decomposition reveals that the
+innate difference in knowledge sources and the
+unpredictable degeneration of the reader model
+contribute most to the inconsistency. Drawing
+from our analysis, we introduce Ensemble of
+Retrievers (EoR), a trainable framework that
+can adaptively retrieve from different knowl-
+edge sources and effectively decrease unpre-
+dictable reader errors. Our experiments on
+Open Domain Question Answering show that
+EoR substantially improves performance over
+the RALM with a single retriever by consider-
+ably reducing inconsistent behaviors.1
+1 Introduction
+Although Large Language Models (LLMs) have
+shown their superiority in many NLP tasks (Ope-
+nAI, 2023; Touvron et al., 2023), they are known to
+struggle with factual hallucinations (Mallen et al.,
+2023; Bang et al., 2023) and outdated parametric
+knowledge (Dhingra et al., 2022; Vu et al., 2023).
+Retrieval-Augmented Language Models (RALMs)
+as an ad-hoc technique have been proven to effec-
+tively alleviate these problems (Ram et al., 2023;
+Vu et al., 2023). In most RALM systems, a re-
+triever takes the responsibility to retrieve relevant
+information from some external knowledge sources
+*Corresponding author
+1Our code and data are available at https://github.
+com/mingdali6717/Ensemble-of-Retrievers
+Figure 1: Retriever-to-Retriever Relative Win Ratio
+heatmap on Natural Questions with ChatGPT as LM.
+Each cell’s number represents the proportion of ques-
+tions answered incorrectly by the column retriever that
+was correctly answered by the row retriever. 0 represents
+all questions correctly answered by the row retriever can
+be correctly answered by the column retriever, which
+implies the column retriever consistently outperform the
+row retriever. See equation 1 for formal definition.
+(e.g., Wikipedia dump (Lewis et al., 2020), search
+engine (Nakano et al., 2021), parametric knowl-
+edge (Yu et al., 2023)) and process them into text
+chunks to extract the most pertinent content for
+subsequent generation with a reader model (e.g.,
+filtering, reranking (Liu et al., 2023b), compression
+(Xu et al., 2023)).
+Although RALMs show their effectiveness at
+the corpus level (Gao et al., 2023b), retrieval-
+augmentation does not consistently promote the
+original retrieval-free LM but sometimes hurts
+its performance at the individual example level
+(Mallen et al., 2023; Yoran et al., 2023; Asai et al.,
+2023). In this work, we observe that variability in
+1arXiv:2405.20680v5  [cs.AI]  6 Mar 2025
+example-level performance exists not only between
+retrieval-augmented and retrieval-free LMs, but ac-
+tually among different retrievers2(e.g. Figure 1).
+We call this observed phenomenon as retriever
+inconsistency . Specifically, we use open-domain
+question answering (ODQA;Chen et al., 2017) as
+our benchmark task and build 15 different retriev-
+ers by retrieving from different knowledge sources
+(search engine, Wikipedia dump and parametric
+knowledge) and implementing diverse processing
+methods (truncation, concatenation, reranking and
+compression). Our experiment reveals that, on av-
+erage, more than 16 %of questions incorrectly an-
+swered by one retriever can be corrected by an
+alternative retriever, and this result holds for all
+testing models and datasets.
+To further investigate the reasons behind re-
+triever inconsistency, we theoretically show that
+RALM’s degenerate behaviors on ODQA under
+regular conditions can be divided into four cate-
+gories: Retriever Error, Extraction Error, Halluci-
+nation Error, and Lucky Guess. We further em-
+pirically investigate the example-level error occur-
+rence behaviors of these four types of errors and
+the results indicate a ubiquitous inconsistent pat-
+tern across retrievers for every error type, which
+collectively contributes to the retriever inconsis-
+tency.
+Our further analysis reveals that the innate differ-
+ence in knowledge sources, such as the absence of
+post-2018 information in the 2018 Wiki dump or
+search engine’s deficiency in understanding tricky
+queries, and the inevitable and unpredictable de-
+generated behavior of the reader model, such as
+hallucination or the weak robustness to irrelevant
+context, serve as the main reason of retriever incon-
+sistency.
+Inspired by our analysis, we propose Ensemble
+of Retrievers (EoR), a trainable framework that
+first samples from RALM with different retrievers
+and then rejects based on a voting mechanism that
+measures similarity between answers. Not only can
+EoR reduce retriever errors by adaptively retrieving
+from the most appropriate knowledge source, but
+effectively reduce errors caused by unpredictable
+degradation of the reader model by comparing an-
+swers from different retrievers, based on our ob-
+2We distinguish different retrievers by their knowledge
+sources and text processing methods. We consider two retriev-
+ers equal if and only if their retrieved text chunks are exactly
+the same for the same query. Retrieval-free could be thought
+of a singular retriever which reads the query and outputs an
+empty set.servation of inconsistent model error behavior and
+the intuition that incorrect answers vary while cor-
+rect answers are always similar. By introducing
+controlling parameters in our framework, we can
+easily construct an optimization problem which
+can be solved by a heuristic search algorithm, and
+automatically search for the optimal retriever pool
+used for sampling. Our framework is compatible
+with any LLM and does not require any training on
+them. Experiment shows that EoR can effectively
+improve the performance consistency compared to
+RALM with a single retriever, thereby improving
+the corpus performance on ODQA.
+2 Retrievers Are Inconsistent
+To investigate the example-level inconsistent behav-
+ior across retrievers and the reasons behind it, we
+adopt the single-hot short-form ODQA task, which
+consists of factual questions with short and clear
+answers, as our benchmark task. The straightfor-
+ward task format and reliable automatic evaluation
+metrics (Kamalloo et al., 2023) enable us to quickly
+and accurately evaluate the correctness of model
+responses and retrieved documents, facilitating in-
+depth theoretical and empirical analysis.
+2.1 Experimental Setup
+We adopt the zero-shot in-context RALM (Ram
+et al., 2023) which directly prepends the retrieved
+documents to the input query based on the prompt
+template (see Appendix C.2). This naive yet effi-
+cient framework have been widely used in recent
+works (Gao et al., 2023b). We employ Llama2-
+chat 7B, 13B (Touvron et al., 2023) and ChatGPT3
+as our base LM and perform greedy-search on all
+response generations to reduce the hallucination
+brought by sampling and guarantee reproducibility.
+Retrievers : We characterize retrievers by their
+individual knowledge sources and the diverse
+knowledge processing methods. We adopt three
+different knowledge sources: Search Engine ( SE),
+Wikipedia ( Wiki ) and model generated parametric
+knowledge ( PK). Specifically, we choose Google
+as our search engine and directly forward the orig-
+inal query to the Google Search API;4We imple-
+ment DPR (Karpukhin et al., 2020), which use
+English Wikipedia dump from Dec. 20, 2018 as
+the documents source, to retrieve from Wikipedia;
+For parametric knowledge, we follow GenRead
+3gpt-3.5-turbo-instruct
+4https://serper.dev/
+2
+(Yu et al., 2023) to directly prompt the base LM
+to generate background documents to answer the
+query.
+As for knowledge processing methods, we adopt
+four main operations: truncation, concatenation,
+reranking and compression. Truncation here partic-
+ularly refer to select top-k text chunks from sorted
+text list,5denoted by " @k"; Concatenation here
+specifically refers to concatenate text from differ-
+ent sources, denoted by " &". Particularly, we use
+Hybrid ( HB) to represent the concatenation of text
+chunks from all three original knowledge sources;
+For reranking (denoted by " @RR "), We adopt We-
+bGLM’s (Liu et al., 2023b) reranking model, a
+Contriever (Izacard et al., 2022) model re-trained
+with model extracted data. It is reported with better
+performance than vanilla Contriever; In the case
+of Compression (denoted by " @CP "), we directly
+prompt the base LM to summarize the input text,
+as LLM have demonstrated notable capabilities in
+extracting information (Yang et al., 2023; Liu et al.,
+2023b).
+It is intractable to exhaust all retriever combi-
+nations, hence we manually design eight typical
+retrievers (we try to keep their output documents
+in similar length) and the compressed version of
+them except for parametric knowledge,6for a to-
+tal of 15 retrievers. We also regard retrieval-free
+(denoted by ReFree ) as a special singular retriever.
+Full retrievers list and processing details could be
+found in Appendix C.1. We use the combination of
+operation abbreviations to represent the retriever,
+the operation priority order follows @RR >@k>&
+>@CP . For example, SE@RR@5&Wiki@5 stands
+for first reranking the search engine results and then
+concatenating the top-5 reranked search engine text
+chunks and the top-5 wiki chunks.
+Datasets : We experiment on three English
+ODQA datasets: Natural Questions (NQ;
+Kwiatkowski et al., 2019), Web Questions (WebQ;
+Berant et al., 2013) and TriviaQA (Joshi et al.,
+2017), details refer to Appendix C.3. We evaluate
+Llama2-chat 7B, 13B on the full validation split,7
+whereas for ChatGPT, we randomly sample 500
+questions from each split for evaluation because of
+budget limitation.
+5Some knowledge sources embrace innate ranking prop-
+erty such as google and DPR.
+6Model generated documents are generally in short length,
+hence we do not compress them.
+7The validation set of WebQ contains only 300 questions,
+hence we use the train split instead.
+Figure 2: Boxplot displaying the distribution of MRLR
+of 15 different retrievers across different dataset and
+models.
+Evaluation Metrics : We need two kinds of met-
+rics, one to evaluate the correctness of answers and
+one to evaluate the example-level inconsistency.
+Following Kamalloo et al. (2023), we adopt BEM
+score (Bulian et al., 2022), a semantic similarity
+metric specifically developed for QA tasks, to eval-
+uate QA accuracy with threshold 0.8.8It is reported
+to have good correlation with humans and cope
+with syntactical variation of answers.
+As for measuring example-level inconsistency,
+we propose two naive metrics: Mean Relative Win
+Ratio (MRWR) and Mean Relative Lose Ratio
+(MRLR). Assuming we have Mdifferent retrievers
+R={r1, r2, ..., r M}and a dataset with Nsamples
+D={< qn, an>}N
+n=1. For retriever rm, we can
+evaluate the correctness of model response for each
+sample sn=< qn, an>, denoted by Im(n) = 1
+ifrmanswers correctly on sample snotherwise
+0. Then we can calculate the Relative Win Ra-
+tio (RWR) of retriever riover another retriever rj,
+which is defined as:
+RWR (i, j) =PN
+n=1Ii(n)∗(1−Ij(n))PN
+n=11−Ij(n)(1)
+Clearly, RWR (i, j)represents the proportion of
+questions answered incorrectly by retriever rjthat
+were correctly answered by retriever ri. The
+MRWR and MRLR are calculated by respectively
+averaging RWR across rows and columns:
+MRWR (i) =1
+M−1X
+j̸=iRWR (i, j) (2)
+MRLR (i) =1
+M−1X
+j̸=iRWR (j, i) (3)
+8We also tried Exact Match, the results are similar.
+3
+Figure 3: Corpus-level performance of different retrievers evaluated by BEM Accuracy on different datasets with
+ChatGPT as base LM. The order of retrievers is sorted by performance on NQ.
+MRLR and MRWR represent the degree of re-
+triever inconsistency. Particularly, MRLR equals
+zero represents retriever riconsistently outper-
+forms all other retrievers.
+2.2 Experimental Results
+Figure 1 shows the RWR between different retriev-
+ers on NQ with ChatGPT as the base LM. We can
+observe significant inconsistency between any two
+different retrievers. Even for the top-performing
+retriever, Wiki@10 (62.2 %BEM Acc), 26 %of its
+failed questions can be correctly answered by the
+losest-ranked retriever, SE@1 (54.0 %BEM Acc).
+In Figure 2, we compare the MRLR of all 15 re-
+trievers across different datasets and models. The
+result indicates that, on average, more than 16 %of
+questions incorrectly answered by one retriever can
+be addressed by an alternative retriever. This phe-
+nomenon is prevalent across different base models
+and datasets, and no evident pattern is observed
+that larger model can alleviate this phenomenon.
+The example-level inconsistency also results in the
+corpus-level performance inconsistency, see Figure
+3, the performance curve of different retrievers on
+TriviaQA and WebQ do not consistently show a
+monotonic trend as the sorted NQ curve.
+3 Why Dose Retriever Inconsistency
+Happen?
+Before delving into the reasons behind retriever
+inconsistency, we firstly formulate the single-hop
+short-form ODQA problem and the RALM model.
+Letq∈ Q denote the factoid question from the
+ODQA task and a∈ A denote an answer to q
+(can be correct or wrong). We use Aq(a)⊂ A to
+denote the semantic equivalence class of the answer
+ato the question qandA∗
+q⊂ A for the set of allcorrect answers to q. We assume the existence and
+uniqueness of A∗
+qfor simplicity.9
+We consider a vanilla RALM Mconsisting
+of a probabilistic Retriever Rand a probabilis-
+tic Reader G. The Retriever Rtakes in a query
+qand return a text string d∼ R(q)∈ P(D). We
+callddocument and use Dto denote the set of
+all available documents, P(D)to denote the set
+of all probability measures over D. The Reader
+Greads the document dand generate a response
+y∼ G(q, d)∈ P(A)based on query q.10We
+use random variable M(q)to represent the answer
+generated by the RALM and the event, RALM cor-
+rectly answers the query q, can be formally written
+byM(q)∈ A∗
+q. We use Aq(a)∈dto denote
+that the document dcontains a syntactical varia-
+tion of the answer afor query q, then we define
+D∗
+q={d|A∗
+q∈d}, i.e. the set of documents that
+contains the correct answer for q.
+3.1 Error Decomposition
+We now proceed to introduce three key errors con-
+tributing to the failures of the RALM.
+Retriever Error Er: Given a query qand a
+retriever R, Retriever Error, denoted by Er, repre-
+sents the circumstance in which the document re-
+turned by Retriever Rdoes not contain the ground-
+truth answer for a query q, formally defined by:
+Er(q,R) :={d /∈ D∗
+q,given d∼ R(q)}
+Hallucination Error Eh: Given a query q, a
+document dand a Reader G, Hallucination Er-
+9Existence means A∗
+qis not empty and Uniqueness means
+that for any a∈ A∗
+q,A(a) =A∗
+q. This assumption is reason-
+able for single-hop short-form ODQA because of its simple
+task format.
+10For deterministic retriever and reader, R(q)andG(q, d)
+collapse to the one-point distribution.
+4
+ror, denoted by Eh, stands for the case where the
+Reader Ggenerates an answer ythat is not present
+in the document d, i.e.
+Eh(q, d,G) :={A(y)/∈d,given y∼ G(q, d)}
+which shares a similar definition to the Grounding
+Error in Baek et al. (2023).
+Extraction Error Ee: Given a query q, a docu-
+ment dand a Reader G, Extraction Error, denoted
+byEe, stands for the situation where the Reader
+Gextracts the wrong portion from a correctly re-
+trieved document, formally defined by:
+Ee(q, d,G) :={y /∈ A∗
+qandA(y)∈d,
+given d∈ D∗
+q, y∼ G(q, d)}
+The probability that these three errors occur for
+given qand RALM Mcan be written by:
+Eq,R
+r:=Pd∼R(q)(d /∈ D∗
+q)
+Eq,G
+h(d) :=Py∼G(q,d)(A(y)/∈dd)
+Eq,G
+e(d) :=Py∼G(q,d)(y /∈ A∗
+q,A(y)∈dd∈ D∗
+q)
+Following above definition, we are able to show
+that the probability of RALM Mfailing on the
+query q,EM(q) :=P(M(q)/∈ A∗
+q), can be de-
+composed into:11
+EM(q) =Ed∼R(q)h
+I{d∈D∗q}· 
+Eq,G
+h(d) +Eq,G
+e(d)
++
+I{d/∈D∗q}· 
+1− Eq,G
+luck(d)· Eq,G
+h(d)i
+(4)
+where Eq,G
+luck:=P(y∈ A∗
+qA(y)/∈d, d /∈ D∗
+q)
+represents the probability that Mluckily ‘halluci-
+nate’ the correct answer given an incorrect retrieved
+document, we call this event Lucky Guess and de-
+note it by Eluck. Details of the derivation can be
+found in Appendix A.
+3.2 Retriever Inconsistency Stems From
+Irregular Error Patterns
+As shown in equation 4, RALM’s failure on the
+single-hop short-form ODQA problem can be fully
+described by three errors, Retriever Error Er, Hal-
+lucination Error Ehand Extraction Error Ee, and a
+special scenario, Lucky Guess Eluck. As a result,
+irregular example-level occurrence of any of these
+11For deterministic RALM, the decomposition can be writ-
+ten more concisely: P(M(q)/∈ A∗
+q) = (1−Er) (Eh+Ee) +
+Er(1− EluckEh)
+Figure 4: Error Relative Win Ratio between different
+Retrievers with ChatGPT as base LM, evaluated on NQ
+validation set. 0 represents the column retriever consis-
+tently outperforms the row retriever concerning error
+occurrence and -1 means at least one of the retrievers
+is free of this error. We only show part of the result be-
+cause of space limitation, but the finding is same, more
+graphs please refer to Appendix D.
+four types of errors12will contribute to the incon-
+sistent behavior of the whole RALM. To quantita-
+tively measure the irregular pattern of each error
+across different retrievers, we follow the similar
+definition of Relative Win Ratio in section 2.1 to
+define the RWR for error E, RWR E, as:
+RWR E(i, j) =PN
+n=1(1−Ii
+E(n))∗Ij
+E(n)
+PN
+n=1Ij
+E(n)(5)
+where Ii
+E(n) = 1 if error Eoccurs for sample sn
+and retriever ri, more details refer to Appendix B.
+Therefore, RWR E(i, j)represents the proportion
+of Retriever Errors made by retriever rjthat are
+avoided by ri, and RWR E(i, j) = 0 implies that
+rjconsistently outperform ri.
+In Figure 4, we show the results of different er-
+rors, where the retrievers are sorted in descending
+order by their corpus-level performance (Figure 3).
+For Retriever Error, we observe significant bidi-
+rectional RWR Erbetween retrievers with different
+sources (such as 0.62/0.36 for Wiki@10 versus PK)
+which indicates the innate differences of knowl-
+edge sources serve as a main reason for the incon-
+sistency of retrieval errors. As a result, retrievers
+12We still use the term ’error’ to represent the Lucky Guess
+event for simplicity.
+5
+with hybrid sources (containing concatenation op-
+eration " &") witnessed more consistent behaviors
+over other retrieves, see the low column RWR Er
+values of them, although still suffer from a small
+portion of unpredictable errors caused by different
+processing methods.
+As for Extraction Error, we observe a widespread
+inconsistency across all retrievers. In particular,
+even SE@RR@5&Wiki@5 and SE@2&wiki@5,
+which share a large portion of contents and
+both contain the correct answer,13obtain non-
+neglectable bidirectional RWR Ee(0.31/0.27). We
+believe these ubiquitous inconsistent behaviors
+stem from Reader G’s weak robustness to long and
+irrelevant contexts (Liu et al., 2023a; Shi et al.,
+2023). A similar phenomenon is observed in Hal-
+lucination Error, but with more severe randomness.
+Kalai and Vempala (2023) demonstrate that hallu-
+cination is inevitable for a statistical reason.
+Therefore, the inconsistent occurrence patterns
+of three errors collectively contribute to unpre-
+dictable RALM’s degeneration. Furthermore,
+Lucky Guess, which compensate the mistakes
+made by retriever error, also demonstrate an in-
+consistent behavior and the irregular occurrence
+will further exacerbating retriever inconsistency.
+4 Ensemble of Retrievers
+Our analysis provides a strong rationale for adopt-
+ing an ensemble of retrievers, which can retrieve
+from different sources, and leverage the irregular
+error behavior to reduce the degeneration of the
+reader model. In fact, we can calculate the the-
+oretical upper bound of the ensemble of retriev-
+ers by assuming a perfect voting mechanism that
+will always select the correct answer as long as
+one retriever outputs the correct one, see figure 5.
+It demonstrates an obvious monotonic increasing
+trend implying the great potential of the ensemble
+of retrievers. However, the variability in perfor-
+mance within models with the same retriever pool
+size underscores the importance of understanding
+both what to include in the ensemble and how to
+effectively combine them.
+4.1 Our Method
+We propose EoR, a trainable generate-then-rerank
+framework that can dynamically determine what
+to retrieve and how to retrieve. Formally, suppose
+13This comes from our constructing and Extraction Error
+estimation methods, see Appendix B and C.1
+Figure 5: The upper bound of BEM Accuracy by en-
+sembling different retrievers on NQ with ChatGPT as
+base LM. Each boxplot represents the distribution of the
+upper bound for different retriever combinations with
+the same pool size. The dashed line shows the best sin-
+gle retriever performance.
+we have Mdifferent retrievers R={ri}M
+i=1and
+a reader model G. EoR accepts an input query q
+and first generates Mresponses based on different
+retrievers, written as ym=G(q, rm(q)), ym∈
+A, m∈ {1,2, ..., M }, then the voter module
+Svoter :AM→RMtakes in the responses and
+calculates a score smfor each response ym, i.e.
+Svoter(y1, y2, ..., y M) = [s1, s2, ..., s m].
+The voter module comprises two functions, sim-
+ilarity function Ssim:A × A → Rand pooling
+function Spool:RM−1→R. The similarity func-
+tion measures the semantic similarity between two
+responses. Specifically, we consider a weighted
+sum of multiple similarity measurement metrics,
+written as:
+Ssim(ym, ynωs) =KX
+iωs
+i·simi(ym, yn)(6)
+where each sim(·,·)represents a distinct semantic
+similarity metric, such as EM, BERTScore (Zhang
+et al., 2020), or the entailment score of a Natural
+Language Inference (NLI; Bowman et al., 2015)
+model, and Krepresents the total number of dif-
+ferent metrics. The metric weight ωscan be prede-
+fined or learned as parameters. As a result, each re-
+sponse ymcorresponds to M−1similarity scores,
+and the pooling function is responsible for com-
+pressing these scores into a single one. Typical
+pooling functions can be mean, maximum, plural-
+ity voting (Zhou, 2012) or majority voting (Wang
+et al., 2023a), detailed formula refer to Appendix
+C.4. Then the voter score smcan be formally writ-
+ten as:
+sm=ωr
+m· Spool({Ssim(ym, ynωs)}n̸=m)(7)
+6
+where ωris preset or trainable parameters repre-
+senting the confidence in different retrievers. The
+final response is selected with the highest score:
+MEoR(q) =ym∗
+where m∗= arg maxmSvoter({ym}ωs, ωr)
+4.2 Ensemble by Learning
+Like the Stacking methods (Wolpert, 1992), we
+can use our EoR model to generate data to train
+the controlling parameters ωsandωr. Specifi-
+cally, assuming we have a training dataset Dtrain =
+{< qi, ai>}N
+i=1. We pass each query qithrough
+our model MEoRand get the corresponding re-
+sponse yi
+mfor each retriever and the similarity
+score simk(yi
+m, yi
+n)for each answer pair yi
+m,yi
+n
+under the k-th similarity metric. We can further
+calculate the correctness of each response yi
+mto the
+ground truth answer aiwith some evaluation met-
+ricg, written as g(yi
+m, ai). The evaluation metric g
+can be EM, BEM, or even human annotation.
+Finding the optimal ωsandωris equivalent to
+solve the following optimization problem:
+max1
+NNX
+i=1g(ym∗
+i, ai)
+s.t. m∗
+i= arg max
+mSvoter({yi
+m}ωs, ωr)
+For given ωsandωr,Svoter({yi
+m}ωs, ωr)can be
+quickly evaluated by equation 6 and 7. Therefore,
+we can solve this problem with a heuristic search
+algorithm, which searches the feasible region by
+continuously evaluating the objective function. To
+conduct automatic retriever selection, we can sim-
+ply replace ωr
+mwithωr
+m·Iωrm>t, where tis a hyper-
+parameter. During searching, retrievers with small
+weights will be directly ignored.
+4.3 Experimental Setting
+Same as section 2.1, we use NQ, WebQ and Triv-
+iaQA as our experiment datasets and Llama2-
+chat 7B, 13B and ChatGPT as our base LM. We
+search parameters on the validation split (train split
+for WebQ) and report performance on the test split.
+For ChatGPT, we randomly sample 500 questions
+from each split same as Section 2.1. We use BEM
+accuracy, EM and MRLR as evaluation metrics.
+For EoR, we use the 15 retrievers introduced
+in section 2.1 and ReFree, in a total of 16 retriev-
+ers, as our initial retriever pool. We choose EM,
+Figure 6: Visualization of Retriever weight ωrlearned
+with different base LM and datasets. Each row repre-
+sents the weights from the same EoR model. A larger
+circle with darker color implies a higher weight on the
+corresponding retriever.
+BertScore, and NLI14as our base similarity metrics
+in equation 6, and mean pooling for the pooling
+function.15We choose the Nelder-Mead method as
+the heuristic search method and implement it with
+SciPy. An upper bound of 0.6 is set for ωsandωr
+to prevent overreliance on a single retriever. We set
+ωrfiltering threshold tto 0.1.
+4.4 Results and Analysis
+EoR exhibits more consistent behavior than sin-
+gle retriever models . Table 1 presents the re-
+sults. EoR has a large reduction in MRLR com-
+pared to the best-performed single retriever model
+across all datasets and models except for one ex-
+ception, which also results in a general corpus-
+level performance increase. The only exception is
+Llama2-chat 13B’s performance on WebQ, which re-
+sults from the discrepancy in retriever performance
+between the train and test set, see Table 2. EoR
+trained on the train set is prone to rely on Wiki@10
+which suffers from a significant performance drop
+in the test set.
+EoR adaptively learns what to retrieve. Fig-
+ure 6 visualizes the retriever weights learned by our
+training methods. Almost every row demonstrates
+a sparse weight distribution and the remaining re-
+trievers with large weights all performed well on
+the corresponding training dataset, which implies
+that EoR can effectively filter out redundant or un-
+reliable retrievers. We can also observe that EoR
+with Llama-13b trained with WebQ indeed puts
+14https://huggingface.co/microsoft/
+deberta-xlarge-mnli
+15Actually we can search for the optimal pooling methods
+by transforming to a categorical variable, but our preliminary
+experiments found that mean pooling is effective enough.
+7
+BaseRNQ WebQ TriviaQA
+Models BEM EM MRLR BEM EM MRLR BEM EM MRLR
+Llama2-chat 7BReFree 34.35 26.70 23.64 51.82 38.34 24.47 55.57 51.29 48.84
+TopR 55.57 46.32 16.33 56.25 43.16 15.66 77.34 72.50 20.11
+EoR 58.92 50.22 12.36 59.45 46.16 10.66 80.62 75.85 10.62
+Llama2-chat 13BReFree 46.43 35.84 32.84 58.76 44.88 19.44 66.36 60.54 47.92
+TopR 62.30 50.94 15.40 62.20 49.11 11.48 82.37 75.99 18.69
+EoR 64.24 53.07 12.05 60.63 47.19 12.86 83.80 77.77 11.68
+ChatGPTReFree 52.40 44.60 25.46 59.20 46.00 20.69 81.60 76.8 37.90
+TopR 60.20 49.60 16.15 61.00 49.20 18.63 84.40 80.60 23.08
+EoR 63.00 52.80 12.97 61.60 50.60 13.38 87.40 83.00 12.00
+Table 1: Main results on the test split of NQ, WebQ and TriviaQA. Top Rrepresents the best-performed single
+retrieval model on the corresponding test set. Bold number indicates the best performance across retrievers with the
+same base model and test set.
+Retrievers Train Test
+Wiki@10 62.10 58.17
+SE@2&Wiki@5 61.90 60.97
+SE@RR@5&Wiki@5 61.24 62.20
+EoR 63.02 60.63
+Table 2: comparison of Llama2-chat 13B’s performance
+with different retrievers on WebQ. Bold number repre-
+sents the best-performed single retriever on the corre-
+sponding split.
+most of its weight on Wiki@10, while EoR with
+Llama-7b and ChatGPT overcome the performance
+deduction brought by distribution shift by spread-
+ing the weight to more retrievers.
+5 Related Work
+Degeneration of RALMs : Many works have em-
+pirically demonstrated that retrieval-augmentation
+sometimes hurts LM’s performance (Ren et al.,
+2023; Mallen et al., 2023; Yoran et al., 2023). Some
+works attribute these failures to incorrect retrieval
+(Mallen et al., 2023; Chen et al., 2022), while some
+blame the degeneration on the weak robustness of
+LM on irrelevant or long context (Ren et al., 2023;
+Li et al., 2023; Gao et al., 2023a). Particularly,
+Ren et al. (2023) found that a large portion of fail-
+ure cases of ChatGPT come from extracting wrong
+answers from the supporting documents. Li et al.
+(2023) claimed that models are prone to ignore
+noisy context, although sometimes they can gener-
+ate correct answer with their parametric knowledge.
+Liu et al. (2023a) showed that LM’s performance is
+vulnerable to the position of relevant informationin a long context.
+Relieving RALMs’s Degeneration : Some works
+focus on improving retrieval recall (Izacard et al.,
+2022; Trivedi et al., 2023; Ma et al., 2023), while
+some works try to increase RALM’s robustness
+on retrieved context by increasing reader model’s
+ability to leverage context (Yoran et al., 2023; Liu
+et al., 2023b) or increasing retriever precision (Xu
+et al., 2023; Liu et al., 2023b). There are also
+some works that try to solve this problem from a
+system perspective, such as using rejection sam-
+pling on the reader side to reduce the hallucination
+(Menick et al., 2022; Asai et al., 2023), or dynam-
+ically deciding whether to retrieve (Mallen et al.,
+2023; Yoran et al., 2023; Asai et al., 2023; Wang
+et al., 2023b; Jeong et al., 2024). However, all
+these methods focus on improving the performance
+of a single retriever-augmented LM, which makes
+most of them compatible with our EoR framework
+as long as they can be fitted into a retriever or a
+reader.
+6 Conclusion
+This work focus on RALM’s performance inconsis-
+tency across different retrievers. Our results show
+that retriever inconsistency is ubiquitous across dif-
+ferent retrievers and base models. To investigate
+the reasons behind it, we theoretically decompose
+RALM’s failure into four categories, which serve
+as a basis for analyzing the degeneration behavior
+of RALM. Our experiments based on our decom-
+position reveal that innate differences in knowl-
+edge sources and the unpredictable degeneration
+of the reader model are the main causes for the
+inconsistency behavior. We further propose En-
+8
+semble of Retrievers (EoR), a trainable framework
+compatible with any LLMs and retrievers. Our
+experiments demonstrate that EoR can effectively
+boost RALM’s performance by adaptively retriev-
+ing from multiple knowledge sources and reducing
+irregular errors made by the reader model.
+7 Acknowledgements
+We thank the HIT SCIR-DT group members for
+their valuable discussions and insightful feed-
+back. This research was supported by the National
+Key Research and Development Program (No.
+2022YFF0902100), Du Xiaoman (Beijing) Science
+Technology Co., Ltd and Nature Scientific Founda-
+tion of Heilongjiang Province (YQ2021F006).
+8 Limitation
+Our theoretical derivation and empirical analysis
+are all based on the naive singe-hop short-from
+ODQA setting, whereas multi-hop reasoning and
+long answer questions are quite common in real-
+world. We do not choose the task under more com-
+plex scenarios because of the absence of reliable
+automatic evaluation metrics and costly human an-
+notation fees, and we also believe that our con-
+clusion and methods can be generalized to more
+complex cases. This is because the retriever incon-
+sistency comes from the irregular error occurrence
+in RALM and intuitively more complex scenario
+implies weaker robustness. Hence we hypothesize
+that complex questions will not only exacerbate the
+errors introduced in section 3.1 but introduce new
+errors such as reasoning errors, which will result in
+more severe inconsistent behaviors. But this need
+further human evaluation to verify. Our EoR frame-
+work can also work with more complex questions
+by using reliable similarity metrics in the voting
+mechanism and learning by human-annotated data.
+Example-wise scoring functions (Asai et al., 2023)
+can also be combined with the voter module by
+some trainable parameters.
+Another concern is the computational cost of
+ensembling multiple retrievers. In fact, EoR can
+leverage the batch inference of LLMs because
+of the sharing of the reader model. Hence com-
+pared with sampling on the reader side such as
+self-consistency(Wang et al., 2023a), the additional
+computational cost mainly comes from multiple re-
+trievers and the answer similarity calculation with
+smaller models. If we do not use parametric knowl-
+edge from LLMs, most of them are computation-ally efficient compared to LLMs and can be easily
+parallelized.
+References
+Akari Asai, Zeqiu Wu, Yizhong Wang, Avirup Sil, and
+Hannaneh Hajishirzi. 2023. Self-rag: Learning to
+retrieve, generate, and critique through self-reflection.
+CoRR , abs/2310.11511.
+Jinheon Baek, Soyeong Jeong, Minki Kang, Jong C.
+Park, and Sung Ju Hwang. 2023. Knowledge-
+augmented language model verification. In Proceed-
+ings of the 2023 Conference on Empirical Methods
+in Natural Language Processing, EMNLP 2023, Sin-
+gapore, December 6-10, 2023 , pages 1720–1736. As-
+sociation for Computational Linguistics.
+Yejin Bang, Samuel Cahyawijaya, Nayeon Lee, Wen-
+liang Dai, Dan Su, Bryan Wilie, Holy Lovenia, Ziwei
+Ji, Tiezheng Yu, Willy Chung, Quyet V . Do, Yan Xu,
+and Pascale Fung. 2023. A multitask, multilingual,
+multimodal evaluation of chatgpt on reasoning, hal-
+lucination, and interactivity. CoRR , abs/2302.04023.
+Jonathan Berant, Andrew Chou, Roy Frostig, and Percy
+Liang. 2013. Semantic parsing on freebase from
+question-answer pairs. In Proceedings of the 2013
+Conference on Empirical Methods in Natural Lan-
+guage Processing, EMNLP 2013, 18-21 October
+2013, Grand Hyatt Seattle, Seattle, Washington, USA,
+A meeting of SIGDAT, a Special Interest Group of the
+ACL, pages 1533–1544. ACL.
+Samuel R. Bowman, Gabor Angeli, Christopher Potts,
+and Christopher D. Manning. 2015. A large anno-
+tated corpus for learning natural language inference.
+InProceedings of the 2015 Conference on Empiri-
+cal Methods in Natural Language Processing , pages
+632–642, Lisbon, Portugal. Association for Compu-
+tational Linguistics.
+Jannis Bulian, Christian Buck, Wojciech Gajewski, Ben-
+jamin Börschinger, and Tal Schuster. 2022. Tomayto,
+tomahto. beyond token-level answer equivalence for
+question answering evaluation. In Proceedings of
+the 2022 Conference on Empirical Methods in Natu-
+ral Language Processing, EMNLP 2022, Abu Dhabi,
+United Arab Emirates, December 7-11, 2022 , pages
+291–305. Association for Computational Linguistics.
+Danqi Chen, Adam Fisch, Jason Weston, and Antoine
+Bordes. 2017. Reading wikipedia to answer open-
+domain questions. In Proceedings of the 55th Annual
+Meeting of the Association for Computational Lin-
+guistics, ACL 2017, Vancouver, Canada, July 30 -
+August 4, Volume 1: Long Papers , pages 1870–1879.
+Association for Computational Linguistics.
+Hung-Ting Chen, Michael J. Q. Zhang, and Eunsol
+Choi. 2022. Rich knowledge sources bring complex
+knowledge conflicts: Recalibrating models to reflect
+conflicting evidence. In Proceedings of the 2022 Con-
+ference on Empirical Methods in Natural Language
+9
+Processing, EMNLP 2022, Abu Dhabi, United Arab
+Emirates, December 7-11, 2022 , pages 2292–2307.
+Association for Computational Linguistics.
+Bhuwan Dhingra, Jeremy R. Cole, Julian Martin
+Eisenschlos, Daniel Gillick, Jacob Eisenstein, and
+William W. Cohen. 2022. Time-aware language mod-
+els as temporal knowledge bases. Trans. Assoc. Com-
+put. Linguistics , 10:257–273.
+Tianyu Gao, Howard Yen, Jiatong Yu, and Danqi Chen.
+2023a. Enabling large language models to gener-
+ate text with citations. In Proceedings of the 2023
+Conference on Empirical Methods in Natural Lan-
+guage Processing, EMNLP 2023, Singapore, Decem-
+ber 6-10, 2023 , pages 6465–6488. Association for
+Computational Linguistics.
+Yunfan Gao, Yun Xiong, Xinyu Gao, Kangxiang Jia,
+Jinliu Pan, Yuxi Bi, Yi Dai, Jiawei Sun, Qianyu Guo,
+Meng Wang, and Haofen Wang. 2023b. Retrieval-
+augmented generation for large language models: A
+survey. CoRR , abs/2312.10997.
+Gautier Izacard, Mathilde Caron, Lucas Hosseini, Se-
+bastian Riedel, Piotr Bojanowski, Armand Joulin,
+and Edouard Grave. 2022. Unsupervised dense in-
+formation retrieval with contrastive learning. Trans.
+Mach. Learn. Res. , 2022.
+Soyeong Jeong, Jinheon Baek, Sukmin Cho, Sung Ju
+Hwang, and Jong C. Park. 2024. Adaptive-rag:
+Learning to adapt retrieval-augmented large lan-
+guage models through question complexity. CoRR ,
+abs/2403.14403.
+Mandar Joshi, Eunsol Choi, Daniel S. Weld, and Luke
+Zettlemoyer. 2017. Triviaqa: A large scale distantly
+supervised challenge dataset for reading comprehen-
+sion. In Proceedings of the 55th Annual Meeting of
+the Association for Computational Linguistics, ACL
+2017, Vancouver, Canada, July 30 - August 4, Volume
+1: Long Papers , pages 1601–1611. Association for
+Computational Linguistics.
+Adam Tauman Kalai and Santosh S. Vempala. 2023.
+Calibrated language models must hallucinate. CoRR ,
+abs/2311.14648.
+Ehsan Kamalloo, Nouha Dziri, Charles L. A. Clarke,
+and Davood Rafiei. 2023. Evaluating open-domain
+question answering in the era of large language mod-
+els. In Proceedings of the 61st Annual Meeting of
+the Association for Computational Linguistics (Vol-
+ume 1: Long Papers), ACL 2023, Toronto, Canada,
+July 9-14, 2023 , pages 5591–5606. Association for
+Computational Linguistics.
+Vladimir Karpukhin, Barlas Oguz, Sewon Min, Patrick
+S. H. Lewis, Ledell Wu, Sergey Edunov, Danqi Chen,
+and Wen-tau Yih. 2020. Dense passage retrieval for
+open-domain question answering. In Proceedings of
+the 2020 Conference on Empirical Methods in Nat-
+ural Language Processing, EMNLP 2020, Online,
+November 16-20, 2020 , pages 6769–6781. Associa-
+tion for Computational Linguistics.Tom Kwiatkowski, Jennimaria Palomaki, Olivia Red-
+field, Michael Collins, Ankur P. Parikh, Chris Alberti,
+Danielle Epstein, Illia Polosukhin, Jacob Devlin, Ken-
+ton Lee, Kristina Toutanova, Llion Jones, Matthew
+Kelcey, Ming-Wei Chang, Andrew M. Dai, Jakob
+Uszkoreit, Quoc Le, and Slav Petrov. 2019. Natu-
+ral questions: a benchmark for question answering
+research. Trans. Assoc. Comput. Linguistics , 7:452–
+466.
+Patrick S. H. Lewis, Ethan Perez, Aleksandra Pik-
+tus, Fabio Petroni, Vladimir Karpukhin, Naman
+Goyal, Heinrich Küttler, Mike Lewis, Wen-tau Yih,
+Tim Rocktäschel, Sebastian Riedel, and Douwe
+Kiela. 2020. Retrieval-augmented generation for
+knowledge-intensive NLP tasks. In Advances in Neu-
+ral Information Processing Systems 33: Annual Con-
+ference on Neural Information Processing Systems
+2020, NeurIPS 2020, December 6-12, 2020, virtual .
+Daliang Li, Ankit Singh Rawat, Manzil Zaheer, Xin
+Wang, Michal Lukasik, Andreas Veit, Felix X. Yu,
+and Sanjiv Kumar. 2023. Large language models
+with controllable working memory. In Findings of
+the Association for Computational Linguistics: ACL
+2023, Toronto, Canada, July 9-14, 2023 , pages 1774–
+1793. Association for Computational Linguistics.
+Nelson F. Liu, Kevin Lin, John Hewitt, Ashwin Paran-
+jape, Michele Bevilacqua, Fabio Petroni, and Percy
+Liang. 2023a. Lost in the middle: How language
+models use long contexts. CoRR , abs/2307.03172.
+Xiao Liu, Hanyu Lai, Hao Yu, Yifan Xu, Aohan Zeng,
+Zhengxiao Du, Peng Zhang, Yuxiao Dong, and
+Jie Tang. 2023b. Webglm: Towards an efficient
+web-enhanced question answering system with hu-
+man preferences. In Proceedings of the 29th ACM
+SIGKDD Conference on Knowledge Discovery and
+Data Mining, KDD 2023, Long Beach, CA, USA,
+August 6-10, 2023 , pages 4549–4560. ACM.
+Xinbei Ma, Yeyun Gong, Pengcheng He, Hai Zhao,
+and Nan Duan. 2023. Query rewriting for
+retrieval-augmented large language models. CoRR ,
+abs/2305.14283.
+Alex Mallen, Akari Asai, Victor Zhong, Rajarshi Das,
+Daniel Khashabi, and Hannaneh Hajishirzi. 2023.
+When not to trust language models: Investigating
+effectiveness of parametric and non-parametric mem-
+ories. In Proceedings of the 61st Annual Meeting of
+the Association for Computational Linguistics (Vol-
+ume 1: Long Papers), ACL 2023, Toronto, Canada,
+July 9-14, 2023 , pages 9802–9822. Association for
+Computational Linguistics.
+Jacob Menick, Maja Trebacz, Vladimir Mikulik, John
+Aslanides, H. Francis Song, Martin J. Chadwick,
+Mia Glaese, Susannah Young, Lucy Campbell-
+Gillingham, Geoffrey Irving, and Nat McAleese.
+2022. Teaching language models to support answers
+with verified quotes. CoRR , abs/2203.11147.
+Reiichiro Nakano, Jacob Hilton, Suchir Balaji, Jeff Wu,
+Long Ouyang, Christina Kim, Christopher Hesse,
+10
+Shantanu Jain, Vineet Kosaraju, William Saunders,
+Xu Jiang, Karl Cobbe, Tyna Eloundou, Gretchen
+Krueger, Kevin Button, Matthew Knight, Benjamin
+Chess, and John Schulman. 2021. Webgpt: Browser-
+assisted question-answering with human feedback.
+CoRR , abs/2112.09332.
+OpenAI. 2023. GPT-4 technical report. CoRR ,
+abs/2303.08774.
+Ori Ram, Yoav Levine, Itay Dalmedigos, Dor Muhlgay,
+Amnon Shashua, Kevin Leyton-Brown, and Yoav
+Shoham. 2023. In-context retrieval-augmented lan-
+guage models. CoRR , abs/2302.00083.
+Ruiyang Ren, Yuhao Wang, Yingqi Qu, Wayne Xin
+Zhao, Jing Liu, Hao Tian, Hua Wu, Ji-Rong Wen,
+and Haifeng Wang. 2023. Investigating the factual
+knowledge boundary of large language models with
+retrieval augmentation. CoRR , abs/2307.11019.
+Freda Shi, Xinyun Chen, Kanishka Misra, Nathan
+Scales, David Dohan, Ed H. Chi, Nathanael Schärli,
+and Denny Zhou. 2023. Large language models can
+be easily distracted by irrelevant context. In Interna-
+tional Conference on Machine Learning, ICML 2023,
+23-29 July 2023, Honolulu, Hawaii, USA , volume
+202 of Proceedings of Machine Learning Research ,
+pages 31210–31227. PMLR.
+Hugo Touvron, Louis Martin, Kevin Stone, Peter Al-
+bert, Amjad Almahairi, Yasmine Babaei, Nikolay
+Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti
+Bhosale, Dan Bikel, Lukas Blecher, Cristian Canton-
+Ferrer, Moya Chen, Guillem Cucurull, David Esiobu,
+Jude Fernandes, Jeremy Fu, Wenyin Fu, Brian Fuller,
+Cynthia Gao, Vedanuj Goswami, Naman Goyal, An-
+thony Hartshorn, Saghar Hosseini, Rui Hou, Hakan
+Inan, Marcin Kardas, Viktor Kerkez, Madian Khabsa,
+Isabel Kloumann, Artem Korenev, Punit Singh Koura,
+Marie-Anne Lachaux, Thibaut Lavril, Jenya Lee, Di-
+ana Liskovich, Yinghai Lu, Yuning Mao, Xavier Mar-
+tinet, Todor Mihaylov, Pushkar Mishra, Igor Moly-
+bog, Yixin Nie, Andrew Poulton, Jeremy Reizen-
+stein, Rashi Rungta, Kalyan Saladi, Alan Schelten,
+Ruan Silva, Eric Michael Smith, Ranjan Subrama-
+nian, Xiaoqing Ellen Tan, Binh Tang, Ross Tay-
+lor, Adina Williams, Jian Xiang Kuan, Puxin Xu,
+Zheng Yan, Iliyan Zarov, Yuchen Zhang, Angela Fan,
+Melanie Kambadur, Sharan Narang, Aurélien Ro-
+driguez, Robert Stojnic, Sergey Edunov, and Thomas
+Scialom. 2023. Llama 2: Open foundation and fine-
+tuned chat models. CoRR , abs/2307.09288.
+Harsh Trivedi, Niranjan Balasubramanian, Tushar Khot,
+and Ashish Sabharwal. 2023. Interleaving retrieval
+with chain-of-thought reasoning for knowledge-
+intensive multi-step questions. In Proceedings of
+the 61st Annual Meeting of the Association for Com-
+putational Linguistics (Volume 1: Long Papers),
+ACL 2023, Toronto, Canada, July 9-14, 2023 , pages
+10014–10037. Association for Computational Lin-
+guistics.
+Tu Vu, Mohit Iyyer, Xuezhi Wang, Noah Constant,
+Jerry W. Wei, Jason Wei, Chris Tar, Yun-Hsuan Sung,Denny Zhou, Quoc V . Le, and Thang Luong. 2023.
+Freshllms: Refreshing large language models with
+search engine augmentation. CoRR , abs/2310.03214.
+Xuezhi Wang, Jason Wei, Dale Schuurmans, Quoc V .
+Le, Ed H. Chi, Sharan Narang, Aakanksha Chowd-
+hery, and Denny Zhou. 2023a. Self-consistency
+improves chain of thought reasoning in language
+models. In The Eleventh International Conference
+on Learning Representations, ICLR 2023, Kigali,
+Rwanda, May 1-5, 2023 . OpenReview.net.
+Yile Wang, Peng Li, Maosong Sun, and Yang Liu.
+2023b. Self-knowledge guided retrieval augmenta-
+tion for large language models. In Findings of the
+Association for Computational Linguistics: EMNLP
+2023, Singapore, December 6-10, 2023 , pages 10303–
+10315. Association for Computational Linguistics.
+David H. Wolpert. 1992. Stacked generalization. Neu-
+ral Networks , 5(2):241–259.
+Fangyuan Xu, Weijia Shi, and Eunsol Choi. 2023.
+RECOMP: improving retrieval-augmented lms with
+compression and selective augmentation. CoRR ,
+abs/2310.04408.
+Xianjun Yang, Yan Li, Xinlu Zhang, Haifeng Chen, and
+Wei Cheng. 2023. Exploring the limits of chatgpt
+for query or aspect-based text summarization. CoRR ,
+abs/2302.08081.
+Ori Yoran, Tomer Wolfson, Ori Ram, and Jonathan
+Berant. 2023. Making retrieval-augmented lan-
+guage models robust to irrelevant context. CoRR ,
+abs/2310.01558.
+Wenhao Yu, Dan Iter, Shuohang Wang, Yichong Xu,
+Mingxuan Ju, Soumya Sanyal, Chenguang Zhu,
+Michael Zeng, and Meng Jiang. 2023. Generate
+rather than retrieve: Large language models are
+strong context generators. In The Eleventh Inter-
+national Conference on Learning Representations,
+ICLR 2023, Kigali, Rwanda, May 1-5, 2023 . Open-
+Review.net.
+Tianyi Zhang, Varsha Kishore, Felix Wu, Kilian Q.
+Weinberger, and Yoav Artzi. 2020. Bertscore: Evalu-
+ating text generation with BERT. In 8th International
+Conference on Learning Representations, ICLR 2020,
+Addis Ababa, Ethiopia, April 26-30, 2020 . OpenRe-
+view.net.
+Zhi-Hua Zhou. 2012. Ensemble methods: foundations
+and algorithms . CRC press.
+A Error Decomposition Derivation
+Given a query qand a RALM model M(q) =
+G(q,R(q)). We consider the probabilistic retriever
+model R(·) :Q → P (D),P(D)denote the
+set of all probability measures over the set of all
+documents D, and the probabilistic reader model
+G(·,·) :Q × D → P (A).Adenote the set of
+11
+all possible answers. We use A∗
+qto denote the set
+of all correct answers to qandA(a)to denote the
+semantic equivalent class of a. We assume the
+uniqueness of the correct answers in the case of
+equivalent class, i.e. for any y1, y2∈ A∗
+q, we have
+A(y1) =A(y2), hence A∗
+qis an equivalent class
+itself.
+Now, let’s try to decompose the probability that
+RALM Manswers incorrectly given q.
+P(M(q)/∈ A∗
+q)
+=Ed∼R(q)h
+Ey∼G(q,d)h
+I{y/∈A∗q}dii
+=Edh
+Ey
+I{y/∈A∗q}·I{d/∈D∗q}+I{y/∈A∗q}·I{d∈D∗q}di
+=Edh
+I{d∈D∗q}·Ey
+I{y/∈A∗q}d /∈ D∗
+qi
++
+Edh
+I{d/∈D∗q}·Ey
+I{y/∈A∗q}d∈ D∗
+qi
+(8)
+Now, considering Ey∼Gh
+I{y/∈A∗q}d /∈ D∗
+qi
+:
+Ey
+I{y/∈A∗q}d /∈ D∗
+q
+=P(y /∈ A∗
+qd /∈ D∗
+q)
+=P(y /∈ A∗
+qA(y)/∈d, d /∈ D∗
+q)·P(Eh(q, d,G)) +
+P(y /∈ A∗
+qA(y)∈d, d /∈ D∗
+q)·(1−P(Eh))
+=h
+1−P(y∈ A∗
+qA(y)/∈d, d /∈ D∗
+q)i
+· Eh(d)+
+1·
+1− Eh(d)
+=1−P(y∈ A∗
+qA(y)/∈d, d /∈ D∗
+q)· Eh(d)
+=1− Eluck(d)· Eh(d) (9)
+P(y /∈ A∗
+qA(y)∈d, d /∈ D∗
+q) = 1 because if
+y∈ A∗
+q, then A∗
+q∈dbyA(y)∈d. This is
+contradicted to the definition of d /∈ D∗
+q. Actually,
+if the document ddoes not contain any semantic
+variant of the ground-truth answer but contain a
+semantic variant of y, then ycan not be a semantic
+variant of the ground-truth answer.
+Similarly,
+Ey
+I{y/∈A∗q}d∈ D∗
+q
+=P(y /∈ A∗
+qA(y)/∈d, d∈ D∗
+q)·P(Eh(q, d,G)) +
+P(y /∈ A∗
+q,A(y)∈dd∈ D∗
+q)
+=1·P(Eh(q, d,G)) +P(Ee(q, d,G))
+=Eh(d) +Ee(d) (10)
+P(y /∈ A∗
+qA(y)/∈d, d∈ D∗
+q) = 1 because if
+y∈ A∗
+q, thenA(y) =A∗
+qby the uniqueness as-
+sumption. Then A(y)/∈d⇒ A∗
+q/∈dwhich is
+contradicted to the definition of d∈ D∗
+q.Combing equation 4,5 and 6, we get:
+P(M(q)/∈ A∗
+q)
+=Edh
+I{d∈D∗q}· 
+Eh(d) +Ee(d)
++I{d/∈D∗q}· 
+1− Eluck(d)· Eh(d)i
+(11)
+B Experiment Setting for Error Analysis
+Assuming we have a dataset with Nsamples D=
+{< qn, an>}N
+n=1and a RALM Mwith retriever
+R. For certain example < qn, an>, we can calcu-
+late the Answer Correctness Indicator,
+IM
+A(n) = 1 ifM(qn) =an,
+the Retriever Error Occurrence Indicator,
+IM
+Er(n) = 1 if a n/∈ R(qn)
+and the Hallucination Error Occurrence Indicator,
+IM
+Eh(n) = 1 ifM(qn)/∈ R(qn)
+for each query. We use BEM score with threshold
+0.8 to evaluate the answer correctness and Exact
+Match to evaluate whether a retrieved document
+contains a certain piece of text, i.e. a∈dif a
+normalized form of ais matched in d. We can then
+evaluate the occurrence indicator for Extraction
+Error and Lucky Guess:
+IM
+Ee(n) = (1−IM
+Er(n))·(1−IM
+Eh(n))·(1−IM
+A(n))
+IM
+Eluck(n) = IM
+Er(n)·IM
+Eh(n)·IM
+A(n)
+Because of the training objective of LLM, it
+tends to generate long answers, which affects the
+EM accuracy on estimating whether a document
+contain an answer. Although we have tried several
+methods to shorten average answer length, such as
+special instruction, there are still long answers with
+unimportant content such as "Surely, the answer to
+the question is". Therefore, before conducting error
+analysis, we filter out the question with an answer
+longer than 5 words generated by some retriever
+and all answers to the same question generated by
+other retrievers. We denote the filtered dataset as
+D∗with size N∗.
+Following equation 5, we calculate the Relative
+Win Ratio (RWR) for Retriever Error Erbetween
+RALM MiandMjby:
+RWR Er(i, j) =PN∗
+n=1(1−IMi
+Er(n))∗IMj
+Er(n)
+PN∗
+n=1IMj
+Er(n)
+12
+and the RWR for Hallucination Error Ehby:
+RWR Eh(i, j) =PN∗
+n=1(1−IMi
+Eh(n))∗IMj
+Eh(n)
+PN∗
+n=1IMj
+Eh(n)
+As for the Extraction Error Ee, notably it is de-
+fined under the condition that retriever returns the
+correct documents. Therefore, when calculating
+RWR Eh(i, j), we only consider the circumstance
+that both retriever in MiandMjreturn the correct
+documents, i.e.
+RWR Ee=PN∗
+n=1(1−IMi
+Ee(n))∗IMj
+Ee(n)∗I∗
+Ee(n)
+PN∗
+n=1IMj
+Ee(n)∗I∗
+Ee(n)
+where I∗
+Ee(n) = (1 −IMi
+Er(n))∗(1−IMj
+Er(n)).
+Similarly, RWR Eluckis defined by:
+PN∗
+n=1(1−IMi
+Eluck(n))∗IMj
+Eluck(n)∗I∗
+Eluck(n)
+PN∗
+n=1IMj
+Eluck(n)∗I∗
+Eluck(n)
+where I∗
+Eluck(n) = IMi
+Er(n)∗IMi
+Eh(n)∗IMj
+Er(n)∗
+IMj
+Eh(n).
+C Implementation Details
+C.1 Implementation Details of Retrievers
+Following is the full list of 15 retrievers and
+corresponding processing methods:
+Wiki@10 : We directly select the top-10 passages
+returned from DPR (implement with pyserini) and
+concatenate them. Each passage has an average
+length of 100 words.
+SE@1 : We fetch and extract contents from the
+top-1 URL returned by Google API and them
+truncate it to 1000 words.
+SE@4 : We fetch and extract contents from the
+top-4 URLs returned by Google API. For the
+content in each URL, we select 250 words from
+the beginning including the title. Then concatenate
+them.
+PK: We prompt the base LM to generate back-
+ground documents to answer the query.
+SE@RR@10 : We fetch and extract contents
+from all URLs returned by Google API. Then we
+split all contents into chunks with an average of
+100 words. We then use the reranking module
+introduced, a retrained contriever model from
+WebGLM, to encode the query and each chunk,
+and select the top-10 chunks with highest cosines
+similarity.SE@2&Wiki@5 : We concatenate the top-2
+chunks from SE@4 and top-5 chunks from
+Wiki@10.
+SE@RR@5&Wiki@5 : We concatenate the top-5
+chunks from SE@RR@10 and top-5 chunks from
+Wiki@10.
+HB@RR@10 : Similar to SE@RR@10, we fetch
+and extract contents from all URLs returned by
+Google API and then split all contents as long as
+the document returned by PK into chunks with an
+average of 100 words. We then put them with the
+top-20 chunks returned by DPR and use reranking
+module to rerank all chunks. We select the top-10
+as the final result.
+Wiki@10@CP : We summarize Wiki@10 with our
+compression model.
+SE@1@CP : We summarize SE@1 with our
+compression model.
+SE@4@CP : We summarize SE@4 with our
+compression model.
+SE@RR@10@CP : We summarize SE@RR@10
+with our compression model.
+SE@2&Wiki@5@CP : We summarize
+SE@2&Wiki@5 with our compression model.
+SE@RR@5&Wiki@5@CP : We summarize
+SE@RR@5&Wiki@5 with our compression
+model.
+HB@RR@10@CP : We summarize HB@RR@10
+with our compression model.
+C.2 Prompt Templates
+Template for generating Parametric Knoweldge
+(PK) :
+we use {query} to represent the placeholder for
+inserting the corresponding query. This template is
+following (Yu et al., 2023).
+Generate a background document to answer
+the given question.
+{query}.
+Template for Compression (@CP) :
+we use {query} to represent the placeholder for
+inserting the corresponding query and {document}
+for the document to be compressed.
+Please truthfully summarize the document
+below, the summary should contain the most
+important information relevant to answer the
+query and be within 200 words:
+query: {query}
+13
+document: {document}
+summary:
+Template for Retrieval-free Generation :
+we use {query} to represent the placeholder for in-
+serting the corresponding query. We manually ex-
+amine many different templates and select the one
+with highest average validation set performance
+with our automatic evaluation metrics.
+Template for ChatGPT:
+Please directly answer the following question
+within 15 words:
+{query}
+Template for Llama2-chat, inspired by (Ren et al.,
+2023):
+Please directly answer the following question
+with one or few words:
+{query}
+Template for Retrieval-Augmented Gener-
+ation :
+we use {query} to represent the placeholder for
+inserting the corresponding query and {document}
+for the document returned by retriever.
+Template for ChatGPT:
+Assuming the following paragraphs are true:
+{document}
+Please directly answer the following
+question within 15 words:
+{query}
+Template for Llama2-chat:
+Assuming the following paragraphs are true:
+{document}
+Please directly answer the following
+question with one or few words:
+{query}
+C.3 Datasets
+NQ(Kwiatkowski et al., 2019) consists of ques-
+tions collected from real Google search queries and
+the answers are extracted from Wikipedia by hu-
+mans.Datasets Train Valid Test
+NQ 79,168 8,757 3,610
+WebQ 3,478 300 2,032
+TriviaQA 78,785 8,837 11,313
+Table 3: Dataset statistics
+WebQ (Berant et al., 2013) contains questions col-
+lected from the Google Suggest API and answers
+collected by AMT workers based on Freebase.
+TriviaQA (Joshi et al., 2017) contains question-
+answer pairs from several trivia and quiz-league
+websites.
+We use the same dataset splits as GenRead (Yu
+et al., 2023). They unify the formats of all three
+datasets and the datasets can be download from this
+URL. Dataset statistics can be found in Table 3.
+C.4 Pooling Functions
+Assuming we have N similarity scores
+s1, s2, ..., s N, then the pooling functions
+Spool:RN→Rare defined as follows:
+Mean Pooling :
+Spool(s1, s2, ..., s N) =1
+NNX
+i=1si
+Max Pooling :
+Spool(s1, s2, ..., s N) =max{s1, s2, ..., s N}
+Majority Voting :
+Spool(s1, s2, ..., s N) = InPN
+iI{si>s}≥N
+2o
+where s is the threshold to identify semantic equiv-
+alent answers. The majority voting pooling filters
+out all answers with the number of semantic equiv-
+alent answers less thanN
+2
+Plurality Voting : Assume we have M answers,
+for the i-th answer, we have calculated M-1 sim-
+ilarity scores si,1, si,2, ..., s i,M−1. We denote
+c∗
+i=PM−1
+j I{si,j>s}which represent the es-
+timated number of semantic equivalent answers
+given above similarity scores. Then the plurality
+voting pooling score for the i-th answer is given
+by:
+Spool(si,1, si,2, ..., s i,M−1) = In
+c∗
+i=maxkc∗
+ko
+14
+D Complete Figures
+Figure 7, 8 and 9 show the Error RWR between all
+retrievers on different combination of datasets and
+models. We can see the findings are same as what
+we discussed in section 3.2.
+15
+Figure 7: Full Error Relative Win Ratio between different Retrievers with ChatGPT as base LM, evaluated on NQ
+validation set.
+16
+Figure 8: Full Error Relative Win Ratio between different Retrievers with Llama-chat 7b as base LM, evaluated on
+WebQ train set.
+17
+Figure 9: Full Error Relative Win Ratio between different Retrievers with Llama-chat 13b as base LM, evaluated on
+TriviaQA validation set.
+18

@@ -1,0 +1,226 @@
+{
+  "01_hybrid_retrieval": [
+    {
+      "paper_name": "Deep_Retrieval_at_CheckThat_2025_Identifying_Scientific_Papers_from_Implicit_Social_Media_Mentions_via_Hybrid_Retrieval_and_Re-Ranking.pdf",
+      "abstract": "",
+      "key_contributions": [],
+      "methodology": "",
+      "experiments": "",
+      "limitations": "",
+      "innovation_points": [
+        "fusion(4)",
+        "hybrid(14)",
+        "retrieval(91)",
+        "learning(8)",
+        "neural(5)",
+        "transformer(4)",
+        "embedding(21)",
+        "index(5)",
+        "query(20)"
+      ]
+    },
+    {
+      "paper_name": "Search_Still_Matters_Information_Retrieval_in_the_Era_of_Generative_AI.pdf",
+      "abstract": "",
+      "key_contributions": [],
+      "methodology": "",
+      "experiments": "",
+      "limitations": "",
+      "innovation_points": [
+        "retrieval(15)"
+      ]
+    },
+    {
+      "paper_name": "HYRR_Hybrid_Infused_Reranking_for_Passage_Retrieval.pdf",
+      "abstract": "We present Hybrid Infused Reranking for Pas-\nsages Retrieval ( HYRR ), a framework for\ntraining rerankers based on a hybrid of BM25\nand neural retrieval models. Retrievers based\non hybrid models have been shown to out-\nperform both BM25 and neural models alone.\nOur approach exploits this improved perfor-\nmance when training a reranker, leading to\na robust reranking model. The reranker, a\ncross-attention neural model, is shown to be\nrobust to different ﬁrst-stage retrieval systems,\nachieving bett...",
+      "key_contributions": [],
+      "methodology": "achieving strong results in general, we show that\nby training a robust reranker which has been ex-\nposed to training data from a hybrid of term-based\nand neural retrieval models, we are able to achieve\nhigh performance on MS MAMRCO passage rank-\ning task and a large set of out-of-domain datasets\n(BE...",
+      "experiments": "",
+      "limitations": "",
+      "innovation_points": [
+        "attention(6)",
+        "hybrid(31)",
+        "retrieval(45)",
+        "reranking(38)",
+        "learning(10)",
+        "neural(19)",
+        "transformer(4)",
+        "query(46)"
+      ]
+    },
+    {
+      "paper_name": "Retrieval-Augmented_Generation_for_Large_Language_Models_A_Survey.pdf",
+      "abstract": "",
+      "key_contributions": [],
+      "methodology": "assists in addressing the difficulties encountered during the\nfine-tuning process and enhances model performance.\nIV. G ENERATION\nAfter retrieval, it is not a good practice to directly input all\nthe retrieved information to the LLM for answering questions.\nFollowing will introduce adjustments from t...",
+      "experiments": "",
+      "limitations": "",
+      "innovation_points": [
+        "dynamic(5)",
+        "adaptive(8)",
+        "attention(4)",
+        "fusion(4)",
+        "hybrid(5)",
+        "retrieval(241)",
+        "reranking(4)",
+        "weight(6)",
+        "learning(30)",
+        "neural(7)",
+        "embedding(25)",
+        "index(31)",
+        "query(56)"
+      ]
+    },
+    {
+      "paper_name": "HybGRAG_Hybrid_Retrieval-Augmented_Generation_on_Textual_and_Relational_Knowledge_Bases.pdf",
+      "abstract": "Given a semi-structured knowledge base\n(SKB), where text documents are intercon-\nnected by relations, how can we effectively re-\ntrieve relevant information to answer user ques-\ntions? Retrieval-Augmented Generation (RAG)\nretrieves documents to assist large language\nmodels (LLMs) in question answering; while\nGraph RAG (GRAG) uses structured knowl-\nedge bases as its knowledge source. However,\nmany questions require both textual and rela-\ntional information from SKB — referred to as\n“hybrid” quest...",
+      "key_contributions": [],
+      "methodology": "",
+      "experiments": "",
+      "limitations": "",
+      "innovation_points": [
+        "adaptive(4)",
+        "hybrid(49)",
+        "retrieval(83)",
+        "learning(11)",
+        "neural(5)",
+        "embedding(6)",
+        "query(15)"
+      ]
+    },
+    {
+      "paper_name": "DAT_Dynamic_Alpha_Tuning_for_Hybrid_Retrieval_in_Retrieval-Augmented_Generation.pdf",
+      "abstract": "Hybrid retrieval techniques in Retrieval-Augmented Generation (RAG)\nsystems enhance information retrieval by combining dense and sparse (e.g.,\nBM25-based) retrieval methods. However, existing approaches struggle\nwith adaptability, as fixed weighting schemes fail to adjust to different\nqueries. To address this, we propose DAT (Dynamic Alpha Tuning), a novel\nhybrid retrieval framework that dynamically balances dense retrieval and\nBM25 for each query. DAT leverages a large language model (LLM) to\ne...",
+      "key_contributions": [],
+      "methodology": "performs better for a given query without the computational burden of evaluating multiple\ndocuments. This lightweight evaluation provides a strong signal for estimating relative\nretrieval strength for dynamic αcalculation.\nOur contributions are four-fold:\n•We propose a query-adaptive framework that ...",
+      "experiments": "",
+      "limitations": "",
+      "innovation_points": [
+        "dynamic(22)",
+        "adaptive(9)",
+        "fusion(5)",
+        "hybrid(68)",
+        "retrieval(120)",
+        "weight(54)",
+        "embedding(5)",
+        "index(6)",
+        "query(46)"
+      ]
+    }
+  ],
+  "02_multimodal_retrieval": [
+    {
+      "paper_name": "Multimodal_ArXiv_A_Dataset_for_Improving_Scientific_Comprehension_of_Large_Vision_Language_Models.pdf",
+      "abstract": "Large vision-language models (LVLMs) excel\nacross diverse tasks involving concrete images\nfrom natural scenes. However, their ability\nto interpret abstract figures, such as geome-\ntry shapes and scientific plots, remains limited\ndue to a scarcity of training datasets in scien-\ntific domains. To fill this gap, we introduce\nMultimodal ArXiv, consisting of ArXivCap\nand ArXivQA, for enhancing LVLMs scientific\ncomprehension. ArXivCap is a figure-caption\ndataset comprising 6.4M images and 3.9M cap-\nti...",
+      "key_contributions": [],
+      "methodology": "may overlook the diversity of disciplines and data\nmodalities present in the broader scientific litera-\nture. Future research could incorporate a broader\nrange of datasets and domains to enrich the cover-\nage of scientific knowledge, and explore dynamic\ndata selection methods to improve performance\n...",
+      "experiments": "",
+      "limitations": "",
+      "innovation_points": [
+        "multimodal(29)",
+        "learning(14)",
+        "neural(7)",
+        "query(4)"
+      ]
+    },
+    {
+      "paper_name": "MM-Embed_Universal_Multimodal_Retrieval_with_Multimodal_LLMs.pdf",
+      "abstract": "",
+      "key_contributions": [],
+      "methodology": "",
+      "experiments": "",
+      "limitations": "",
+      "innovation_points": [
+        "retrieval(199)",
+        "multimodal(103)",
+        "cross-modal(6)",
+        "reranking(28)",
+        "learning(15)",
+        "embedding(18)",
+        "index(6)",
+        "query(87)"
+      ]
+    },
+    {
+      "paper_name": "GME_Improving_Universal_Multimodal_Retrieval_by_Multimodal_LLMs.pdf",
+      "abstract": "",
+      "key_contributions": [],
+      "methodology": "In this section, we present the training framework for de-\nveloping the General Multimodal Embedder (GME) model.\nWe describe the contrastive learning approach used to train\nthe embedding model. Building on this, we conduct de-\ntailed experiments to determine the optimal balance of...",
+      "experiments": "",
+      "limitations": "",
+      "innovation_points": [
+        "fusion(7)",
+        "retrieval(120)",
+        "multimodal(63)",
+        "cross-modal(44)",
+        "learning(35)",
+        "neural(8)",
+        "embedding(43)",
+        "query(66)"
+      ]
+    }
+  ],
+  "07_core_papers": [
+    {
+      "paper_name": "2506.10380v1.pdf",
+      "abstract": "Retrieval-Augmented Generation (RAG) has\ndemonstrated considerable effectiveness in\nopen-domain question answering. However,\nwhen applied to heterogeneous documents,\ncomprising both textual and tabular compo-\nnents, existing RAG approaches exhibit critical\nlimitations. The prevailing practice of flatten-\ning tables and chunking strategies disrupts the\nintrinsic tabular structure, leads to information\nloss, and undermines the reasoning capabilities\nof LLMs in multi-hop, global queries. To ad-\ndre...",
+      "key_contributions": [],
+      "methodology": "",
+      "experiments": "",
+      "limitations": "",
+      "innovation_points": [
+        "hybrid(18)",
+        "retrieval(38)",
+        "learning(5)",
+        "embedding(6)",
+        "query(89)"
+      ]
+    },
+    {
+      "paper_name": "2407.05658v1.pdf",
+      "abstract": "",
+      "key_contributions": [],
+      "methodology": "",
+      "experiments": "",
+      "limitations": "",
+      "innovation_points": [
+        "dynamic(6)",
+        "attention(4)",
+        "retrieval(25)",
+        "learning(29)",
+        "neural(10)"
+      ]
+    },
+    {
+      "paper_name": "2506.08276v1.pdf",
+      "abstract": "Embedding-based search is widely used in applications such\nas recommendation and retrieval-augmented generation (RAG).\nRecently, there is a growing demand to support these capabil-\nities over personal data stored locally on devices. However,\nmaintaining the necessary data structure associated with\nthe embedding-based search is often infeasible due to its\nhigh storage overhead. For example, indexing 100 GB of raw\ndata requires 150 to 700 GB of storage, making local deploy-\nment impractical. Reduc...",
+      "key_contributions": [],
+      "methodology": "achieves high recall while substantially reducing computa-\ntional cost, thereby lowering overall latency.\nFor efficient approximate distance calculation, we employ\nPQ, a widely used technique that compresses the embedding\nspace by several orders of magnitude. In our setting, we use\nonly 2GB of PQ-co...",
+      "experiments": "",
+      "limitations": "",
+      "innovation_points": [
+        "dynamic(15)",
+        "retrieval(40)",
+        "weight(7)",
+        "learning(10)",
+        "neural(5)",
+        "embedding(92)",
+        "index(80)",
+        "query(40)"
+      ]
+    },
+    {
+      "paper_name": "2506.09542v1.pdf",
+      "abstract": "Retrieval-Augmented Generation (RAG) improves factual accuracy by grounding\nresponses in external knowledge. However, existing methods typically rely on a\nsingle source, either unstructured text or structured knowledge. Moreover, they lack\ncognitively inspired mechanisms for activating relevant knowledge. To address\nthese issues, we propose KG-Infused RAG , a framework that integrates KGs into\nRAG systems to implement spreading activation , a cognitive process that enables\nconcept association an...",
+      "key_contributions": [],
+      "methodology": "3.1 Task Definition\nGiven a question q, a KG G, and a corpus Dc, the goal is to generate an answer aby retrieving\nstructured facts from Gand textual passages from Dc, and integrating them for final answer generation.\nLetGq⊂ G denote the retrieved KG subgraph composed of query-relevant triples, and P...",
+      "experiments": "",
+      "limitations": "",
+      "innovation_points": [
+        "retrieval(77)",
+        "learning(9)",
+        "query(94)"
+      ]
+    }
+  ]
+}

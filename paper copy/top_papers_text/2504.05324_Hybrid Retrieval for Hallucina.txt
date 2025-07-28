@@ -1,0 +1,696 @@
+Title: Hybrid Retrieval for Hallucination Mitigation in Large Language Models: A Comparative Analysis
+arXiv ID: 2504.05324
+Score: 0.9897
+Total Pages: 19
+Extraction Time: 2025-06-21 01:03:08
+================================================================================
+
+
+--- Page 1 ---
+January 2025
+Hybrid Retrieval for Hallucination
+Mitigation in Large Language Models: A
+Comparative Analysis
+Chandana sree MALAa,b,1Gizem GEZICIbFosca GIANNOTTIb
+aDepartment of Computer Science, University of Pisa
+bDepartment of Computer Science, Scuola Normale Superiore
+Abstract.
+Large Language Models (LLMs) excel in language comprehension and genera-
+tion but are prone to hallucinations, producing factually incorrect or unsupported
+outputs. Retrieval-Augmented Generation (RAG) systems mitigate this by ground-
+ing LLM responses with external knowledge. This study evaluates the relationship
+between retriever effectiveness and hallucination reduction in LLMs using three re-
+trieval approaches: sparse retrieval (BM25-based keyword search), dense retrieval
+(semantic search with Sentence Transformers), and the proposed hybrid retrieval
+module which incorporates information from query expansion and further fuses the
+results of sparse and dense retrievers through a dynamically-weighted Reciprocal
+Rank Fusion (RRF) score. Using the HaluBench dataset, a benchmark for halluci-
+nations in Question Answering tasks, we assess retrieval performance with MAP
+and NDCG metrics, focusing on the relevance of the top-3 retrieved documents.
+Results show that the hybrid retriever has a better relevance score outperforming
+both sparse and dense retrievers. Further evaluation of LLM-generated answers
+against ground truth using metrics like accuracy, hallucination rate, and rejection
+rate reveals that the hybrid retriever achieves the highest accuracy on fails, the low-
+est hallucination rate, and the lowest rejection rate. These findings highlight the
+hybrid retriever’s ability to enhance retrieval relevance, reduce hallucination rates,
+and improve LLM reliability, emphasizing the importance of advanced retrieval
+techniques in mitigating hallucinations and improving response accuracy.
+Keywords. Retrieval Augmented Generation, Large Language Models, Hallucination
+Mitigation, Retrieval Performance, Query Expansion, HaluBench
+1. Introduction
+Advancements in natural language processing (NLP) have brought large language mod-
+els to the forefront, revolutionizing both academic research and practical applications in
+diverse domains. RAG is an approach that enhances LLMs by integrating retrieval mech-
+anisms to improve response accuracy and reduce hallucinations [1]. Instead of relying
+solely on the model’s internal knowledge, RAG retrieves relevant external documents
+1Corresponding Author: Chandana sree Mala, email: [c.mala@studenti.unipi.it, chandana.mala@sns.it],
+ORCiD: https://orcid.org/0009-0004-7500-6121arXiv:2504.05324v1  [cs.IR]  28 Feb 2025
+
+--- Page 2 ---
+January 2025
+from a knowledge source (e.g., databases, search engines, or vector stores) and incorpo-
+rates them into the generation process. By integrating retrieval mechanisms from exter-
+nal sources, RAG effectively addresses major limitations of standalone LLMs [2, 3], in-
+cluding the high costs associated with training and fine-tuning [4], the issue of hallucina-
+tion [5–8], and constraints imposed by the input window [9] and knowledge cut-off [1].
+Moreover, RAG has already become a foundational technology in various real-world
+products like Contextual AI [14] and Cohere [15].
+RAG system blends the encyclopedic memory of a search engine with the genera-
+tive models and consists of two main modules as the retrieval phase (R) and the genera-
+tion phase (G). In the retrieval phase, a retriever fetches relevant documents based on the
+input query using three retrieval approaches: a sparse retriever leveraging ( BM25 [10]-
+based lexical matching), a dense retriever(using embeddings from Sentence Transform-
+ers), or a hybrid approach (combining both methods). These retrieval algorithms have
+been inspired from Information Retrieval (IR), where search systems seek for alternative
+retrieval approaches to satisfy the information need of users, i.e. retrieving the most rele-
+vant documents at the top positions of a ranked list with respect to a given user query [11].
+Many popular web search engines employ BM25 or similar ranking algorithms to deter-
+mine the relevance of search results for a given query.
+This paper explores the effectiveness of different retrieval methods in reducing hal-
+lucinations. Note that hallucinations occur when the generated answers are not faithful
+to the context (intrinsic hallucinations) or don’t align with factual reality (extrinsic hal-
+lucinations) [12, 13]. In this paper, we focus solely on intrinsic hallucinations since in
+real-world settings, user-provided documents may contain information that conflicts with
+external knowledge sources.
+To the best of our knowledge, this is the first study that evaluates the hybrid retrieval
+performance in mitigating hallucinations. Our main contributions are as follows:
+•We use a query expansion module to increase the coverage of the hybrid retrieval
+phase.
+•We evaluated how different types of retrieval performance affect hallucinations in
+LLM generated outputs.
+This paper is organized by introducing the motivation behind reducing hallucina-
+tions in LLMs through Retrieval-Augmented Generation. The second section surveys re-
+cent RAG studies, highlighting key retrieval strategies and their relevance to mitigating
+hallucinations. In the third section, we detail our hybrid retrieval methodology, under-
+scoring query expansion and dynamic weighting. The fourth section outlines the experi-
+mental setup and results on the dataset, and the paper concludes with final observations
+on the effectiveness of the proposed hybrid retriever followed by future work.
+2. Related Work
+RAG systems have emerged as a promising solution to the inherent limitations of LLMs,
+particularly their tendency to hallucinate or generate inaccurate information [14, 15].
+By integrating retrieval mechanisms, RAG systems retrieve relevant external knowledge
+during the retrieval phase, which is then incorporated into the query. This ensures that the
+LLM’s generated output is informed by up-to-date and contextually relevant information
+[16].
+
+--- Page 3 ---
+January 2025
+Early work in [17] and [8] demonstrated that complementing LLMs with specialized
+retrievers can substantially ground the generated text in factual evidence.This has spurred
+research into a variety of domain-specific and application-specific RAG approaches, such
+as [18, 19], where sophisticated modules decrease hallucinations by parsing industry ab-
+breviations and consolidating context from heterogeneous sources.
+Additionally, [20, 21] and [22, 23] illustrate both benchmark comparisons and
+methodological guides for improving retrieval accuracy, with an emphasis on ensuring
+that even black-box LLMs can trace back to reliable evidence like discussed in this pa-
+per [24].
+Recent research has focused on enhancing the efficiency and performance of RAG
+systems by improving their retrieval components like discussed in this papers [25] and
+[16, 26] highlight how fusing dense and sparse retrieval signals yields higher relevance
+in challenging Q&A contexts [27].
+This fusion approach is further explored in [28] and [29, 30], where rank fusion,
+weighted scoring, and dynamic weighting strategies emerge as key factors for precise,
+context-rich retrieval. Contributions such as [2, 3, 31, 32] and offer an analytical lens
+through which prompt optimization, domain adaptation, and query expansion recom-
+mender modules, most recent paper [22] demonstrate that by expanding the query to rel-
+evant fields may enhance response quality by improving the relevance of the retrieved
+information which can further reduce irrelevance or hallucinations.
+Despite considerable progress in hybrid retrieval and RAG systems, gaps remain in
+understanding how retrieval approaches dynamically adapt to specific query scenarios
+and how these adaptations influence hallucination reduction. By extending the findings
+of previous research, our study systematically investigates the role of hybrid retrieval
+in mitigating hallucinations, ultimately paving the way for more reliable and accurate
+outputs in large language models.
+3. Methodology
+In this section we describe our RAG system which is composed of two main modules as
+the retrieval and the generation phase as mentioned in Section 1. In the retrieval phase,
+differently from the studies in the literature, we incorporated a query expansion ( QE)
+module on top of the hybrid retrieval. The goal of this step is to address lexical chasm , i.e.
+the gap or the mismatch between the vocabulary used to formulate query and to represent
+information in documents.
+3.1.Retrieval Phase
+The retrieval phase of a LLM-driven RAG system often contains two main components:
+theindexed database and the retriever [2]. The indexed database DB is an external
+knowledge-base which is a structured collection of documents di∈D, for i={1, ...,n}.
+These documents include domain-specific knowledge, thus the relevant information with
+respect to the potential user queries of the current use-case. The steps in the retrieval
+phase are as follows. First, Dis stored offline in DB. Then, the retriever encodes qand all
+Din a vector space. Following that the retriever applies a chosen similarity function fsim
+which computes a similarity score between two given vector representations of qanddi
+
+--- Page 4 ---
+January 2025
+Expanded
+Query(q’)For Specific queries:
+Assign the weight of 0.7 to
+Sparse & 0.3 to Dense
+For Generic queries:
+Assign the weight of 0.7 to
+Dense & 0.3 to SparseQuery Expansion
+WordNet
+Reciprocal Rank Fusion
+Dense RetrieverSparse RetrieverTop-k Results of
+Sparse Retriever
+Top-k Results of
+Dense RetrieverTop-k Results of
+Hybrid RetrieverUser Query (q)
+Hybrid Retriever Dynamic weighting
+Figure 1. Our Hybrid Retriever Pipeline
+.Large Language Model
+(LLM)
+Top-K Results
+of Hybrid
+RetrieverWhat U.S. 
+Route runs through 
+Clay Township down to 
+Jacksonville, Florida?User Query
+Top-K Results
+of Dense
+RetrieverTop-K Results
+of Sparse
+RetrieverAnswer: U.S. Route 11
+ Hallucinated 
+Response 
+Answer: No sufficient
+context to answer
+ Insufficient context 
+Answer: U.S. Route 17
+Correct 
+Response 
+Prompt to LLM
+Figure 2. Generation phase
+and ranks dibased on their relevance to a given query q. In this way, the most relevant di
+with respect to qis supposed to get the highest score.
+Various retrieval methods leverage different types of information from qandD.
+Sparse retriever ( RetS) performs a keyword search through projecting qandDinto a
+sparse vector space, usually employing traditional Bag-of-Words (BoW) techniques like
+BM25 [10] or t f∗id f. These BoW approches often struggle with synonyms and varying
+contextual meanings and fails to capture the semantic relationships between the words.
+To address these limitations, dense retrievers ( RetD) [33, 34] perform semantic
+search by encoding qandDinto dense vectors to capture their semantic meaning.
+On the other hand, hybrid approach leverages information both from sparse and
+dense vector representations through combining their similarity (relevance) scores.
+While the conventional approach for hybrid retriever typically uses a linear combination
+of sparse and dense retriever scores, our hybrid retriever denoted as RetHyb−RRFutilizes
+Reciprocal Rank Fusion (RRF) [28,35] to establish the final ranking. In contrast to score-
+based interpolation, RRF uses the ranking positions of each document retrieved by the
+individual retrievers, providing a more balanced and effective fusion of results. Further-
+more, rather than choosing a retriever among sparse, dense, or hybrid retrieval strategies,
+our proposed retriever RetHyb−RRFcompares all these three strategies and adapts its be-
+haviour based on the current query’s characteristics. Unlike many hybrid models that rely
+on computationally intensive dense retrievers requiring complex compression techniques
+
+--- Page 5 ---
+January 2025
+such as linear projection, PCA, or product quantization [36], RetHyb−RRFenhances re-
+trieval effectiveness by integrating a query expansion ( QE) module to increase the query
+coverage and adapting the weights of different retrieval approaches with respect to the
+query’s characteristics.
+In this work, our aim is to systematically evaluate three retrieval approaches
+sparse ,dense , and hybrid to measure their effectiveness in mitigating hallucinations.
+The hybrid method integrates keyword and semantic searches through query expansion
+and dynamic weighting as illustrated in Figure 1, aiming to maximize both precision and
+recall [37] and further examine its influence on LLM generated responses as illustrated
+in Figure 2
+Hybrid retrieval approach Our hybrid retrieval process RetHyb−RRFstarts with QE,
+an essential step aimed at enhancing the retrieval phase by augmenting qwith seman-
+tically related terms. For this purpose, WordNet [38], a comprehensive lexical database
+that demonstrates the relationships between words—such as synonyms (similar mean-
+ings), antonyms (opposite meanings), or words within the same category—is utilized.
+Let the original query qbe seen as the set of query terms qj, denoted as qj∈q, for
+j={1, ...,|q|}where |q|is the number of terms in the query. In QE, for each qj, we
+retrieve a set of synonym terms from WordNet via NLTK2and use only top−2 most-
+relevant terms denoted as T(qj)to expand qnot to change its original intent. Then, the
+expanded query q′is defined as:
+q′=q∪T(qj) (1)
+As an example, if qj=car, we can include T={automobile ,vehicle }from Word-
+Net, to create q′. Then q′is utilized during RetHyb−RRFto close the lexical gap between q
+anddi. Query expansion techniques have already been shown to enhance recall in infor-
+mation retrieval tasks [39] through increasing query coverage. After the QE,RetHyb−RRF
+employs dynamic weighting [40] to optimize the contributions of RetSandRetDbased on
+the characteristics of q′. These characteristics are assessed by evaluating the term distri-
+bution and level of informativeness of q′[41]. Specific queries that are detailed, focused,
+and often seek precise information or exact matches are given greater weight to RetS,
+whereas general queries that are broad or open-ended which lack specific details and
+typically require a high-level or conceptual information, are weighted more to RetD[42].
+LetwRetSandwRetDrepresent the weights assigned to RetSandRetD. These weights
+are dynamically computed by RetHyb−RRFbased on a query specificity score [41, 43, 44]
+denoted as S(q′):
+S(q′) =1
+|q′||q′|
+∑
+i=1t f∗id f(qj) (2)
+Then, we assign the weights to retrievers wRetbased on the query specificity score
+as follows:
+2https://www.nltk.org/
+
+--- Page 6 ---
+January 2025
+wRetS=αS(q′) (3)
+wRetD=1−wRetS (4)
+where αthat is set to 1 by default, serves as a scaling factor for normalization. For
+specific queries with a high specificity score S(q′),wRetSwill be higher, whereas for gen-
+eral queries with a low S(q′),wRetDwill be lower. This dynamic weighting mechanism
+customizes the retrieval process based on the query’s characteristics, potentially enhanc-
+ing both precision and recall.
+Next, RetSandRetDindependently retrieve the top−k(k=3, in our case) docu-
+ments denoted as DRetSandDRetDbased on their respective scoring mechanisms, BM25
+forRetSusing exact lexical matches and cosine −similarity forRetDwhich aims to cap-
+ture semantic similarity. For RetD, the vector embeddings of q′andDare both dense rep-
+resentations created by the model sentence-transformers/all-mpnet-base-v23[45]. Note
+thatBM25 is particularly effective for specific queries, while cosine −similarity is more
+effective for general queries. More details and the mathematical formula of BM25 can be
+found in [46] and a detailed discussion on the use of sentence embeddings for semantic
+search in [34].
+After retrieving DRetSandDRetD, these two ranked lists are fused using a weighted
+RRF score denoted as RRF weighted which is computed as follows:
+RRF weighted (di) =∑
+Ret∈{RetS,RetD}wRet
+ε+rRet(di)(5)
+where rRet(di)is the rank of diwhich exists in DRetSorDRetD, and wRetis the weight
+assigned to the respective retriever during the dynamic weighting step of RetHyb−RRF,
+andεis a small constant to avoid division by zero. RRF weighted (di)is the relevance score
+then utilized by RetHyb−RRFto rank the documents diwith respect to a given query q. As
+the final step, top−kdocuments with the highest RRF weighted (di)denoted as DRetHyb−RRF
+are obtained by RetHyb−RRFas follows:
+DRetHyb−RRF=argmax
+diRRF weighted (di) (6)
+Thus, diwhich are highly ranked by both RetSandRetDwill receive higher relevance
+scores by RetHyb−RRF, while incorporating the previously assigned dynamic weights
+wRetSandwRetD.DRetHyb−RRFis expected to provide the most relevant (precision) and the
+broadest context (recall) for q, leveraging the advantages of both lexical ( RetS) and se-
+mantic retrieval ( RetD) methods, where |DRetHyb−RRF|=3 (number of the retrieved docu-
+ments by the hybrid retriever). This step ensures that the retrieval process not only iden-
+tifies relevant documents but also ranks them in a way that maximizes their utility for
+downstream tasks, such as answer generation in RAG systems.
+3https://huggingface.co/sentence-transformers/all-mpnet-base-v2
+
+--- Page 7 ---
+January 2025
+3.2.Generation Phase
+The generation phase consists of two key components: a prompt pand a chosen pre-
+trained LLM M. In the retrieval phase, RetHyb−RRFretrieves the top−3 most-relevant
+documents DRetHyb−RRFfrom DBbased on the query q′(expanded version of q) to incor-
+porate context information into the query for the generation phase. For this, q′is concate-
+nated with DRetHyb−RRFto form p(see Appendix A for the prompt we use) which is then
+used as a prompt for Mto generate a response to the original query Q. We use standard
+prompting with detailed instructions in zero-shot settings, i.e. without providing any ex-
+emplars, although alternative approaches including few-shot learning [47] or Chain of
+Thought (CoT) prompting [48], i.e. step-by-step reasoning, can be used in RAG systems
+as demonstrated by [49].
+Note that we use the pre-trained LLM without any fine-tuning, i.e changing the
+model weights. The model used for the response generation is LLaMA-3-8B-Instruct
+[4], is a cutting-edge large language model with 8 billion parameters, max new tokens
+= 8132, temperature=0.8, top p=0.9 optimized for instruction-following tasks.
+4. Experimental Setup
+In this section, we outline the experimental setup based on the proposed RAG pipeline,
+as detailed in Section 3. To evaluate if the proposed pipeline is a promising approach on
+mitigating hallucinations, we separately assess retrieval performance (Section 3.1) and
+the overall effectiveness of the RAG pipeline by examining both the retrieval phase out-
+put and the final response to the query q, which integrates the results of the retrieval and
+generation phases (Section 3.2). This approach enables us to assess how retrieval perfor-
+mance impacts the overall effectiveness of the pipeline in mitigating hallucinations.
+4.1. Dataset
+We conduct our study on the HaluBench dataset [50], a comprehensive hallucina-
+tion evaluation benchmark consisting of 13,867 samples. The dataset is a combina-
+tion of six diverse benchmarks that are source datasets, i.e. DROP [51], HaluEval [52],
+RAGTruth [53], FinanceBench [54], PubMedQA [55], and COVIDQA [56], and contains
+hallucinated and faithful responses to questions that may span various domains, includ-
+ing general knowledge, reasoning, specific facts, or specialized topics including finance
+and healthcare. The HaluBench dataset includes examples of challenging-to-detect hallu-
+cinations, meaning instances that seem plausible but are not faithful to the context. Each
+data instance in HaluBench includes a context passage ( di), a question based on that con-
+text ( qdi), an LLM-generated answer, and a binary label indicating whether the answer
+constitutes a hallucination in relation to the context ( PASS for correct answers and FAIL
+for hallucinated answers). The binary labels in HaluBench were generated by comparing
+the LLM-generated answer with the ground truth from the source dataset. Therefore, for
+our evaluations, if an instance is labeled as PASS , its LLM-generated answer was consid-
+ered the ground truth. However, for instances labeled as FAIL , the ground truth answer
+was directly obtained from the corresponding source dataset.
+For the evaluations, we utilized the different versions of HaluBench to separately
+assess the retrieval phase and the overall effectiveness of the RAG pipeline in reducing
+
+--- Page 8 ---
+January 2025
+hallucinations. To evaluate the retrieval performance, we employed the entire HaluBench
+dataset, which contains 13,867 instances denoted as HaluBench orig. In this dataset, we
+measured the performance of the retrievers in an automated manner by using the ques-
+tions q, and the respective context passages qdi. If a given retriever retrieves the con-
+text passages qdifor a given q, then these retrieved documents are relevant , otherwise
+irrelevant . On the other hand, for assessing the overall performance in mitigating hal-
+lucinations, the evaluation cannot be fulfilled in an automated manner since the evalu-
+ation requires reasoning capabilities and should be done by a human annotator which
+is the standard approach [50]. Thus, we could not annotate the entire dataset and used
+a randomly sampled subset of 300 instances which is denoted as HaluBench small, with
+50 instances from each of the six source datasets to maintain dataset diversity. This sub-
+set contained an equal number of PASS andFAIL instances per source dataset, with 25
+instances of each, ensuring a balanced evaluation.
+The responses of the entire RAG pipeline for all the queries Qin the annotated
+dataset were labelled by a human annotator through comparing the generated response
+and the ground truth answer with the following three labels:
+•Hallucinated Answer ( ✗): The generated answer is factually incorrect or unsup-
+ported by the provided context.
+•Correct Answer ( ✓): The generated answer matches the ground truth and is factu-
+ally accurate.
+•Insufficient Context ( ?): The retrieved context does not provide sufficient infor-
+mation to answer the query.
+For the comparative evaluation, the responses from all three RAG pipelines, which
+differ in their retrieval approaches (sparse, dense, and hybrid), were fully annotated.
+The annotated files can be found in our github repo4Note that HaluBench small was
+annotated by a single human annotator due to time constraints. Nonetheless, the query
+set we annotated was not difficult so we believe that it was less prone to disagreements.
+10 samples from the annotated dataset can be found in the Appendix.
+4.2. Evaluation Metrics
+Retrieval Metrics To evaluate the retrieval performance of our hybrid approach
+RetHyb−RRF, we compared its performance with the sparse RetS, and dense RetDretriev-
+ers. For this, we used commonly-used order-aware metrics from the Information Re-
+trieval (IR) domain, namely Mean Average Precision (MAP) [20,57,58] and Normalized
+Discounted Cumulative Gain (NDCG) [11, 20, 59].
+As mentioned in Section 3, since each retriever returns a ranked list of three docu-
+ments ( top−3), these metrics were computed at a cut-off value, k=3, i.e. number of
+documents considered for the evaluation.
+MAP averages the precision @kmetric at each relevant item position in the retrieved
+ranked list of documents, where precision @kmeasures the proportion of relevant doc-
+uments in a ranked list of size k. For a query q, the Average Precision (AP) is defined
+as:
+4https://anonymous.4open.science/r/HybridRAG_for_Hallucinations-884F
+
+--- Page 9 ---
+January 2025
+AP=1
+|Rel q|n
+∑
+i=1Precision @i·⊮[reli=1] (7)
+where ⊮[·]is the indicator function that specifies whether the document at rank iis
+relevant and |Relq|is the total number of relevant documents for query q. The MAP of a
+retriever is then computed as the mean of AP across the set of all queries Qin the dataset
+as follows:
+MAP =1
+|Q|∑
+q∈QAP(q) (8)
+This metric rewards the retrieval approaches that put more relevant documents at
+the top of the ranked list. DCG has a stronger concept of ranking which discounts the
+“value” of each relevant document based on its rank in a ranked list of size kusing a
+logarithmic discount function as follows:
+DCG @k=k
+∑
+i=12reli−1
+log2(i+1)(9)
+NDCG @k=DCG @k
+IDCG @k(10)
+where reliis the relevance grade of a document at rank iand for the binary case, if a
+document is relevant, relevance grade is assigned as 1, otherwise 0. NDCG@k then nor-
+malizes DCG@k by the “ideal” ranked list (IDCG@k), where every relevant document
+is ranked at the start of the list. For both MAP and NDCG metrics, higher scores mean
+better retrieval performance.
+Overall Evaluation Metrics To evaluate the overall performance of the RAG pipeline
+in mitigating hallucinations, we utilize the following metrics as defined in [3, 58]:
+• Accuracy: [30, 52] The proportion of correct answers among all generated an-
+swers (higher values are better).
+• Hallucination Rate: [60] The proportion of hallucinated answers among all gen-
+erated answers (lower values are better).
+• Rejection Rate: [3, 58] The proportion of cases where the retrieved context was
+insufficient to answer the query (lower values are better).
+• Adjusted Accuracy: [61–63] The proportion of correct predictions among all
+cases where the model made a prediction, excluding cases with insufficient con-
+text. It ensures that the metric focuses only on cases where the model attempts
+to answer, providing a more precise evaluation of its performance. This metric is
+defined as:
+Adjusted Accuracy =Correct Answers
+Correct Answers +Hallucinated Answers×100 (11)
+
+--- Page 10 ---
+January 2025
+Figure 3. Overall Performance in Mitigating Hallucinations on HaluBench small
+4.3. Results
+Retrieval Performance The evaluation results on HaluBench origof the three retriev-
+ers, sparse, dense, and hybrid based on two metrics MAP@3 and NDCG@3 are dis-
+played in Table 1. Regarding the MAP metric, RetSgives a score of 0 .724, RetDhas
+0.768, while RetHyb−RRFachieves 0 .897. Similarly, for the NDCG, RetSandRetDget
+0.732 and 0 .783 respectively, whereas RetHyb−RRFhas a relatively higher score of 0 .915.
+The results indicate that hybrid retriever outperforms both the sparse and dense retrievers
+across both retrieval metrics, demonstrating the effectiveness of combining lexical and
+semantic retrieval techniques. The performance gap between the retrievers in terms of
+NDCG is larger due to its sensitivity to ranking. The enhancements in NDCG and MAP
+can be attributed to the hybrid retriever’s capability to capture both exact matches and
+semantic relevance, along with its utilization of query expansion and dynamic weighting.
+Metric Sparse ( RetS) Dense ( RetD) Hybrid ( RetHyb−RRF)
+MAP@3 0.724 0.768 0.897
+NDCG@3 0.732 0.783 0.915
+Table 1. Retrieval Performance Evaluation on HaluBench orig
+Overall Performance on Hallucinations To assess the overall performance of the
+RAG pipeline in mitigating hallucinations, we use the metrics defined in Section 4.2.
+This involves a comparative evaluation of three RAG pipelines with different retrieval
+approaches ( RetS,RetD, and RetHyb−RRF), allowing us to examine the performance of dif-
+ferent retrieval methods in mitigating hallucinations. In other words, this evaluation pro-
+vides insights into whether they provide relevant and sufficient context for the next step
+in the RAG pipeline, the generation phase (Section 3.2), which aims to generate accurate
+
+--- Page 11 ---
+January 2025
+Table 2. Overall Performance in Mitigating Hallucinations Across Six Source Datasets
+Datasets Retrievers Accuracy (%) Hallucination Rate (%) Rejection Rate (%) Adjusted Accuracy (%)
+HaluEvalRetS 56.00 22.00 22.00 71.79
+RetD 64.00 22.00 14.00 74.42
+RetHyb−RRF 92.00 6.00 2.00 93.88
+DropRetS 30.61 48.98 20.41 38.46
+RetD 48.98 38.78 12.24 55.81
+RetHyb−RRF 77.55 14.29 8.16 84.44
+RAGTruthRetS 68.00 12.00 20.00 85.00
+RetD 76.00 10.00 14.00 88.37
+RetHyb−RRF 88.00 4.00 8.00 95.65
+PubMedRetS 60.00 16.00 24.00 78.95
+RetD 66.00 20.00 14.00 76.74
+RetHyb−RRF 92.00 4.00 4.00 95.83
+CovidQARetS 30.00 20.00 50.00 60.00
+RetD 14.00 58.02 28.10 19.44
+RetHyb−RRF 70.02 22.00 8.00 76.09
+FinanceBenchRetS 8.00 8.02 84.00 50.00
+RetD 26.00 24.30 50.00 52.00
+RetHyb−RRF 62.90 6.00 32.00 91.18
+responses by prompting the model M. The overall evaluation results on HaluBench small
+are displayed in Figure 3.
+The results show that the complete RAG pipeline using RetHyb−RRFas the retriever
+outperformed the other two pipelines, which use RetSandRetDretrievers, across all
+four evaluation metrics. Following the overall evaluation on the annotated HaluBench
+dataset, we also assessed the performance of the RAG pipeline with RetHyb−RRFsepa-
+rately across six source datasets from various domains. Based on accuracy, RetHyb−RRF
+showed the best performance on the HaluEval and PubMed datasets with the accuracy
+score of 92.00, while the worst performance on the FinanceBench (the accuracy score of
+62.90). In terms of hallucination rate (lower is better), RetHyb−RRFachieved the lowest
+score of 4.00 on the RAGTruth and PubMed datasets, whereas the highest score of 22.00
+on the CovidQA. Regarding the rejection rate (lower is better), although RetHyb−RRFhad
+the best performance on the HaluEval with the rejection rate of 2.00, the results on the
+other datasets except the FinanceBench are similar. RetHyb−RRFgot the highest rejection
+rate of 32.00 on the FinanceBench. Based on adjusted accuracy, RetHyb−RRFachieved
+the highest score on the PubMed, while the lowest on the CovidQA. The findings re-
+veal that although RetHyb−RRFexhibited the poorest performance on each metric for the
+CovidQA and FinanceBench datasets which are domain-specific challenging datasets, it
+significantly enhanced the results on these datasets with respect to other two retrievers.
+Then, we also evaluated the performance of the pipeline with RetHyb−RRFonly on
+the hallucinated samples (labelled as FAIL in the annotated dataset). There were 125
+hallucinated samples in total. RAGTruth dataset does not contain any samples labelled
+asFAIL . For this, we used the same three metrics from Section 4.2 as accuracy, hallu-
+cination rate and rejection rate which were computed only on the 125 hallucinated ex-
+amples. The overall evaluation results on these 125 hallucinated samples are displayed
+in Figure 4, where the RAG pipeline with the RetHyb−RRFoutperformed others. And the
+detailed evaluation results of hallucinated samples on each dataset are displayed in Ap-
+
+--- Page 12 ---
+January 2025
+pendix D. We have also evaluated our hybrid RAG pipeline by comparing it with the
+baseline LLM(Llama-3-instruct-8B) model, the results are illustrated in Appendix B.
+The results emphasize the importance of high-quality retrieval in minimizing hallucina-
+tions in RAG systems. The hybrid retriever, combining lexical and semantic methods,
+provided more relevant context, improving answer generation and reducing hallucination
+rates.
+Figure 4. Metrics comparison on only Hallucinated Samples
+5. Conclusion
+In this paper we presented a hybrid retrieval approach RetHyb−RRF, designed to mitigate
+hallucinations in LLMs by leveraging both sparse and dense retrievers. Experimental re-
+sults on the HaluBench dataset demonstrated that hybrid retriever, which combines key-
+word search and semantic search methods with query expansion and dynamic weighting,
+consistently outperformed the other two sparse and dense retrieval methods in terms of
+MAP@3 and NDCG@3. Moreover, the hybrid retriever reduced hallucination rates and
+improved retrieval precision across domain-specific datasets, most notably in medical
+and financial domains which are considered as more challenging. By providing more
+relevant contextual documents, the hybrid strategy enabled higher accuracy in LLM-
+generated answers and fewer instances of insufficient context. These findings highlight
+the value of integrating hybrid retrieval methods for better robustness and reliability.
+Future work may further explore optimizations, including incorporating advanced
+re-ranking algorithms to further refine the selection of retrieved documents and by adapt-
+ing our method to various data sets which are domain-specific. We also investigate the
+impact of the proposed method on other types of LLMs, to evaluate its broader applica-
+bility and effectiveness.
+
+--- Page 13 ---
+January 2025
+References
+[1] Lewis P, Perez E, Piktus A, Petroni F, Karpukhin V , Goyal N, et al. Retrieval-augmented generation for
+knowledge-intensive nlp tasks. Advances in Neural Information Processing Systems. 2020;33:9459-74.
+[2] Zhao S, Huang Y , Song J, Wang Z, Wan C, Ma L. Towards understanding retrieval accuracy and prompt
+quality in RAG systems. arXiv preprint arXiv:241119463. 2024.
+[3] Chen J, Lin H, Han X, Sun L. Benchmarking large language models in retrieval-augmented generation.
+In: Proceedings of the AAAI Conference on Artificial Intelligence. vol. 38; 2024. p. 17754-62.
+[4] Touvron H, Lavril T, Izacard G, Martinet X, Lachaux MA, Lacroix T, et al. Llama: Open and efficient
+foundation language models. arXiv preprint arXiv:230213971. 2023.
+[5] Huang L, Yu W, Ma W, Zhong W, Feng Z, Wang H, et al. A survey on hallucination in large lan-
+guage models: Principles, taxonomy, challenges, and open questions. ACM Transactions on Information
+Systems. 2023.
+[6] Zhang Y , Li Y , Cui L, Cai D, Liu L, Fu T, et al. Siren’s song in the AI ocean: A survey on hallucination
+in large language models, 2023. URL https://arxiv org/abs/230901219. 2024.
+[7] Bai Z, Wang P, Xiao T, He T, Han Z, Zhang Z, et al. Hallucination of multimodal large language models:
+A survey. arXiv preprint arXiv:240418930. 2024.
+[8] Béchard P, Ayala OM. Reducing hallucination in structured outputs via Retrieval-Augmented Genera-
+tion. arXiv preprint arXiv:240408189. 2024.
+[9] Vaswani A. Attention is all you need. Advances in Neural Information Processing Systems. 2017.
+[10] Robertson S, Zaragoza H, et al. The probabilistic relevance framework: BM25 and beyond. Foundations
+and Trends® in Information Retrieval. 2009;3(4):333-89.
+[11] Sawarkar K, Mangal A, Solanki SR. Blended RAG: Improving RAG (Retriever-Augmented Generation)
+Accuracy with Semantic Search and Hybrid Query-Based Retrievers; 2024. Available from: https:
+//arxiv.org/abs/2404.07220 .
+[12] Jian Y , Gao C, V osoughi S. Embedding Hallucination for Few-shot Language Fine-tuning. In:
+Carpuat M, de Marneffe MC, Meza Ruiz IV , editors. Proceedings of the 2022 Conference of the
+North American Chapter of the Association for Computational Linguistics: Human Language Tech-
+nologies. Seattle, United States: Association for Computational Linguistics; 2022. Available from:
+https://aclanthology.org/2022.naacl-main.404/ .
+[13] Ji Z, Lee N, Frieske R, Yu T, Su D, Xu Y , et al. Survey of hallucination in natural language generation.
+ACM Computing Surveys. 2023;55(12):1-38.
+[14] Semnani S, Yao V , Zhang H, Lam M. WikiChat: Stopping the Hallucination of Large Language Model
+Chatbots by Few-Shot Grounding on Wikipedia. In: Bouamor H, Pino J, Bali K, editors. Findings of the
+Association for Computational Linguistics: EMNLP 2023. Singapore: Association for Computational
+Linguistics; 2023. Available from: https://aclanthology.org/2023.findings-emnlp.157/ .
+[15] Chang TA, Tomanek K, Hoffmann J, Thain N, MacMurray van Liemt E, Meier-Hellstern K, et al. De-
+tecting Hallucination and Coverage Errors in Retrieval Augmented Generation for Controversial Topics.
+In: Calzolari N, Kan MY , Hoste V , Lenci A, Sakti S, Xue N, editors. Proceedings of the 2024 Joint
+International Conference on Computational Linguistics, Language Resources and Evaluation (LREC-
+COLING 2024). Torino, Italia: ELRA and ICCL; 2024. Available from: https://aclanthology.
+org/2024.lrec-main.423/ .
+[16] Wang X, Wang Z, Gao X, Zhang F, Wu Y , Xu Z, et al. Searching for best practices in retrieval-augmented
+generation. In: Proceedings of the 2024 Conference on Empirical Methods in Natural Language Pro-
+cessing; 2024. p. 17716-36.
+[17] Shuster K, Poff S, Chen M, Kiela D, Weston J. Retrieval augmentation reduces hallucination in conver-
+sation. arXiv preprint arXiv:210407567. 2021.
+[18] Shi L, Kazda M, Sears B, Shropshire N, Puri R. Ask-EDA: A Design Assistant Empowered by LLM,
+Hybrid RAG and Abbreviation De-hallucination. arXiv preprint arXiv:240606575. 2024.
+[19] Anjum S, Zhang H, Zhou W, Paek EJ, Zhao X, Feng Y . HALO: Hallucination Analysis and Learn-
+ing Optimization to Empower LLMs with Retrieval-Augmented Context for Guided Clinical Decision
+Making. arXiv preprint arXiv:240910011. 2024.
+[20] Salemi A, Zamani H. Evaluating retrieval quality in retrieval-augmented generation. In: Proceedings of
+the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval;
+2024. p. 2395-400.
+[21] Gao Y , Xiong Y , Gao X, Jia K, Pan J, Bi Y , et al. Retrieval-Augmented Generation for Large Language
+Models: A Survey. ArXiv. 2023;abs/2312.10997. Available from: https://api.semanticscholar.
+
+--- Page 14 ---
+January 2025
+org/CorpusID:266359151 .
+[22] Li S, Stenzel L, Eickhoff C, Bahrainian SA. Enhancing Retrieval-Augmented Generation: A Study of
+Best Practices. arXiv preprint arXiv:250107391. 2025.
+[23] Guu K, Lee K, Tung Z, Pasupat P, Chang M. Retrieval Augmented Language Model Pre-Training.
+In: III HD, Singh A, editors. Proceedings of the 37th International Conference on Machine Learning.
+vol. 119 of Proceedings of Machine Learning Research. PMLR; 2020. p. 3929-38. Available from:
+https://proceedings.mlr.press/v119/guu20a.html .
+[24] Shi W, Min S, Yasunaga M, Seo M, James R, Lewis M, et al. REPLUG: Retrieval-Augmented Black-
+Box Language Models. In: Duh K, Gomez H, Bethard S, editors. Proceedings of the 2024 Conference of
+the North American Chapter of the Association for Computational Linguistics: Human Language Tech-
+nologies (V olume 1: Long Papers). Mexico City, Mexico: Association for Computational Linguistics;
+2024. Available from: https://aclanthology.org/2024.naacl-long.463/ .
+[25] Sawarkar K, Mangal A, Solanki SR. Blended RAG: Improving RAG (Retriever-Augmented Generation)
+Accuracy with Semantic Search and Hybrid Query-Based Retrievers. arXiv preprint arXiv:240407220.
+2024.
+[26] Arivazhagan MG, Liu L, Qi P, Chen X, Wang WY , Huang Z. Hybrid hierarchical retrieval for open-
+domain question answering. In: Findings of the Association for Computational Linguistics: ACL 2023;
+2023. p. 10680-9.
+[27] Omrani P, Hosseini A, Hooshanfar K, Ebrahimian Z, Toosi R, Akhaee MA. Hybrid Retrieval-
+Augmented Generation Approach for LLMs Query Response Enhancement. In: 2024 10th International
+Conference on Web Research (ICWR). IEEE; 2024. p. 22-6.
+[28] Bruch S, Gai S, Ingber A. An analysis of fusion functions for hybrid retrieval. ACM Transactions on
+Information Systems. 2023;42(1):1-35.
+[29] Rackauckas Z. Rag-fusion: a new take on retrieval-augmented generation. arXiv preprint
+arXiv:240203367. 2024.
+[30] Kalra R, Wu Z, Gulley A, Hilliard A, Guan X, Koshiyama A, et al. HyPA-RAG: A Hybrid Parameter
+Adaptive Retrieval-Augmented Generation System for AI Legal and Policy Applications. arXiv preprint
+arXiv:240909046. 2024.
+[31] Hsia J, Shaikh A, Wang Z, Neubig G. RAGGED: Towards Informed Design of Retrieval Augmented
+Generation Systems. arXiv preprint arXiv:240309040. 2024.
+[32] Olufade O, Abiola A, Chisom O. Dynamic Model for Query-Document Expansion towards Improving
+Retrieval Relevance. arXiv preprint arXiv:210310474. 2021.
+[33] Izacard G, Caron M, Hosseini L, Riedel S, Bojanowski P, Joulin A, et al. Unsupervised dense informa-
+tion retrieval with contrastive learning. arXiv preprint arXiv:211209118. 2021.
+[34] Karpukhin V , O ˘guz B, Min S, Lewis P, Wu L, Edunov S, et al. Dense passage retrieval for open-domain
+question answering. arXiv preprint arXiv:200404906. 2020.
+[35] Cormack GV , Clarke CL, Buettcher S. Reciprocal rank fusion outperforms condorcet and individual
+rank learning methods. In: Proceedings of the 32nd international ACM SIGIR conference on Research
+and development in information retrieval; 2009. p. 758-9.
+[36] Luo M, Jain S, Gupta A, Einolghozati A, Oguz B, Chatterjee D, et al. A study on the efficiency and
+generalization of light hybrid retrievers. arXiv preprint arXiv:221001371. 2022.
+[37] Lin J, Ma X, Lin SC, Yang JH, Pradeep R, Nogueira R. Pyserini: A Python toolkit for reproducible
+information retrieval research with sparse and dense representations. In: Proceedings of the 44th In-
+ternational ACM SIGIR Conference on Research and Development in Information Retrieval; 2021. p.
+2356-62.
+[38] Miller GA. WordNet: a lexical database for English. Communications of the ACM. 1995;38(11):39-41.
+[39] Carpineto C, Romano G. A Survey of Automatic Query Expansion in Information Retrieval. ACM
+Comput Surv. 2012 Jan;44(1). Available from: https://doi.org/10.1145/2071389.2071390 .
+[40] Azad HK, Deepak A. Query expansion techniques for information retrieval: a survey. Information
+Processing & Management. 2019;56(5):1698-735.
+[41] Jones KS. A statistical interpretation of term specificity and its application in retrieval. J Documentation.
+2021;60:493-502. Available from: https://api.semanticscholar.org/CorpusID:2996187 .
+[42] Kuzi S, Zhang M, Li C, Bendersky M, Najork M. Leveraging semantic and lexical matching to improve
+the recall of document retrieval systems: A hybrid approach. arXiv preprint arXiv:201001195. 2020.
+[43] Salton G, Buckley C. Term-weighting approaches in automatic text retrieval. Information processing &
+management. 1988;24(5):513-23.
+
+--- Page 15 ---
+January 2025
+[44] Aizawa A. An information-theoretic perspective of tf–idf measures. Information Processing & Man-
+agement. 2003;39(1):45-65.
+[45] Reimers N. Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. arXiv preprint
+arXiv:190810084. 2019.
+[46] Manning CD. An introduction to information retrieval; 2009.
+[47] Brown T, Mann B, Ryder N, Subbiah M, Kaplan JD, Dhariwal P, et al. Language models are few-shot
+learners. Advances in neural information processing systems. 2020;33:1877-901.
+[48] Wei J, Wang X, Schuurmans D, Bosma M, Xia F, Chi E, et al. Chain-of-thought prompting elicits rea-
+soning in large language models. Advances in neural information processing systems. 2022;35:24824-
+37.
+[49] Wang Z, Liu A, Lin H, Li J, Ma X, Liang Y . Rat: Retrieval augmented thoughts elicit context-aware
+reasoning in long-horizon generation. arXiv preprint arXiv:240305313. 2024.
+[50] Ravi SS, Mielczarek B, Kannappan A, Kiela D, Qian R. Lynx: An open source hallucination evaluation
+model. arXiv preprint arXiv:240708488. 2024.
+[51] Dua D, Wang Y , Dasigi P, Stanovsky G, Singh S, Gardner M. DROP: A reading comprehension bench-
+mark requiring discrete reasoning over paragraphs. arXiv preprint arXiv:190300161. 2019.
+[52] Li J, Cheng X, Zhao WX, Nie JY , Wen JR. Halueval: A large-scale hallucination evaluation benchmark
+for large language models. arXiv preprint arXiv:230511747. 2023.
+[53] Niu C, Wu Y , Zhu J, Xu S, Shum K, Zhong R, et al. Ragtruth: A hallucination corpus for developing
+trustworthy retrieval-augmented language models. arXiv preprint arXiv:240100396. 2023.
+[54] Islam P, Kannappan A, Kiela D, Qian R, Scherrer N, Vidgen B. Financebench: A new benchmark for
+financial question answering. arXiv preprint arXiv:231111944. 2023.
+[55] Jin Q, Dhingra B, Liu Z, Cohen WW, Lu X. Pubmedqa: A dataset for biomedical research question
+answering. arXiv preprint arXiv:190906146. 2019.
+[56] Möller T, Reina A, Jayakumar R, Pietsch M. COVID-QA: A question answering dataset for COVID-19.
+In: Proceedings of the 1st Workshop on NLP for COVID-19 at ACL 2020; 2020. .
+[57] Yue Y , Finley T, Radlinski F, Joachims T. A support vector method for optimizing average precision. In:
+Proceedings of the 30th Annual International ACM SIGIR Conference on Research and Development
+in Information Retrieval. New York, NY , USA: Association for Computing Machinery; 2007. Available
+from: https://doi.org/10.1145/1277741.1277790 .
+[58] Yu H, Gan A, Zhang K, Tong S, Liu Q, Liu Z. Evaluation of retrieval-augmented generation: A survey.
+In: CCF Conference on Big Data. Springer; 2024. p. 102-20.
+[59] Järvelin K, Kekäläinen J. Cumulated gain-based evaluation of IR techniques. ACM Trans Inf Syst.
+2002;20(4). Available from: https://doi.org/10.1145/582415.582418 .
+[60] Capellini R, Atienza F, Sconfield M. Knowledge Accuracy and Reducing Hallucinations in LLMs via
+Dynamic Domain Knowledge Injection; 2024.
+[61] Es S, James J, Espinosa-Anke L, Schockaert S. Ragas: Automated evaluation of retrieval augmented
+generation. arXiv preprint arXiv:230915217. 2023.
+[62] Min S, Lyu X, Holtzman A, Artetxe M, Lewis M, Hajishirzi H, et al.. Rethinking the Role of Demon-
+strations: What Makes In-Context Learning Work?; 2022. Available from: https://arxiv.org/abs/
+2202.12837 .
+[63] Kry ´sci´nski W, McCann B, Xiong C, Socher R. Evaluating the factual consistency of abstractive text
+summarization. arXiv preprint arXiv:191012840. 2019.
+Appendix
+A. Prompt used for the experiment
+[INST] You are a precise and helpful assistant. When responding:
+- Provide a single, clear answer without repetition
+- Don’t restate the question or context. DO NOT REPEAT THE PROMPT IN
+THE RESPONSE AND DO NOT WRITE ANY CODE.
+- Search if you can find the relevant answer in the provided context.
+- If uncertain, say "The context doesn’t provide sufficient information

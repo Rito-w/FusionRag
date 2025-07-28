@@ -1,0 +1,899 @@
+[
+  {
+    "arxiv_id": "2502.18139",
+    "title": "LevelRAG: Enhancing Retrieval-Augmented Generation with Multi-hop Logic Planning over Rewriting Augmented Searchers",
+    "filepath": "all_paper1_downloads/2502.18139_LevelRAG Enhancing Retrieval-Augmented Generation .pdf",
+    "score": 0.994888961315155,
+    "abstract": "Retrieval-Augmented Generation (RAG) is a crucial method for mitigating hallucinations in Large Language Models (LLMs) and integrating external knowledge into their responses. Existing RAG methods typically employ query rewriting to clarify the user intent and manage multi-hop logic, while using hybrid retrieval to expand search scope. However, the tight coupling of query rewriting to the dense retriever limits its compatibility with hybrid retrieval, impeding further RAG performance improvements. To address this challenge, we introduce a high-level searcher that decomposes complex queries into atomic queries, independent of any retriever-specific optimizations. Additionally, to harness the strengths of sparse retrievers for precise keyword retrieval, we have developed a new sparse searcher that employs Lucene syntax to enhance retrieval accuracy.Alongside web and dense searchers, these components seamlessly collaborate within our proposed method, \\textbf{LevelRAG}. In LevelRAG, the high-level searcher orchestrates the retrieval logic, while the low-level searchers (sparse, web, and dense) refine the queries for optimal retrieval. This approach enhances both the completeness and accuracy of the retrieval process, overcoming challenges associated with current query rewriting techniques in hybrid retrieval scenarios. Empirical experiments conducted on five datasets, encompassing both single-hop and multi-hop question answering tasks, demonstrate the superior performance of LevelRAG compared to existing RAG methods. Notably, LevelRAG outperforms the state-of-the-art proprietary model, GPT4o, underscoring its effectiveness and potential impact on the RAG field.",
+    "authors": [
+      "Zhuocheng Zhang",
+      "Yang Feng",
+      "and Min Zhang"
+    ],
+    "publish_time": "20250225",
+    "link": "https://www.arxiv.org/abs/2502.18139"
+  },
+  {
+    "arxiv_id": "2404.07220",
+    "title": "Blended RAG: Improving RAG (Retriever-Augmented Generation) Accuracy with Semantic Search and Hybrid Query-Based Retrievers",
+    "filepath": "all_paper1_downloads/2404.07220_Blended RAG Improving RAG Retriever-Augmented Gene.pdf",
+    "score": 0.9943976402282715,
+    "abstract": "Retrieval-Augmented Generation (RAG) is a prevalent approach to infuse a private knowledge base of documents with Large Language Models (LLM) to build Generative Q\\&A (Question-Answering) systems. However, RAG accuracy becomes increasingly challenging as the corpus of documents scales up, with Retrievers playing an outsized role in the overall RAG accuracy by extracting the most relevant document from the corpus to provide context to the LLM. In this paper, we propose the 'Blended RAG' method of leveraging semantic search techniques, such as Dense Vector indexes and Sparse Encoder indexes, blended with hybrid query strategies. Our study achieves better retrieval results and sets new benchmarks for IR (Information Retrieval) datasets like NQ and TREC-COVID datasets. We further extend such a 'Blended Retriever' to the RAG system to demonstrate far superior results on Generative Q\\&A datasets like SQUAD, even surpassing fine-tuning performance.",
+    "authors": [
+      "Kunal Sawarkar",
+      "Abhilasha Mangal",
+      "Shivam Raj Solanki"
+    ],
+    "publish_time": "20240322",
+    "link": "https://www.arxiv.org/abs/2404.07220"
+  },
+  {
+    "arxiv_id": "2503.23013",
+    "title": "DAT: Dynamic Alpha Tuning for Hybrid Retrieval in Retrieval-Augmented Generation",
+    "filepath": "all_paper1_downloads/2503.23013_DAT Dynamic Alpha Tuning for Hybrid Retrieval in R.pdf",
+    "score": 0.994045615196228,
+    "abstract": "Hybrid retrieval techniques in Retrieval-Augmented Generation (RAG) systems enhance information retrieval by combining dense and sparse (e.g., BM25-based) retrieval methods. However, existing approaches struggle with adaptability, as fixed weighting schemes fail to adjust to different queries. To address this, we propose DAT (Dynamic Alpha Tuning), a novel hybrid retrieval framework that dynamically balances dense retrieval and BM25 for each query. DAT leverages a large language model (LLM) to evaluate the effectiveness of the top-1 results from both retrieval methods, assigning an effectiveness score to each. It then calibrates the optimal weighting factor through effectiveness score normalization, ensuring a more adaptive and query-aware weighting between the two approaches. Empirical results show that DAT consistently significantly outperforms fixed-weighting hybrid retrieval methods across various evaluation metrics. Even on smaller models, DAT delivers strong performance, highlighting its efficiency and adaptability.",
+    "authors": [
+      "Hsin-Ling Hsu",
+      "Jengnan Tzeng"
+    ],
+    "publish_time": "20250329",
+    "link": "https://www.arxiv.org/abs/2503.23013"
+  },
+  {
+    "arxiv_id": "2406.00638",
+    "title": "COS-Mix: Cosine Similarity and Distance Fusion for Improved Information Retrieval",
+    "filepath": "all_paper1_downloads/2406.00638_COS-Mix Cosine Similarity and Distance Fusion for .pdf",
+    "score": 0.9908910393714905,
+    "abstract": "This study proposes a novel hybrid retrieval strategy for Retrieval-Augmented Generation (RAG) that integrates cosine similarity and cosine distance measures to improve retrieval performance, particularly for sparse data. The traditional cosine similarity measure is widely used to capture the similarity between vectors in high-dimensional spaces. However, it has been shown that this measure can yield arbitrary results in certain scenarios. To address this limitation, we incorporate cosine distance measures to provide a complementary perspective by quantifying the dissimilarity between vectors. Our approach is experimented on proprietary data, unlike recent publications that have used open-source datasets. The proposed method demonstrates enhanced retrieval performance and provides a more comprehensive understanding of the semantic relationships between documents or items. This hybrid strategy offers a promising solution for efficiently and accurately retrieving relevant information in knowledge-intensive applications, leveraging techniques such as BM25 (sparse) retrieval , vector (Dense) retrieval, and cosine distance based retrieval to facilitate efficient information retrieval.",
+    "authors": [
+      "Kush Juvekar",
+      "Anupam Purwar"
+    ],
+    "publish_time": "20240602",
+    "link": "https://www.arxiv.org/abs/2406.00638"
+  },
+  {
+    "arxiv_id": "2005.11401",
+    "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+    "filepath": "all_paper1_downloads/2005.11401_Retrieval-Augmented Generation for Knowledge-Inten.pdf",
+    "score": 0.9900716543197632,
+    "abstract": "Large pre-trained language models have been shown to store factual knowledge in their parameters, and achieve state-of-the-art results when fine-tuned on downstream NLP tasks. However, their ability to access and precisely manipulate knowledge is still limited, and hence on knowledge-intensive tasks, their performance lags behind task-specific architectures. Additionally, providing provenance for their decisions and updating their world knowledge remain open research problems. Pre-trained models with a differentiable access mechanism to explicit non-parametric memory can overcome this issue, but have so far been only investigated for extractive downstream tasks. We explore a general-purpose fine-tuning recipe for retrieval-augmented generation (RAG) -- models which combine pre-trained parametric and non-parametric memory for language generation. We introduce RAG models where the parametric memory is a pre-trained seq2seq model and the non-parametric memory is a dense vector index of Wikipedia, accessed with a pre-trained neural retriever. We compare two RAG formulations, one which conditions on the same retrieved passages across the whole generated sequence, the other can use different passages per token. We fine-tune and evaluate our models on a wide range of knowledge-intensive NLP tasks and set the state-of-the-art on three open domain QA tasks, outperforming parametric seq2seq models and task-specific retrieve-and-extract architectures. For language generation tasks, we find that RAG models generate more specific, diverse and factual language than a state-of-the-art parametric-only seq2seq baseline.",
+    "authors": [
+      "Patrick Lewis",
+      "Ethan Perez",
+      "Aleksandra Piktus",
+      "Fabio Petroni",
+      "Vladimir Karpukhin",
+      "Naman Goyal",
+      "Heinrich K\\\"uttler",
+      "Mike Lewis",
+      "Wen-tau Yih",
+      "Tim Rockt\\\"aschel",
+      "Sebastian Riedel",
+      "Douwe Kiela"
+    ],
+    "publish_time": "20200522",
+    "link": "https://www.arxiv.org/abs/2005.11401"
+  },
+  {
+    "arxiv_id": "2504.05324",
+    "title": "Hybrid Retrieval for Hallucination Mitigation in Large Language Models: A Comparative Analysis",
+    "filepath": "all_paper1_downloads/2504.05324_Hybrid Retrieval for Hallucination Mitigation in L.pdf",
+    "score": 0.9897018671035767,
+    "abstract": "Large Language Models (LLMs) excel in language comprehension and generation but are prone to hallucinations, producing factually incorrect or unsupported outputs. Retrieval Augmented Generation (RAG) systems address this issue by grounding LLM responses with external knowledge. This study evaluates the relationship between retriever effectiveness and hallucination reduction in LLMs using three retrieval approaches: sparse retrieval based on BM25 keyword search, dense retrieval using semantic search with Sentence Transformers, and a proposed hybrid retrieval module. The hybrid module incorporates query expansion and combines the results of sparse and dense retrievers through a dynamically weighted Reciprocal Rank Fusion score. Using the HaluBench dataset, a benchmark for hallucinations in question answering tasks, we assess retrieval performance with metrics such as mean average precision and normalised discounted cumulative gain, focusing on the relevance of the top three retrieved documents. Results show that the hybrid retriever achieves better relevance scores, outperforming both sparse and dense retrievers. Further evaluation of LLM-generated answers against ground truth using metrics such as accuracy, hallucination rate, and rejection rate reveals that the hybrid retriever achieves the highest accuracy on fails, the lowest hallucination rate, and the lowest rejection rate. These findings highlight the hybrid retriever's ability to enhance retrieval relevance, reduce hallucination rates, and improve LLM reliability, emphasising the importance of advanced retrieval techniques in mitigating hallucinations and improving response accuracy.",
+    "authors": [
+      "Chandana Sree Mala",
+      "Gizem Gezici",
+      "Fosca Giannotti"
+    ],
+    "publish_time": "20250228",
+    "link": "https://www.arxiv.org/abs/2504.05324"
+  },
+  {
+    "arxiv_id": "2412.16311",
+    "title": "HybGRAG: Hybrid Retrieval-Augmented Generation on Textual and Relational Knowledge Bases",
+    "filepath": "all_paper1_downloads/2412.16311_HybGRAG Hybrid Retrieval-Augmented Generation on T.pdf",
+    "score": 0.9870686531066895,
+    "abstract": "Given a semi-structured knowledge base (SKB), where text documents are interconnected by relations, how can we effectively retrieve relevant information to answer user questions? Retrieval-Augmented Generation (RAG) retrieves documents to assist large language models (LLMs) in question answering; while Graph RAG (GRAG) uses structured knowledge bases as its knowledge source. However, many questions require both textual and relational information from SKB - referred to as \"hybrid\" questions - which complicates the retrieval process and underscores the need for a hybrid retrieval method that leverages both information. In this paper, through our empirical analysis, we identify key insights that show why existing methods may struggle with hybrid question answering (HQA) over SKB. Based on these insights, we propose HybGRAG for HQA consisting of a retriever bank and a critic module, with the following advantages: (1) Agentic, it automatically refines the output by incorporating feedback from the critic module, (2) Adaptive, it solves hybrid questions requiring both textual and relational information with the retriever bank, (3) Interpretable, it justifies decision making with intuitive refinement path, and (4) Effective, it surpasses all baselines on HQA benchmarks. In experiments on the STaRK benchmark, HybGRAG achieves significant performance gains, with an average relative improvement in Hit@1 of 51%.",
+    "authors": [
+      "Meng-Chieh Lee",
+      "Qi Zhu",
+      "Costas Mavromatis",
+      "Zhen Han",
+      "Soji Adeshina",
+      "Vassilis N. Ioannidis",
+      "Huzefa Rangwala",
+      "Christos Faloutsos"
+    ],
+    "publish_time": "20241220",
+    "link": "https://www.arxiv.org/abs/2412.16311"
+  },
+  {
+    "arxiv_id": "2408.04948",
+    "title": "HybridRAG: Integrating Knowledge Graphs and Vector Retrieval Augmented Generation for Efficient Information Extraction",
+    "filepath": "all_paper1_downloads/2408.04948_HybridRAG Integrating Knowledge Graphs and Vector .pdf",
+    "score": 0.986052393913269,
+    "abstract": "Extraction and interpretation of intricate information from unstructured text data arising in financial applications, such as earnings call transcripts, present substantial challenges to large language models (LLMs) even using the current best practices to use Retrieval Augmented Generation (RAG) (referred to as VectorRAG techniques which utilize vector databases for information retrieval) due to challenges such as domain specific terminology and complex formats of the documents. We introduce a novel approach based on a combination, called HybridRAG, of the Knowledge Graphs (KGs) based RAG techniques (called GraphRAG) and VectorRAG techniques to enhance question-answer (Q&A) systems for information extraction from financial documents that is shown to be capable of generating accurate and contextually relevant answers. Using experiments on a set of financial earning call transcripts documents which come in the form of Q&A format, and hence provide a natural set of pairs of ground-truth Q&As, we show that HybridRAG which retrieves context from both vector database and KG outperforms both traditional VectorRAG and GraphRAG individually when evaluated at both the retrieval and generation stages in terms of retrieval accuracy and answer generation. The proposed technique has applications beyond the financial domain",
+    "authors": [
+      "Bhaskarjit Sarmah",
+      "Benika Hall",
+      "Rohan Rao",
+      "Sunil Patel",
+      "Stefano Pasquali",
+      "Dhagash Mehta"
+    ],
+    "publish_time": "20240809",
+    "link": "https://www.arxiv.org/abs/2408.04948"
+  },
+  {
+    "arxiv_id": "2308.04215",
+    "title": "Hybrid Retrieval-Augmented Generation for Real-time Composition Assistance",
+    "filepath": "all_paper1_downloads/2308.04215_Hybrid Retrieval-Augmented Generation for Real-tim.pdf",
+    "score": 0.9829109311103821,
+    "abstract": "Retrieval augmentation enhances performance of traditional language models by incorporating additional context. However, the computational demands for retrieval augmented large language models (LLMs) pose a challenge when applying them to real-time tasks, such as composition assistance. To address this limitation, we propose the Hybrid Retrieval-Augmented Generation (HybridRAG) framework, a novel approach that efficiently combines a cloud-based LLM with a smaller, client-side, language model through retrieval augmented memory. This integration enables the client model to generate effective responses, benefiting from the LLM's capabilities and contextual information. Additionally, through an asynchronous memory update mechanism, the client model can deliver real-time completions swiftly to user inputs without the need to wait for responses from the cloud. Our experiments on five benchmark datasets demonstrate that HybridRAG significantly improves utility over client-only models while maintaining low latency.",
+    "authors": [
+      "Menglin Xia",
+      "Xuchao Zhang",
+      "Camille Couturier",
+      "Guoqing Zheng",
+      "Saravan Rajmohan",
+      "Victor Ruhle"
+    ],
+    "publish_time": "20230808",
+    "link": "https://www.arxiv.org/abs/2308.04215"
+  },
+  {
+    "arxiv_id": "2409.09046",
+    "title": "HyPA-RAG: A Hybrid Parameter Adaptive Retrieval-Augmented Generation System for AI Legal and Policy Applications",
+    "filepath": "all_paper1_downloads/2409.09046_HyPA-RAG A Hybrid Parameter Adaptive Retrieval-Aug.pdf",
+    "score": 0.9804992079734802,
+    "abstract": "While Large Language Models (LLMs) excel in text generation and question-answering, their effectiveness in AI legal and policy is limited by outdated knowledge, hallucinations, and inadequate reasoning in complex contexts. Retrieval-Augmented Generation (RAG) systems improve response accuracy by integrating external knowledge but struggle with retrieval errors, poor context integration, and high costs, particularly in interpreting qualitative and quantitative AI legal texts. This paper introduces a Hybrid Parameter-Adaptive RAG (HyPA-RAG) system tailored for AI legal and policy, exemplified by NYC Local Law 144 (LL144). HyPA-RAG uses a query complexity classifier for adaptive parameter tuning, a hybrid retrieval strategy combining dense, sparse, and knowledge graph methods, and an evaluation framework with specific question types and metrics. By dynamically adjusting parameters, HyPA-RAG significantly improves retrieval accuracy and response fidelity. Testing on LL144 shows enhanced correctness, faithfulness, and contextual precision, addressing the need for adaptable NLP systems in complex, high-stakes AI legal and policy applications.",
+    "authors": [
+      "Rishi Kalra",
+      "Zekun Wu",
+      "Ayesha Gulley",
+      "Airlie Hilliard",
+      "Xin Guan",
+      "Adriano Koshiyama",
+      "Philip Treleaven"
+    ],
+    "publish_time": "20240829",
+    "link": "https://www.arxiv.org/abs/2409.09046"
+  },
+  {
+    "arxiv_id": "2410.01782",
+    "title": "Open-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models",
+    "filepath": "all_paper1_downloads/2410.01782_Open-RAG Enhanced Retrieval-Augmented Reasoning wi.pdf",
+    "score": 0.9728719592094421,
+    "abstract": "Retrieval-Augmented Generation (RAG) has been shown to enhance the factual accuracy of Large Language Models (LLMs), but existing methods often suffer from limited reasoning capabilities in effectively using the retrieved evidence, particularly when using open-source LLMs. To mitigate this gap, we introduce a novel framework, Open-RAG, designed to enhance reasoning capabilities in RAG with open-source LLMs. Our framework transforms an arbitrary dense LLM into a parameter-efficient sparse mixture of experts (MoE) model capable of handling complex reasoning tasks, including both single- and multi-hop queries. Open-RAG uniquely trains the model to navigate challenging distractors that appear relevant but are misleading. As a result, Open-RAG leverages latent learning, dynamically selecting relevant experts and integrating external knowledge effectively for more accurate and contextually relevant responses. In addition, we propose a hybrid adaptive retrieval method to determine retrieval necessity and balance the trade-off between performance gain and inference speed. Experimental results show that the Llama2-7B-based Open-RAG outperforms state-of-the-art LLMs and RAG models such as ChatGPT, Self-RAG, and Command R+ in various knowledge-intensive tasks. We open-source our code and models at https://openragmoe.github.io/",
+    "authors": [
+      "Shayekh Bin Islam",
+      "Md Asib Rahman",
+      "K S M Tozammel Hossain",
+      "Enamul Hoque",
+      "Shafiq Joty",
+      "Md Rizwan Parvez"
+    ],
+    "publish_time": "20241002",
+    "link": "https://www.arxiv.org/abs/2410.01782"
+  },
+  {
+    "arxiv_id": "2403.04256",
+    "title": "Federated Recommendation via Hybrid Retrieval Augmented Generation",
+    "filepath": "all_paper1_downloads/2403.04256_Federated Recommendation via Hybrid Retrieval Augm.pdf",
+    "score": 0.9727187752723694,
+    "abstract": "Federated Recommendation (FR) emerges as a novel paradigm that enables privacy-preserving recommendations. However, traditional FR systems usually represent users/items with discrete identities (IDs), suffering from performance degradation due to the data sparsity and heterogeneity in FR. On the other hand, Large Language Models (LLMs) as recommenders have proven effective across various recommendation scenarios. Yet, LLM-based recommenders encounter challenges such as low inference efficiency and potential hallucination, compromising their performance in real-world scenarios. To this end, we propose GPT-FedRec, a federated recommendation framework leveraging ChatGPT and a novel hybrid Retrieval Augmented Generation (RAG) mechanism. GPT-FedRec is a two-stage solution. The first stage is a hybrid retrieval process, mining ID-based user patterns and text-based item features. Next, the retrieved results are converted into text prompts and fed into GPT for re-ranking. Our proposed hybrid retrieval mechanism and LLM-based re-rank aims to extract generalized features from data and exploit pretrained knowledge within LLM, overcoming data sparsity and heterogeneity in FR. In addition, the RAG approach also prevents LLM hallucination, improving the recommendation performance for real-world users. Experimental results on diverse benchmark datasets demonstrate the superior performance of GPT-FedRec against state-of-the-art baseline methods.",
+    "authors": [
+      "Huimin Zeng",
+      "Zhenrui Yue",
+      "Qian Jiang",
+      "Dong Wang"
+    ],
+    "publish_time": "20240307",
+    "link": "https://www.arxiv.org/abs/2403.04256"
+  },
+  {
+    "arxiv_id": "2504.16121",
+    "title": "LegalRAG: A Hybrid RAG System for Multilingual Legal Information Retrieval",
+    "filepath": "all_paper1_downloads/2504.16121_LegalRAG A Hybrid RAG System for Multilingual Lega.pdf",
+    "score": 0.923014223575592,
+    "abstract": "Natural Language Processing (NLP) and computational linguistic techniques are increasingly being applied across various domains, yet their use in legal and regulatory tasks remains limited. To address this gap, we develop an efficient bilingual question-answering framework for regulatory documents, specifically the Bangladesh Police Gazettes, which contain both English and Bangla text. Our approach employs modern Retrieval Augmented Generation (RAG) pipelines to enhance information retrieval and response generation. In addition to conventional RAG pipelines, we propose an advanced RAG-based approach that improves retrieval performance, leading to more precise answers. This system enables efficient searching for specific government legal notices, making legal information more accessible. We evaluate both our proposed and conventional RAG systems on a diverse test set on Bangladesh Police Gazettes, demonstrating that our approach consistently outperforms existing methods across all evaluation metrics.",
+    "authors": [
+      "Muhammad Rafsan Kabir",
+      "Rafeed Mohammad Sultan",
+      "Fuad Rahman",
+      "Mohammad Ruhul Amin",
+      "Sifat Momen",
+      "Nabeel Mohammed",
+      "Shafin Rahman"
+    ],
+    "publish_time": "20250419",
+    "link": "https://www.arxiv.org/abs/2504.16121"
+  },
+  {
+    "arxiv_id": "2408.05141",
+    "title": "A Hybrid RAG System with Comprehensive Enhancement on Complex Reasoning",
+    "filepath": "all_paper1_downloads/2408.05141_A Hybrid RAG System with Comprehensive Enhancement.pdf",
+    "score": 0.9138166308403015,
+    "abstract": "Retrieval-augmented generation (RAG) is a framework enabling large language models (LLMs) to enhance their accuracy and reduce hallucinations by integrating external knowledge bases. In this paper, we introduce a hybrid RAG system enhanced through a comprehensive suite of optimizations that significantly improve retrieval quality, augment reasoning capabilities, and refine numerical computation ability. We refined the text chunks and tables in web pages, added attribute predictors to reduce hallucinations, conducted LLM Knowledge Extractor and Knowledge Graph Extractor, and finally built a reasoning strategy with all the references. We evaluated our system on the CRAG dataset through the Meta CRAG KDD Cup 2024 Competition. Both the local and online evaluations demonstrate that our system significantly enhances complex reasoning capabilities. In local evaluations, we have significantly improved accuracy and reduced error rates compared to the baseline model, achieving a notable increase in scores. In the meanwhile, we have attained outstanding results in online assessments, demonstrating the performance and generalization capabilities of the proposed system. The source code for our system is released in \\url{https://gitlab.aicrowd.com/shizueyy/crag-new}.",
+    "authors": [
+      "Ye Yuan",
+      "Chengwu Liu",
+      "Jingyang Yuan",
+      "Gongbo Sun",
+      "Siqi Li",
+      "Ming Zhang"
+    ],
+    "publish_time": "20240809",
+    "link": "https://www.arxiv.org/abs/2408.05141"
+  },
+  {
+    "arxiv_id": "2504.09554",
+    "title": "HD-RAG: Retrieval-Augmented Generation for Hybrid Documents Containing Text and Hierarchical Tables",
+    "filepath": "all_paper1_downloads/2504.09554_HD-RAG Retrieval-Augmented Generation for Hybrid D.pdf",
+    "score": 0.9137980937957764,
+    "abstract": "With the rapid advancement of large language models (LLMs), Retrieval-Augmented Generation (RAG) effectively combines LLMs generative capabilities with external retrieval-based information. The Hybrid Document RAG task aims to integrate textual and hierarchical tabular data for more comprehensive retrieval and generation in complex scenarios. However, there is no existing dataset specifically designed for this task that includes both text and tabular data. Additionally, existing methods struggle to retrieve relevant tabular data and integrate it with text. Semantic similarity-based retrieval lacks accuracy, while table-specific methods fail to handle complex hierarchical structures effectively. Furthermore, the QA task requires complex reasoning and calculations, further complicating the challenge. In this paper, we propose a new large-scale dataset, DocRAGLib, specifically designed for the question answering (QA) task scenario under Hybrid Document RAG. To tackle these challenges, we introduce HD-RAG, a novel framework that incorporates a row-and-column level (RCL) table representation, employs a two-stage process combining ensemble and LLM-based retrieval, and integrates RECAP, which is designed for multi-step reasoning and complex calculations in Document-QA tasks. We conduct comprehensive experiments with DocRAGLib, showing that HD-RAG outperforms existing baselines in both retrieval accuracy and QA performance, demonstrating its effectiveness.",
+    "authors": [
+      "Chi Zhang",
+      "Qiyang Chen"
+    ],
+    "publish_time": "20250413",
+    "link": "https://www.arxiv.org/abs/2504.09554"
+  },
+  {
+    "arxiv_id": "2207.06300",
+    "title": "Re2G: Retrieve, Rerank, Generate",
+    "filepath": "all_paper1_downloads/2207.06300_Re2G Retrieve Rerank Generate.pdf",
+    "score": 0.9134673476219177,
+    "abstract": "As demonstrated by GPT-3 and T5, transformers grow in capability as parameter spaces become larger and larger. However, for tasks that require a large amount of knowledge, non-parametric memory allows models to grow dramatically with a sub-linear increase in computational cost and GPU memory requirements. Recent models such as RAG and REALM have introduced retrieval into conditional generation. These models incorporate neural initial retrieval from a corpus of passages. We build on this line of research, proposing Re2G, which combines both neural initial retrieval and reranking into a BART-based sequence-to-sequence generation. Our reranking approach also permits merging retrieval results from sources with incomparable scores, enabling an ensemble of BM25 and neural initial retrieval. To train our system end-to-end, we introduce a novel variation of knowledge distillation to train the initial retrieval, reranker, and generation using only ground truth on the target sequence output. We find large gains in four diverse tasks: zero-shot slot filling, question answering, fact-checking, and dialog, with relative gains of 9% to 34% over the previous state-of-the-art on the KILT leaderboard. We make our code available as open source at https://github.com/IBM/kgi-slot-filling/tree/re2g.",
+    "authors": [
+      "Michael Glass",
+      "Gaetano Rossiello",
+      "Md Faisal Mahbub Chowdhury",
+      "Ankita Rajaram Naik",
+      "Pengshan Cai",
+      "Alfio Gliozzo"
+    ],
+    "publish_time": "20220713",
+    "link": "https://www.arxiv.org/abs/2207.06300"
+  },
+  {
+    "arxiv_id": "2106.05346",
+    "title": "End-to-End Training of Multi-Document Reader and Retriever for Open-Domain Question Answering",
+    "filepath": "all_paper1_downloads/2106.05346_End-to-End Training of Multi-Document Reader and R.pdf",
+    "score": 0.903671383857727,
+    "abstract": "We present an end-to-end differentiable training method for retrieval-augmented open-domain question answering systems that combine information from multiple retrieved documents when generating answers. We model retrieval decisions as latent variables over sets of relevant documents. Since marginalizing over sets of retrieved documents is computationally hard, we approximate this using an expectation-maximization algorithm. We iteratively estimate the value of our latent variable (the set of relevant documents for a given question) and then use this estimate to update the retriever and reader parameters. We hypothesize that such end-to-end training allows training signals to flow to the reader and then to the retriever better than staged-wise training. This results in a retriever that is able to select more relevant documents for a question and a reader that is trained on more accurate documents to generate an answer. Experiments on three benchmark datasets demonstrate that our proposed method outperforms all existing approaches of comparable size by 2-3% absolute exact match points, achieving new state-of-the-art results. Our results also demonstrate the feasibility of learning to retrieve to improve answer generation without explicit supervision of retrieval decisions.",
+    "authors": [
+      "Devendra Singh Sachan",
+      "Siva Reddy",
+      "William Hamilton",
+      "Chris Dyer",
+      "Dani Yogatama"
+    ],
+    "publish_time": "20210609",
+    "link": "https://www.arxiv.org/abs/2106.05346"
+  },
+  {
+    "arxiv_id": "2403.14403v2",
+    "title": "Adaptive-RAG: Learning to Adapt Retrieval-Augmented Large Language Models through Question Complexity",
+    "filepath": "all_paper1_downloads/2403.14403v2_Adaptive-RAG Learning to Adapt Retrieval-Augmented.pdf",
+    "score": 0.903404176235199,
+    "abstract": "Retrieval-Augmented Large Language Models (LLMs), which incorporate the non-parametric knowledge from external knowledge bases into LLMs, have emerged as a promising approach to enhancing response accuracy in several tasks, such as Question-Answering (QA). However, even though there are various approaches dealing with queries of different complexities, they either handle simple queries with unnecessary computational overhead or fail to adequately address complex multi-step queries; yet, not all user requests fall into only one of the simple or complex categories. In this work, we propose a novel adaptive QA framework, that can dynamically select the most suitable strategy for (retrieval-augmented) LLMs from the simplest to the most sophisticated ones based on the query complexity. Also, this selection process is operationalized with a classifier, which is a smaller LM trained to predict the complexity level of incoming queries with automatically collected labels, obtained from actual predicted outcomes of models and inherent inductive biases in datasets. This approach offers a balanced strategy, seamlessly adapting between the iterative and single-step retrieval-augmented LLMs, as well as the no-retrieval methods, in response to a range of query complexities. We validate our model on a set of open-domain QA datasets, covering multiple query complexities, and show that ours enhances the overall efficiency and accuracy of QA systems, compared to relevant baselines including the adaptive retrieval approaches. Code is available at: https://github.com/starsuzi/Adaptive-RAG.",
+    "authors": [
+      "Soyeong Jeong",
+      "Jinheon Baek",
+      "Sukmin Cho",
+      "Sung Ju Hwang",
+      "Jong C. Park"
+    ],
+    "publish_time": "20240321",
+    "link": "https://www.arxiv.org/abs/2403.14403v2"
+  },
+  {
+    "arxiv_id": "2502.16767",
+    "title": "A Hybrid Approach to Information Retrieval and Answer Generation for Regulatory Texts",
+    "filepath": "all_paper1_downloads/2502.16767_A Hybrid Approach to Information Retrieval and Ans.pdf",
+    "score": 0.9032446146011353,
+    "abstract": "Regulatory texts are inherently long and complex, presenting significant challenges for information retrieval systems in supporting regulatory officers with compliance tasks. This paper introduces a hybrid information retrieval system that combines lexical and semantic search techniques to extract relevant information from large regulatory corpora. The system integrates a fine-tuned sentence transformer model with the traditional BM25 algorithm to achieve both semantic precision and lexical coverage. To generate accurate and comprehensive responses, retrieved passages are synthesized using Large Language Models (LLMs) within a Retrieval Augmented Generation (RAG) framework. Experimental results demonstrate that the hybrid system significantly outperforms standalone lexical and semantic approaches, with notable improvements in Recall@10 and MAP@10. By openly sharing our fine-tuned model and methodology, we aim to advance the development of robust natural language processing tools for compliance-driven applications in regulatory domains.",
+    "authors": [
+      "Jhon Rayo",
+      "Raul de la Rosa and Mario Garrido"
+    ],
+    "publish_time": "20250224",
+    "link": "https://www.arxiv.org/abs/2502.16767"
+  },
+  {
+    "arxiv_id": "2501.16276",
+    "title": "URAG: Implementing a Unified Hybrid RAG for Precise Answers in University Admission Chatbots -- A Case Study at HCMUT",
+    "filepath": "all_paper1_downloads/2501.16276_URAG Implementing a Unified Hybrid RAG for Precise.pdf",
+    "score": 0.8921102285385132,
+    "abstract": "With the rapid advancement of Artificial Intelligence, particularly in Natural Language Processing, Large Language Models (LLMs) have become pivotal in educational question-answering systems, especially university admission chatbots. Concepts such as Retrieval-Augmented Generation (RAG) and other advanced techniques have been developed to enhance these systems by integrating specific university data, enabling LLMs to provide informed responses on admissions and academic counseling. However, these enhanced RAG techniques often involve high operational costs and require the training of complex, specialized modules, which poses challenges for practical deployment. Additionally, in the educational context, it is crucial to provide accurate answers to prevent misinformation, a task that LLM-based systems find challenging without appropriate strategies and methods. In this paper, we introduce the Unified RAG (URAG) Framework, a hybrid approach that significantly improves the accuracy of responses, particularly for critical queries. Experimental results demonstrate that URAG enhances our in-house, lightweight model to perform comparably to state-of-the-art commercial models. Moreover, to validate its practical applicability, we conducted a case study at our educational institution, which received positive feedback and acclaim. This study not only proves the effectiveness of URAG but also highlights its feasibility for real-world implementation in educational settings.",
+    "authors": [
+      "Long Nguyen",
+      "Tho Quan"
+    ],
+    "publish_time": "20250127",
+    "link": "https://www.arxiv.org/abs/2501.16276"
+  },
+  {
+    "arxiv_id": "2406.06575",
+    "title": "Ask-EDA: A Design Assistant Empowered by LLM, Hybrid RAG and Abbreviation De-hallucination",
+    "filepath": "all_paper1_downloads/2406.06575_Ask-EDA A Design Assistant Empowered by LLM Hybrid.pdf",
+    "score": 0.892109751701355,
+    "abstract": "Electronic design engineers are challenged to find relevant information efficiently for a myriad of tasks within design construction, verification and technology development. Large language models (LLM) have the potential to help improve productivity by serving as conversational agents that effectively function as subject-matter experts. In this paper we demonstrate Ask-EDA, a chat agent designed to serve as a 24x7 expert available to provide guidance to design engineers. Ask-EDA leverages LLM, hybrid retrieval augmented generation (RAG) and abbreviation de-hallucination (ADH) techniques to deliver more relevant and accurate responses. We curated three evaluation datasets, namely q2a-100, cmds-100 and abbr-100. Each dataset is tailored to assess a distinct aspect: general design question answering, design command handling and abbreviation resolution. We demonstrated that hybrid RAG offers over a 40% improvement in Recall on the q2a-100 dataset and over a 60% improvement on the cmds-100 dataset compared to not using RAG, while ADH yields over a 70% enhancement in Recall on the abbr-100 dataset. The evaluation results show that Ask-EDA can effectively respond to design-related inquiries.",
+    "authors": [
+      "Luyao Shi",
+      "Michael Kazda",
+      "Bradley Sears",
+      "Nick Shropshire",
+      "Ruchir Puri"
+    ],
+    "publish_time": "20240603",
+    "link": "https://www.arxiv.org/abs/2406.06575"
+  },
+  {
+    "arxiv_id": "2402.03367",
+    "title": "RAG-Fusion: a New Take on Retrieval-Augmented Generation",
+    "filepath": "all_paper1_downloads/2402.03367_RAG-Fusion a New Take on Retrieval-Augmented Gener.pdf",
+    "score": 0.8919371366500854,
+    "abstract": "Infineon has identified a need for engineers, account managers, and customers to rapidly obtain product information. This problem is traditionally addressed with retrieval-augmented generation (RAG) chatbots, but in this study, I evaluated the use of the newly popularized RAG-Fusion method. RAG-Fusion combines RAG and reciprocal rank fusion (RRF) by generating multiple queries, reranking them with reciprocal scores and fusing the documents and scores. Through manually evaluating answers on accuracy, relevance, and comprehensiveness, I found that RAG-Fusion was able to provide accurate and comprehensive answers due to the generated queries contextualizing the original query from various perspectives. However, some answers strayed off topic when the generated queries' relevance to the original query is insufficient. This research marks significant progress in artificial intelligence (AI) and natural language processing (NLP) applications and demonstrates transformations in a global and multi-industry context.",
+    "authors": [
+      "Zackary Rackauckas"
+    ],
+    "publish_time": "20240131",
+    "link": "https://www.arxiv.org/abs/2402.03367"
+  },
+  {
+    "arxiv_id": "2502.18470",
+    "title": "Spatial-RAG: Spatial Retrieval Augmented Generation for Real-World Spatial Reasoning Questions",
+    "filepath": "all_paper1_downloads/2502.18470_Spatial-RAG Spatial Retrieval Augmented Generation.pdf",
+    "score": 0.8345637917518616,
+    "abstract": "Spatial reasoning remains a challenge for Large Language Models (LLMs), which struggle with spatial data retrieval and reasoning. We propose Spatial Retrieval-Augmented Generation (Spatial-RAG), a framework that extends RAG to spatial tasks by integrating sparse spatial retrieval (spatial databases) and dense semantic retrieval (LLM-based similarity). A multi-objective ranking strategy balances spatial constraints and semantic relevance, while an LLM-guided generator ensures coherent responses. Experiments on a real-world tourism dataset show that Spatial-RAG significantly improves spatial question answering, bridging the gap between LLMs and spatial intelligence.",
+    "authors": [
+      "Dazhou Yu",
+      "Riyang Bao",
+      "Gengchen Mai",
+      "Liang Zhao"
+    ],
+    "publish_time": "20250204",
+    "link": "https://www.arxiv.org/abs/2502.18470"
+  },
+  {
+    "arxiv_id": "2405.14831",
+    "title": "HippoRAG: Neurobiologically Inspired Long-Term Memory for Large Language Models",
+    "filepath": "all_paper1_downloads/2405.14831_HippoRAG Neurobiologically Inspired Long-Term Memo.pdf",
+    "score": 0.8165819048881531,
+    "abstract": "In order to thrive in hostile and ever-changing natural environments, mammalian brains evolved to store large amounts of knowledge about the world and continually integrate new information while avoiding catastrophic forgetting. Despite the impressive accomplishments, large language models (LLMs), even with retrieval-augmented generation (RAG), still struggle to efficiently and effectively integrate a large amount of new experiences after pre-training. In this work, we introduce HippoRAG, a novel retrieval framework inspired by the hippocampal indexing theory of human long-term memory to enable deeper and more efficient knowledge integration over new experiences. HippoRAG synergistically orchestrates LLMs, knowledge graphs, and the Personalized PageRank algorithm to mimic the different roles of neocortex and hippocampus in human memory. We compare HippoRAG with existing RAG methods on multi-hop question answering and show that our method outperforms the state-of-the-art methods remarkably, by up to 20%. Single-step retrieval with HippoRAG achieves comparable or better performance than iterative retrieval like IRCoT while being 10-30 times cheaper and 6-13 times faster, and integrating HippoRAG into IRCoT brings further substantial gains. Finally, we show that our method can tackle new types of scenarios that are out of reach of existing methods. Code and data are available at https://github.com/OSU-NLP-Group/HippoRAG.",
+    "authors": [
+      "Bernal Jim\\'enez Guti\\'errez",
+      "Yiheng Shu",
+      "Yu Gu",
+      "Michihiro Yasunaga",
+      "Yu Su"
+    ],
+    "publish_time": "20240523",
+    "link": "https://www.arxiv.org/abs/2405.14831"
+  },
+  {
+    "arxiv_id": "2407.16833",
+    "title": "Retrieval Augmented Generation or Long-Context LLMs? A Comprehensive Study and Hybrid Approach",
+    "filepath": "all_paper1_downloads/2407.16833_Retrieval Augmented Generation or Long-Context LLM.pdf",
+    "score": 0.8164645433425903,
+    "abstract": "Retrieval Augmented Generation (RAG) has been a powerful tool for Large Language Models (LLMs) to efficiently process overly lengthy contexts. However, recent LLMs like Gemini-1.5 and GPT-4 show exceptional capabilities to understand long contexts directly. We conduct a comprehensive comparison between RAG and long-context (LC) LLMs, aiming to leverage the strengths of both. We benchmark RAG and LC across various public datasets using three latest LLMs. Results reveal that when resourced sufficiently, LC consistently outperforms RAG in terms of average performance. However, RAG's significantly lower cost remains a distinct advantage. Based on this observation, we propose Self-Route, a simple yet effective method that routes queries to RAG or LC based on model self-reflection. Self-Route significantly reduces the computation cost while maintaining a comparable performance to LC. Our findings provide a guideline for long-context applications of LLMs using RAG and LC.",
+    "authors": [
+      "Zhuowan Li",
+      "Cheng Li",
+      "Mingyang Zhang",
+      "Qiaozhu Mei",
+      "Michael Bendersky"
+    ],
+    "publish_time": "20240723",
+    "link": "https://www.arxiv.org/abs/2407.16833"
+  },
+  {
+    "arxiv_id": "2401.15884",
+    "title": "Corrective Retrieval Augmented Generation",
+    "filepath": "all_paper1_downloads/2401.15884_Corrective Retrieval Augmented Generation.pdf",
+    "score": 0.8164593577384949,
+    "abstract": "Large language models (LLMs) inevitably exhibit hallucinations since the accuracy of generated texts cannot be secured solely by the parametric knowledge they encapsulate. Although retrieval-augmented generation (RAG) is a practicable complement to LLMs, it relies heavily on the relevance of retrieved documents, raising concerns about how the model behaves if retrieval goes wrong. To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation. Specifically, a lightweight retrieval evaluator is designed to assess the overall quality of retrieved documents for a query, returning a confidence degree based on which different knowledge retrieval actions can be triggered. Since retrieval from static and limited corpora can only return sub-optimal documents, large-scale web searches are utilized as an extension for augmenting the retrieval results. Besides, a decompose-then-recompose algorithm is designed for retrieved documents to selectively focus on key information and filter out irrelevant information in them. CRAG is plug-and-play and can be seamlessly coupled with various RAG-based approaches. Experiments on four datasets covering short- and long-form generation tasks show that CRAG can significantly improve the performance of RAG-based approaches.",
+    "authors": [
+      "Shi-Qi Yan",
+      "Jia-Chen Gu",
+      "Yun Zhu",
+      "Zhen-Hua Ling"
+    ],
+    "publish_time": "20240129",
+    "link": "https://www.arxiv.org/abs/2401.15884"
+  },
+  {
+    "arxiv_id": "2212.14024",
+    "title": "Demonstrate-Search-Predict: Composing retrieval and language models for knowledge-intensive NLP",
+    "filepath": "all_paper1_downloads/2212.14024_Demonstrate-Search-Predict Composing retrieval and.pdf",
+    "score": 0.7973059415817261,
+    "abstract": "Retrieval-augmented in-context learning has emerged as a powerful approach for addressing knowledge-intensive tasks using frozen language models (LM) and retrieval models (RM). Existing work has combined these in simple \"retrieve-then-read\" pipelines in which the RM retrieves passages that are inserted into the LM prompt. To begin to fully realize the potential of frozen LMs and RMs, we propose Demonstrate-Search-Predict (DSP), a framework that relies on passing natural language texts in sophisticated pipelines between an LM and an RM. DSP can express high-level programs that bootstrap pipeline-aware demonstrations, search for relevant passages, and generate grounded predictions, systematically breaking down problems into small transformations that the LM and RM can handle more reliably. We have written novel DSP programs for answering questions in open-domain, multi-hop, and conversational settings, establishing in early evaluations new state-of-the-art in-context learning results and delivering 37-120%, 8-39%, and 80-290% relative gains against the vanilla LM (GPT-3.5), a standard retrieve-then-read pipeline, and a contemporaneous self-ask pipeline, respectively. We release DSP at https://github.com/stanfordnlp/dsp",
+    "authors": [
+      "Omar Khattab",
+      "Keshav Santhanam",
+      "Xiang Lisa Li",
+      "David Hall",
+      "Percy Liang",
+      "Christopher Potts",
+      "Matei Zaharia"
+    ],
+    "publish_time": "20221228",
+    "link": "https://www.arxiv.org/abs/2212.14024"
+  },
+  {
+    "arxiv_id": "2310.05149",
+    "title": "Retrieval-Generation Synergy Augmented Large Language Models",
+    "filepath": "all_paper1_downloads/2310.05149_Retrieval-Generation Synergy Augmented Large Langu.pdf",
+    "score": 0.7762343883514404,
+    "abstract": "Large language models augmented with task-relevant documents have demonstrated impressive performance on knowledge-intensive tasks. However, regarding how to obtain effective documents, the existing methods are mainly divided into two categories. One is to retrieve from an external knowledge base, and the other is to utilize large language models to generate documents. We propose an iterative retrieval-generation collaborative framework. It is not only able to leverage both parametric and non-parametric knowledge, but also helps to find the correct reasoning path through retrieval-generation interactions, which is very important for tasks that require multi-step reasoning. We conduct experiments on four question answering datasets, including single-hop QA and multi-hop QA tasks. Empirical results show that our method significantly improves the reasoning ability of large language models and outperforms previous baselines.",
+    "authors": [
+      "Zhangyin Feng",
+      "Xiaocheng Feng",
+      "Dezhi Zhao",
+      "Maojin Yang",
+      "Bing Qin"
+    ],
+    "publish_time": "20231008",
+    "link": "https://www.arxiv.org/abs/2310.05149"
+  },
+  {
+    "arxiv_id": "2310.14393",
+    "title": "Merging Generated and Retrieved Knowledge for Open-Domain QA",
+    "filepath": "all_paper1_downloads/2310.14393_Merging Generated and Retrieved Knowledge for Open.pdf",
+    "score": 0.7762324810028076,
+    "abstract": "Open-domain question answering (QA) systems are often built with retrieval modules. However, retrieving passages from a given source is known to suffer from insufficient knowledge coverage. Alternatively, prompting large language models (LLMs) to generate contextual passages based on their parametric knowledge has been shown to improve QA performance. Yet, LLMs tend to \"hallucinate\" content that conflicts with the retrieved knowledge. Based on the intuition that answers supported by both sources are more likely to be correct, we propose COMBO, a Compatibility-Oriented knowledge Merging for Better Open-domain QA framework, to effectively leverage the two sources of information. Concretely, we match LLM-generated passages with retrieved counterparts into compatible pairs, based on discriminators trained with silver compatibility labels. Then a Fusion-in-Decoder-based reader model handles passage pairs to arrive at the final answer. Experiments show that COMBO outperforms competitive baselines on three out of four tested open-domain QA benchmarks. Further analysis reveals that our proposed framework demonstrates greater efficacy in scenarios with a higher degree of knowledge conflicts.",
+    "authors": [
+      "Yunxiang Zhang",
+      "Muhammad Khalifa",
+      "Lajanugen Logeswaran",
+      "Moontae Lee",
+      "Honglak Lee",
+      "Lu Wang"
+    ],
+    "publish_time": "20231022",
+    "link": "https://www.arxiv.org/abs/2310.14393"
+  },
+  {
+    "arxiv_id": "2310.11511",
+    "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+    "filepath": "all_paper1_downloads/2310.11511_Self-RAG Learning to Retrieve Generate and Critiqu.pdf",
+    "score": 0.754001259803772,
+    "abstract": "Despite their remarkable capabilities, large language models (LLMs) often produce responses containing factual inaccuracies due to their sole reliance on the parametric knowledge they encapsulate. Retrieval-Augmented Generation (RAG), an ad hoc approach that augments LMs with retrieval of relevant knowledge, decreases such issues. However, indiscriminately retrieving and incorporating a fixed number of retrieved passages, regardless of whether retrieval is necessary, or passages are relevant, diminishes LM versatility or can lead to unhelpful response generation. We introduce a new framework called Self-Reflective Retrieval-Augmented Generation (Self-RAG) that enhances an LM's quality and factuality through retrieval and self-reflection. Our framework trains a single arbitrary LM that adaptively retrieves passages on-demand, and generates and reflects on retrieved passages and its own generations using special tokens, called reflection tokens. Generating reflection tokens makes the LM controllable during the inference phase, enabling it to tailor its behavior to diverse task requirements. Experiments show that Self-RAG (7B and 13B parameters) significantly outperforms state-of-the-art LLMs and retrieval-augmented models on a diverse set of tasks. Specifically, Self-RAG outperforms ChatGPT and retrieval-augmented Llama2-chat on Open-domain QA, reasoning and fact verification tasks, and it shows significant gains in improving factuality and citation accuracy for long-form generations relative to these models.",
+    "authors": [
+      "Akari Asai",
+      "Zeqiu Wu",
+      "Yizhong Wang",
+      "Avirup Sil",
+      "Hannaneh Hajishirzi"
+    ],
+    "publish_time": "20231017",
+    "link": "https://www.arxiv.org/abs/2310.11511"
+  },
+  {
+    "arxiv_id": "2410.10594",
+    "title": "VisRAG: Vision-based Retrieval-augmented Generation on Multi-modality Documents",
+    "filepath": "all_paper1_downloads/2410.10594_VisRAG Vision-based Retrieval-augmented Generation.pdf",
+    "score": 0.7539428472518921,
+    "abstract": "Retrieval-augmented generation (RAG) is an effective technique that enables large language models (LLMs) to utilize external knowledge sources for generation. However, current RAG systems are solely based on text, rendering it impossible to utilize vision information like layout and images that play crucial roles in real-world multi-modality documents. In this paper, we introduce VisRAG, which tackles this issue by establishing a vision-language model (VLM)-based RAG pipeline. In this pipeline, instead of first parsing the document to obtain text, the document is directly embedded using a VLM as an image and then retrieved to enhance the generation of a VLM. Compared to traditional text-based RAG, VisRAG maximizes the retention and utilization of the data information in the original documents, eliminating the information loss introduced during the parsing process. We collect both open-source and synthetic data to train the retriever in VisRAG and explore a variety of generation methods. Experiments demonstrate that VisRAG outperforms traditional RAG in both the retrieval and generation stages, achieving a 25--39\\% end-to-end performance gain over traditional text-based RAG pipeline. Further analysis reveals that VisRAG is effective in utilizing training data and demonstrates strong generalization capability, positioning it as a promising solution for RAG on multi-modality documents. Our code and data are available at https://github.com/openbmb/visrag .",
+    "authors": [
+      "Shi Yu",
+      "Chaoyue Tang",
+      "Bokai Xu",
+      "Junbo Cui",
+      "Junhao Ran",
+      "Yukun Yan",
+      "Zhenghao Liu",
+      "Shuo Wang",
+      "Xu Han",
+      "Zhiyuan Liu",
+      "Maosong Sun"
+    ],
+    "publish_time": "20241014",
+    "link": "https://www.arxiv.org/abs/2410.10594"
+  },
+  {
+    "arxiv_id": "2402.07630",
+    "title": "G-Retriever: Retrieval-Augmented Generation for Textual Graph Understanding and Question Answering",
+    "filepath": "all_paper1_downloads/2402.07630_G-Retriever Retrieval-Augmented Generation for Tex.pdf",
+    "score": 0.7537294030189514,
+    "abstract": "Given a graph with textual attributes, we enable users to `chat with their graph': that is, to ask questions about the graph using a conversational interface. In response to a user's questions, our method provides textual replies and highlights the relevant parts of the graph. While existing works integrate large language models (LLMs) and graph neural networks (GNNs) in various ways, they mostly focus on either conventional graph tasks (such as node, edge, and graph classification), or on answering simple graph queries on small or synthetic graphs. In contrast, we develop a flexible question-answering framework targeting real-world textual graphs, applicable to multiple applications including scene graph understanding, common sense reasoning, and knowledge graph reasoning. Toward this goal, we first develop a Graph Question Answering (GraphQA) benchmark with data collected from different tasks. Then, we propose our G-Retriever method, introducing the first retrieval-augmented generation (RAG) approach for general textual graphs, which can be fine-tuned to enhance graph understanding via soft prompting. To resist hallucination and to allow for textual graphs that greatly exceed the LLM's context window size, G-Retriever performs RAG over a graph by formulating this task as a Prize-Collecting Steiner Tree optimization problem. Empirical evaluations show that our method outperforms baselines on textual graph tasks from multiple domains, scales well with larger graph sizes, and mitigates hallucination.~\\footnote{Our codes and datasets are available at: \\url{https://github.com/XiaoxinHe/G-Retriever}}",
+    "authors": [
+      "Xiaoxin He",
+      "Yijun Tian",
+      "Yifei Sun",
+      "Nitesh V. Chawla",
+      "Thomas Laurent",
+      "Yann LeCun",
+      "Xavier Bresson",
+      "Bryan Hooi"
+    ],
+    "publish_time": "20240212",
+    "link": "https://www.arxiv.org/abs/2402.07630"
+  },
+  {
+    "arxiv_id": "2506.00054v1",
+    "title": "Retrieval-Augmented Generation: A Comprehensive Survey of Architectures, Enhancements, and Robustness Frontiers",
+    "filepath": "all_paper1_downloads/2506.00054v1_Retrieval-Augmented Generation A Comprehensive Sur.pdf",
+    "score": 0.70500248670578,
+    "abstract": "Retrieval-Augmented Generation (RAG) has emerged as a powerful paradigm to enhance large language models (LLMs) by conditioning generation on external evidence retrieved at inference time. While RAG addresses critical limitations of parametric knowledge storage-such as factual inconsistency and domain inflexibility-it introduces new challenges in retrieval quality, grounding fidelity, pipeline efficiency, and robustness against noisy or adversarial inputs. This survey provides a comprehensive synthesis of recent advances in RAG systems, offering a taxonomy that categorizes architectures into retriever-centric, generator-centric, hybrid, and robustness-oriented designs. We systematically analyze enhancements across retrieval optimization, context filtering, decoding control, and efficiency improvements, supported by comparative performance analyses on short-form and multi-hop question answering tasks. Furthermore, we review state-of-the-art evaluation frameworks and benchmarks, highlighting trends in retrieval-aware evaluation, robustness testing, and federated retrieval settings. Our analysis reveals recurring trade-offs between retrieval precision and generation flexibility, efficiency and faithfulness, and modularity and coordination. We conclude by identifying open challenges and future research directions, including adaptive retrieval architectures, real-time retrieval integration, structured reasoning over multi-hop evidence, and privacy-preserving retrieval mechanisms. This survey aims to consolidate current knowledge in RAG research and serve as a foundation for the next generation of retrieval-augmented language modeling systems.",
+    "authors": [
+      "Chaitanya Sharma"
+    ],
+    "publish_time": "20250528",
+    "link": "https://www.arxiv.org/abs/2506.00054v1"
+  },
+  {
+    "arxiv_id": "2412.07420v1",
+    "title": "RAG-based Question Answering over Heterogeneous Data and Text",
+    "filepath": "all_paper1_downloads/2412.07420v1_RAG-based Question Answering over Heterogeneous Da.pdf",
+    "score": 0.7049320936203003,
+    "abstract": "This article presents the QUASAR system for question answering over unstructured text, structured tables, and knowledge graphs, with unified treatment of all sources. The system adopts a RAG-based architecture, with a pipeline of evidence retrieval followed by answer generation, with the latter powered by a moderate-sized language model. Additionally and uniquely, QUASAR has components for question understanding, to derive crisper input for evidence retrieval, and for re-ranking and filtering the retrieved evidence before feeding the most informative pieces into the answer generation. Experiments with three different benchmarks demonstrate the high answering quality of our approach, being on par with or better than large GPT models, while keeping the computational cost and energy consumption orders of magnitude lower.",
+    "authors": [
+      "Philipp Christmann",
+      "Gerhard Weikum"
+    ],
+    "publish_time": "20241210",
+    "link": "https://www.arxiv.org/abs/2412.07420v1"
+  },
+  {
+    "arxiv_id": "2404.04302",
+    "title": "CBR-RAG: Case-Based Reasoning for Retrieval Augmented Generation in LLMs for Legal Question Answering",
+    "filepath": "all_paper1_downloads/2404.04302_CBR-RAG Case-Based Reasoning for Retrieval Augment.pdf",
+    "score": 0.704712450504303,
+    "abstract": "Retrieval-Augmented Generation (RAG) enhances Large Language Model (LLM) output by providing prior knowledge as context to input. This is beneficial for knowledge-intensive and expert reliant tasks, including legal question-answering, which require evidence to validate generated text outputs. We highlight that Case-Based Reasoning (CBR) presents key opportunities to structure retrieval as part of the RAG process in an LLM. We introduce CBR-RAG, where CBR cycle's initial retrieval stage, its indexing vocabulary, and similarity knowledge containers are used to enhance LLM queries with contextually relevant cases. This integration augments the original LLM query, providing a richer prompt. We present an evaluation of CBR-RAG, and examine different representations (i.e. general and domain-specific embeddings) and methods of comparison (i.e. inter, intra and hybrid similarity) on the task of legal question-answering. Our results indicate that the context provided by CBR's case reuse enforces similarity between relevant components of the questions and the evidence base leading to significant improvements in the quality of generated answers.",
+    "authors": [
+      "Nirmalie Wiratunga",
+      "Ramitha Abeyratne",
+      "Lasal Jayawardena",
+      "Kyle Martin",
+      "Stewart Massie",
+      "Ikechukwu Nkisi-Orji",
+      "Ruvan Weerasinghe",
+      "Anne Liret",
+      "Bruno Fleisch"
+    ],
+    "publish_time": "20240404",
+    "link": "https://www.arxiv.org/abs/2404.04302"
+  },
+  {
+    "arxiv_id": "2405.20834",
+    "title": "Retrieval Meets Reasoning: Even High-school Textbook Knowledge Benefits Multimodal Reasoning",
+    "filepath": "all_paper1_downloads/2405.20834_Retrieval Meets Reasoning Even High-school Textboo.pdf",
+    "score": 0.6783895492553711,
+    "abstract": "Large language models equipped with retrieval-augmented generation (RAG) represent a burgeoning field aimed at enhancing answering capabilities by leveraging external knowledge bases. Although the application of RAG with language-only models has been extensively explored, its adaptation into multimodal vision-language models remains nascent. Going beyond mere answer generation, the primary goal of multimodal RAG is to cultivate the models' ability to reason in response to relevant queries. To this end, we introduce a novel multimodal RAG framework named RMR (Retrieval Meets Reasoning). The RMR framework employs a bi-modal retrieval module to identify the most relevant question-answer pairs, which then serve as scaffolds for the multimodal reasoning process. This training-free approach not only encourages the model to engage deeply with the reasoning processes inherent in the retrieved content but also facilitates the generation of answers that are precise and richly interpretable. Surprisingly, utilizing solely the ScienceQA dataset, collected from elementary and high school science curricula, RMR significantly boosts the performance of various vision-language models across a spectrum of benchmark datasets, including A-OKVQA, MMBench, and SEED. These outcomes highlight the substantial potential of our multimodal retrieval and reasoning mechanism to improve the reasoning capabilities of vision-language models.",
+    "authors": [
+      "Cheng Tan",
+      "Jingxuan Wei",
+      "Linzhuang Sun",
+      "Zhangyang Gao",
+      "Siyuan Li",
+      "Bihui Yu",
+      "Ruifeng Guo",
+      "Stan Z. Li"
+    ],
+    "publish_time": "20240531",
+    "link": "https://www.arxiv.org/abs/2405.20834"
+  },
+  {
+    "arxiv_id": "2401.13256",
+    "title": "UniMS-RAG: A Unified Multi-source Retrieval-Augmented Generation for Personalized Dialogue Systems",
+    "filepath": "all_paper1_downloads/2401.13256_UniMS-RAG A Unified Multi-source Retrieval-Augment.pdf",
+    "score": 0.6505689024925232,
+    "abstract": "Large Language Models (LLMs) has shown exceptional capabilities in many natual language understanding and generation tasks. However, the personalization issue still remains a much-coveted property, especially when it comes to the multiple sources involved in the dialogue system. To better plan and incorporate the use of multiple sources in generating personalized response, we firstly decompose it into three sub-tasks: Knowledge Source Selection, Knowledge Retrieval, and Response Generation. We then propose a novel Unified Multi-Source Retrieval-Augmented Generation system (UniMS-RAG) Specifically, we unify these three sub-tasks with different formulations into the same sequence-to-sequence paradigm during the training, to adaptively retrieve evidences and evaluate the relevance on-demand using special tokens, called acting tokens and evaluation tokens. Enabling language models to generate acting tokens facilitates interaction with various knowledge sources, allowing them to adapt their behavior to diverse task requirements. Meanwhile, evaluation tokens gauge the relevance score between the dialogue context and the retrieved evidence. In addition, we carefully design a self-refinement mechanism to iteratively refine the generated response considering 1) the consistency scores between the generated response and retrieved evidence; and 2) the relevance scores. Experiments on two personalized datasets (DuLeMon and KBP) show that UniMS-RAG achieves state-of-the-art performance on the knowledge source selection and response generation task with itself as a retriever in a unified manner. Extensive analyses and discussions are provided for shedding some new perspectives for personalized dialogue systems.",
+    "authors": [
+      "Hongru Wang",
+      "Wenyu Huang",
+      "Yang Deng",
+      "Rui Wang",
+      "Zezhong Wang",
+      "Yufei Wang",
+      "Fei Mi",
+      "Jeff Z. Pan",
+      "Kam-Fai Wong"
+    ],
+    "publish_time": "20240124",
+    "link": "https://www.arxiv.org/abs/2401.13256"
+  },
+  {
+    "arxiv_id": "2401.18059",
+    "title": "RAPTOR: Recursive Abstractive Processing for Tree-Organized Retrieval",
+    "filepath": "all_paper1_downloads/2401.18059_RAPTOR Recursive Abstractive Processing for Tree-O.pdf",
+    "score": 0.591882050037384,
+    "abstract": "Retrieval-augmented language models can better adapt to changes in world state and incorporate long-tail knowledge. However, most existing methods retrieve only short contiguous chunks from a retrieval corpus, limiting holistic understanding of the overall document context. We introduce the novel approach of recursively embedding, clustering, and summarizing chunks of text, constructing a tree with differing levels of summarization from the bottom up. At inference time, our RAPTOR model retrieves from this tree, integrating information across lengthy documents at different levels of abstraction. Controlled experiments show that retrieval with recursive summaries offers significant improvements over traditional retrieval-augmented LMs on several tasks. On question-answering tasks that involve complex, multi-step reasoning, we show state-of-the-art results; for example, by coupling RAPTOR retrieval with the use of GPT-4, we can improve the best performance on the QuALITY benchmark by 20% in absolute accuracy.",
+    "authors": [
+      "Parth Sarthi",
+      "Salman Abdullah",
+      "Aditi Tuli",
+      "Shubh Khanna",
+      "Anna Goldie",
+      "Christopher D. Manning"
+    ],
+    "publish_time": "20240131",
+    "link": "https://www.arxiv.org/abs/2401.18059"
+  },
+  {
+    "arxiv_id": "2310.05002",
+    "title": "Self-Knowledge Guided Retrieval Augmentation for Large Language Models",
+    "filepath": "all_paper1_downloads/2310.05002_Self-Knowledge Guided Retrieval Augmentation for L.pdf",
+    "score": 0.5617244243621826,
+    "abstract": "Large language models (LLMs) have shown superior performance without task-specific fine-tuning. Despite the success, the knowledge stored in the parameters of LLMs could still be incomplete and difficult to update due to the computational costs. As complementary, retrieval-based methods can offer non-parametric world knowledge and improve the performance on tasks such as question answering. However, we find that the retrieved knowledge does not always help and even has a negative impact on original responses occasionally. To better make use of both internal knowledge and external world knowledge, we investigate eliciting the model's ability to recognize what they know and do not know (which is also called self-knowledge) and propose Self-Knowledge guided Retrieval augmentation (SKR), a simple yet effective method which can let LLMs refer to the questions they have previously encountered and adaptively call for external resources when dealing with new questions. We evaluate SKR on multiple datasets and demonstrate that it outperforms chain-of-thought based and fully retrieval-based methods by using either InstructGPT or ChatGPT.",
+    "authors": [
+      "Yile Wang",
+      "Peng Li",
+      "Maosong Sun",
+      "Yang Liu"
+    ],
+    "publish_time": "20231008",
+    "link": "https://www.arxiv.org/abs/2310.05002"
+  },
+  {
+    "arxiv_id": "2305.06983",
+    "title": "Active Retrieval Augmented Generation",
+    "filepath": "all_paper1_downloads/2305.06983_Active Retrieval Augmented Generation.pdf",
+    "score": 0.5615981817245483,
+    "abstract": "Despite the remarkable ability of large language models (LMs) to comprehend and generate language, they have a tendency to hallucinate and create factually inaccurate output. Augmenting LMs by retrieving information from external knowledge resources is one promising solution. Most existing retrieval augmented LMs employ a retrieve-and-generate setup that only retrieves information once based on the input. This is limiting, however, in more general scenarios involving generation of long texts, where continually gathering information throughout generation is essential. In this work, we provide a generalized view of active retrieval augmented generation, methods that actively decide when and what to retrieve across the course of the generation. We propose Forward-Looking Active REtrieval augmented generation (FLARE), a generic method which iteratively uses a prediction of the upcoming sentence to anticipate future content, which is then utilized as a query to retrieve relevant documents to regenerate the sentence if it contains low-confidence tokens. We test FLARE along with baselines comprehensively over 4 long-form knowledge-intensive generation tasks/datasets. FLARE achieves superior or competitive performance on all tasks, demonstrating the effectiveness of our method. Code and datasets are available at https://github.com/jzbjyb/FLARE.",
+    "authors": [
+      "Zhengbao Jiang",
+      "Frank F. Xu",
+      "Luyu Gao",
+      "Zhiqing Sun",
+      "Qian Liu",
+      "Jane Dwivedi-Yu",
+      "Yiming Yang",
+      "Jamie Callan",
+      "Graham Neubig"
+    ],
+    "publish_time": "20230511",
+    "link": "https://www.arxiv.org/abs/2305.06983"
+  },
+  {
+    "arxiv_id": "2310.01352",
+    "title": "RA-DIT: Retrieval-Augmented Dual Instruction Tuning",
+    "filepath": "all_paper1_downloads/2310.01352_RA-DIT Retrieval-Augmented Dual Instruction Tuning.pdf",
+    "score": 0.5307533144950867,
+    "abstract": "Retrieval-augmented language models (RALMs) improve performance by accessing long-tail and up-to-date knowledge from external data stores, but are challenging to build. Existing approaches require either expensive retrieval-specific modifications to LM pre-training or use post-hoc integration of the data store that leads to suboptimal performance. We introduce Retrieval-Augmented Dual Instruction Tuning (RA-DIT), a lightweight fine-tuning methodology that provides a third option by retrofitting any LLM with retrieval capabilities. Our approach operates in two distinct fine-tuning steps: (1) one updates a pre-trained LM to better use retrieved information, while (2) the other updates the retriever to return more relevant results, as preferred by the LM. By fine-tuning over tasks that require both knowledge utilization and contextual awareness, we demonstrate that each stage yields significant performance improvements, and using both leads to additional gains. Our best model, RA-DIT 65B, achieves state-of-the-art performance across a range of knowledge-intensive zero- and few-shot learning benchmarks, significantly outperforming existing in-context RALM approaches by up to +8.9% in 0-shot setting and +1.4% in 5-shot setting on average.",
+    "authors": [
+      "Xi Victoria Lin",
+      "Xilun Chen",
+      "Mingda Chen",
+      "Weijia Shi",
+      "Maria Lomeli",
+      "Rich James",
+      "Pedro Rodriguez",
+      "Jacob Kahn",
+      "Gergely Szilvasy",
+      "Mike Lewis",
+      "Luke Zettlemoyer",
+      "Scott Yih"
+    ],
+    "publish_time": "20231002",
+    "link": "https://www.arxiv.org/abs/2310.01352"
+  },
+  {
+    "arxiv_id": "2408.01107",
+    "title": "BioRAG: A RAG-LLM Framework for Biological Question Reasoning",
+    "filepath": "all_paper1_downloads/2408.01107_BioRAG A RAG-LLM Framework for Biological Question.pdf",
+    "score": 0.5307170748710632,
+    "abstract": "The question-answering system for Life science research, which is characterized by the rapid pace of discovery, evolving insights, and complex interactions among knowledge entities, presents unique challenges in maintaining a comprehensive knowledge warehouse and accurate information retrieval. To address these issues, we introduce BioRAG, a novel Retrieval-Augmented Generation (RAG) with the Large Language Models (LLMs) framework. Our approach starts with parsing, indexing, and segmenting an extensive collection of 22 million scientific papers as the basic knowledge, followed by training a specialized embedding model tailored to this domain. Additionally, we enhance the vector retrieval process by incorporating a domain-specific knowledge hierarchy, which aids in modeling the intricate interrelationships among each query and context. For queries requiring the most current information, BioRAG deconstructs the question and employs an iterative retrieval process incorporated with the search engine for step-by-step reasoning. Rigorous experiments have demonstrated that our model outperforms fine-tuned LLM, LLM with search engines, and other scientific RAG frameworks across multiple life science question-answering tasks.",
+    "authors": [
+      "Chengrui Wang",
+      "Qingqing Long",
+      "Meng Xiao",
+      "Xunxin Cai",
+      "Chengjun Wu",
+      "Zhen Meng",
+      "Xuezhi Wang",
+      "Yuanchun Zhou"
+    ],
+    "publish_time": "20240802",
+    "link": "https://www.arxiv.org/abs/2408.01107"
+  },
+  {
+    "arxiv_id": "2212.10509",
+    "title": "Interleaving Retrieval with Chain-of-Thought Reasoning for Knowledge-Intensive Multi-Step Questions",
+    "filepath": "all_paper1_downloads/2212.10509_Interleaving Retrieval with Chain-of-Thought Reaso.pdf",
+    "score": 0.5306951999664307,
+    "abstract": "Prompting-based large language models (LLMs) are surprisingly powerful at generating natural language reasoning steps or Chains-of-Thoughts (CoT) for multi-step question answering (QA). They struggle, however, when the necessary knowledge is either unavailable to the LLM or not up-to-date within its parameters. While using the question to retrieve relevant text from an external knowledge source helps LLMs, we observe that this one-step retrieve-and-read approach is insufficient for multi-step QA. Here, \\textit{what to retrieve} depends on \\textit{what has already been derived}, which in turn may depend on \\textit{what was previously retrieved}. To address this, we propose IRCoT, a new approach for multi-step QA that interleaves retrieval with steps (sentences) in a CoT, guiding the retrieval with CoT and in turn using retrieved results to improve CoT. Using IRCoT with GPT3 substantially improves retrieval (up to 21 points) as well as downstream QA (up to 15 points) on four datasets: HotpotQA, 2WikiMultihopQA, MuSiQue, and IIRC. We observe similar substantial gains in out-of-distribution (OOD) settings as well as with much smaller models such as Flan-T5-large without additional training. IRCoT reduces model hallucination, resulting in factually more accurate CoT reasoning. Code, data, and prompts are available at \\url{https://github.com/stonybrooknlp/ircot}",
+    "authors": [
+      "Harsh Trivedi",
+      "Niranjan Balasubramanian",
+      "Tushar Khot",
+      "Ashish Sabharwal"
+    ],
+    "publish_time": "20221220",
+    "link": "https://www.arxiv.org/abs/2212.10509"
+  },
+  {
+    "arxiv_id": "2305.14283",
+    "title": "Query Rewriting for Retrieval-Augmented Large Language Models",
+    "filepath": "all_paper1_downloads/2305.14283_Query Rewriting for Retrieval-Augmented Large Lang.pdf",
+    "score": 0.5306754112243652,
+    "abstract": "Large Language Models (LLMs) play powerful, black-box readers in the retrieve-then-read pipeline, making remarkable progress in knowledge-intensive tasks. This work introduces a new framework, Rewrite-Retrieve-Read instead of the previous retrieve-then-read for the retrieval-augmented LLMs from the perspective of the query rewriting. Unlike prior studies focusing on adapting either the retriever or the reader, our approach pays attention to the adaptation of the search query itself, for there is inevitably a gap between the input text and the needed knowledge in retrieval. We first prompt an LLM to generate the query, then use a web search engine to retrieve contexts. Furthermore, to better align the query to the frozen modules, we propose a trainable scheme for our pipeline. A small language model is adopted as a trainable rewriter to cater to the black-box LLM reader. The rewriter is trained using the feedback of the LLM reader by reinforcement learning. Evaluation is conducted on downstream tasks, open-domain QA and multiple-choice QA. Experiments results show consistent performance improvement, indicating that our framework is proven effective and scalable, and brings a new framework for retrieval-augmented LLM.",
+    "authors": [
+      "Xinbei Ma",
+      "Yeyun Gong",
+      "Pengcheng He",
+      "Hai Zhao",
+      "Nan Duan"
+    ],
+    "publish_time": "20230523",
+    "link": "https://www.arxiv.org/abs/2305.14283"
+  },
+  {
+    "arxiv_id": "2405.12363",
+    "title": "Question-Based Retrieval using Atomic Units for Enterprise RAG",
+    "filepath": "all_paper1_downloads/2405.12363_Question-Based Retrieval using Atomic Units for En.pdf",
+    "score": 0.49952951073646545,
+    "abstract": "Enterprise retrieval augmented generation (RAG) offers a highly flexible framework for combining powerful large language models (LLMs) with internal, possibly temporally changing, documents. In RAG, documents are first chunked. Relevant chunks are then retrieved for a user query, which are passed as context to a synthesizer LLM to generate the query response. However, the retrieval step can limit performance, as incorrect chunks can lead the synthesizer LLM to generate a false response. This work applies a zero-shot adaptation of standard dense retrieval steps for more accurate chunk recall. Specifically, a chunk is first decomposed into atomic statements. A set of synthetic questions are then generated on these atoms (with the chunk as the context). Dense retrieval involves finding the closest set of synthetic questions, and associated chunks, to the user query. It is found that retrieval with the atoms leads to higher recall than retrieval with chunks. Further performance gain is observed with retrieval using the synthetic questions generated over the atoms. Higher recall at the retrieval step enables higher performance of the enterprise LLM using the RAG pipeline.",
+    "authors": [
+      "Vatsal Raina",
+      "Mark Gales"
+    ],
+    "publish_time": "20240520",
+    "link": "https://www.arxiv.org/abs/2405.12363"
+  },
+  {
+    "arxiv_id": "2007.01282",
+    "title": "Leveraging Passage Retrieval with Generative Models for Open Domain Question Answering",
+    "filepath": "all_paper1_downloads/2007.01282_Leveraging Passage Retrieval with Generative Model.pdf",
+    "score": 0.49951815605163574,
+    "abstract": "Generative models for open domain question answering have proven to be competitive, without resorting to external knowledge. While promising, this approach requires to use models with billions of parameters, which are expensive to train and query. In this paper, we investigate how much these models can benefit from retrieving text passages, potentially containing evidence. We obtain state-of-the-art results on the Natural Questions and TriviaQA open benchmarks. Interestingly, we observe that the performance of this method significantly improves when increasing the number of retrieved passages. This is evidence that generative models are good at aggregating and combining evidence from multiple passages.",
+    "authors": [
+      "Gautier Izacard",
+      "Edouard Grave"
+    ],
+    "publish_time": "20200702",
+    "link": "https://www.arxiv.org/abs/2007.01282"
+  },
+  {
+    "arxiv_id": "2406.14891",
+    "title": "Generate-then-Ground in Retrieval-Augmented Generation for Multi-hop Question Answering",
+    "filepath": "all_paper1_downloads/2406.14891_Generate-then-Ground in Retrieval-Augmented Genera.pdf",
+    "score": 0.4683164358139038,
+    "abstract": "Multi-Hop Question Answering (MHQA) tasks present a significant challenge for large language models (LLMs) due to the intensive knowledge required. Current solutions, like Retrieval-Augmented Generation, typically retrieve potential documents from an external corpus to read an answer. However, the performance of this retrieve-then-read paradigm is constrained by the retriever and the inevitable noise in the retrieved documents. To mitigate these challenges, we introduce a novel generate-then-ground (GenGround) framework, synergizing the parametric knowledge of LLMs and external documents to solve a multi-hop question. GenGround empowers LLMs to alternate two phases until the final answer is derived: (1) formulate a simpler, single-hop question and directly generate the answer; (2) ground the question-answer pair in retrieved documents, amending any wrong predictions in the answer. We also propose an instructional grounding distillation method to generalize our method into smaller models. Extensive experiments conducted on four datasets illustrate the superiority of our method.",
+    "authors": [
+      "Zhengliang Shi",
+      "Weiwei Sun",
+      "Shen Gao",
+      "Pengjie Ren",
+      "Zhumin Chen",
+      "Zhaochun Ren"
+    ],
+    "publish_time": "20240621",
+    "link": "https://www.arxiv.org/abs/2406.14891"
+  },
+  {
+    "arxiv_id": "2405.20680",
+    "title": "Unraveling and Mitigating Retriever Inconsistencies in Retrieval-Augmented Large Language Models",
+    "filepath": "all_paper1_downloads/2405.20680_Unraveling and Mitigating Retriever Inconsistencie.pdf",
+    "score": 0.43748193979263306,
+    "abstract": "Although Retrieval-Augmented Large Language Models (RALMs) demonstrate their superiority in terms of factuality, they do not consistently outperform the original retrieval-free Language Models (LMs). Our experiments reveal that this example-level performance inconsistency exists not only between retrieval-augmented and retrieval-free LM but also among different retrievers. To understand this phenomenon, we investigate the degeneration behavior of RALMs and theoretically decompose it into four categories. Further analysis based on our decomposition reveals that the innate difference in knowledge sources and the unpredictable degeneration of the reader model contribute most to the inconsistency. Drawing from our analysis, we introduce Ensemble of Retrievers (EoR), a trainable framework that can adaptively retrieve from different knowledge sources and effectively decrease unpredictable reader errors. Our experiments on Open Domain Question Answering show that EoR substantially improves performance over the RALM with a single retriever by considerably reducing inconsistent behaviors.",
+    "authors": [
+      "Mingda Li",
+      "Xinyu Li",
+      "Yifan Chen",
+      "Wenfeng Xuan",
+      "Weinan Zhang"
+    ],
+    "publish_time": "20240531",
+    "link": "https://www.arxiv.org/abs/2405.20680"
+  },
+  {
+    "arxiv_id": "2407.01219",
+    "title": "Searching for Best Practices in Retrieval-Augmented Generation",
+    "filepath": "all_paper1_downloads/2407.01219_Searching for Best Practices in Retrieval-Augmente.pdf",
+    "score": 0.43746259808540344,
+    "abstract": "Retrieval-augmented generation (RAG) techniques have proven to be effective in integrating up-to-date information, mitigating hallucinations, and enhancing response quality, particularly in specialized domains. While many RAG approaches have been proposed to enhance large language models through query-dependent retrievals, these approaches still suffer from their complex implementation and prolonged response times. Typically, a RAG workflow involves multiple processing steps, each of which can be executed in various ways. Here, we investigate existing RAG approaches and their potential combinations to identify optimal RAG practices. Through extensive experiments, we suggest several strategies for deploying RAG that balance both performance and efficiency. Moreover, we demonstrate that multimodal retrieval techniques can significantly enhance question-answering capabilities about visual inputs and accelerate the generation of multimodal content using a \"retrieval as generation\" strategy.",
+    "authors": [
+      "Xiaohua Wang",
+      "Zhenghua Wang",
+      "Xuan Gao",
+      "Feiran Zhang",
+      "Yixin Wu",
+      "Zhibo Xu",
+      "Tianyuan Shi",
+      "Zhengyuan Wang",
+      "Shizheng Li",
+      "Qi Qian",
+      "Ruicheng Yin",
+      "Changze Lv",
+      "Xiaoqing Zheng",
+      "Xuanjing Huang"
+    ],
+    "publish_time": "20240701",
+    "link": "https://www.arxiv.org/abs/2407.01219"
+  },
+  {
+    "arxiv_id": "2112.04426",
+    "title": "Improving language models by retrieving from trillions of tokens",
+    "filepath": "all_paper1_downloads/2112.04426_Improving language models by retrieving from trill.pdf",
+    "score": 0.40703704953193665,
+    "abstract": "We enhance auto-regressive language models by conditioning on document chunks retrieved from a large corpus, based on local similarity with preceding tokens. With a $2$ trillion token database, our Retrieval-Enhanced Transformer (RETRO) obtains comparable performance to GPT-3 and Jurassic-1 on the Pile, despite using 25$\\times$ fewer parameters. After fine-tuning, RETRO performance translates to downstream knowledge-intensive tasks such as question answering. RETRO combines a frozen Bert retriever, a differentiable encoder and a chunked cross-attention mechanism to predict tokens based on an order of magnitude more data than what is typically consumed during training. We typically train RETRO from scratch, yet can also rapidly RETROfit pre-trained transformers with retrieval and still achieve good performance. Our work opens up new avenues for improving language models through explicit memory at unprecedented scale.",
+    "authors": [
+      "Sebastian Borgeaud",
+      "Arthur Mensch",
+      "Jordan Hoffmann",
+      "Trevor Cai",
+      "Eliza Rutherford",
+      "Katie Millican",
+      "George van den Driessche",
+      "Jean-Baptiste Lespiau",
+      "Bogdan Damoc",
+      "Aidan Clark",
+      "Diego de Las Casas",
+      "Aurelia Guy",
+      "Jacob Menick",
+      "Roman Ring",
+      "Tom Hennigan",
+      "Saffron Huang",
+      "Loren Maggiore",
+      "Chris Jones",
+      "Albin Cassirer",
+      "Andy Brock",
+      "Michela Paganini",
+      "Geoffrey Irving",
+      "Oriol Vinyals",
+      "Simon Osindero",
+      "Karen Simonyan",
+      "Jack W. Rae",
+      "Erich Elsen",
+      "Laurent Sifre"
+    ],
+    "publish_time": "20211208",
+    "link": "https://www.arxiv.org/abs/2112.04426"
+  },
+  {
+    "arxiv_id": "2404.00610",
+    "title": "RQ-RAG: Learning to Refine Queries for Retrieval Augmented Generation",
+    "filepath": "all_paper1_downloads/2404.00610_RQ-RAG Learning to Refine Queries for Retrieval Au.pdf",
+    "score": 0.40697696805000305,
+    "abstract": "Large Language Models (LLMs) exhibit remarkable capabilities but are prone to generating inaccurate or hallucinatory responses. This limitation stems from their reliance on vast pretraining datasets, making them susceptible to errors in unseen scenarios. To tackle these challenges, Retrieval-Augmented Generation (RAG) addresses this by incorporating external, relevant documents into the response generation process, thus leveraging non-parametric knowledge alongside LLMs' in-context learning abilities. However, existing RAG implementations primarily focus on initial input for context retrieval, overlooking the nuances of ambiguous or complex queries that necessitate further clarification or decomposition for accurate responses. To this end, we propose learning to Refine Query for Retrieval Augmented Generation (RQ-RAG) in this paper, endeavoring to enhance the model by equipping it with capabilities for explicit rewriting, decomposition, and disambiguation. Our experimental results indicate that our method, when applied to a 7B Llama2 model, surpasses the previous state-of-the-art (SOTA) by an average of 1.9\\% across three single-hop QA datasets, and also demonstrates enhanced performance in handling complex, multi-hop QA datasets. Our code is available at https://github.com/chanchimin/RQ-RAG.",
+    "authors": [
+      "Chi-Min Chan",
+      "Chunpu Xu",
+      "Ruibin Yuan",
+      "Hongyin Luo",
+      "Wei Xue",
+      "Yike Guo",
+      "Jie Fu"
+    ],
+    "publish_time": "20240331",
+    "link": "https://www.arxiv.org/abs/2404.00610"
+  },
+  {
+    "arxiv_id": "2002.08909",
+    "title": "REALM: Retrieval-Augmented Language Model Pre-Training",
+    "filepath": "all_paper1_downloads/2002.08909_REALM Retrieval-Augmented Language Model Pre-Train.pdf",
+    "score": 0.4069587290287018,
+    "abstract": "Language model pre-training has been shown to capture a surprising amount of world knowledge, crucial for NLP tasks such as question answering. However, this knowledge is stored implicitly in the parameters of a neural network, requiring ever-larger networks to cover more facts. To capture knowledge in a more modular and interpretable way, we augment language model pre-training with a latent knowledge retriever, which allows the model to retrieve and attend over documents from a large corpus such as Wikipedia, used during pre-training, fine-tuning and inference. For the first time, we show how to pre-train such a knowledge retriever in an unsupervised manner, using masked language modeling as the learning signal and backpropagating through a retrieval step that considers millions of documents. We demonstrate the effectiveness of Retrieval-Augmented Language Model pre-training (REALM) by fine-tuning on the challenging task of Open-domain Question Answering (Open-QA). We compare against state-of-the-art models for both explicit and implicit knowledge storage on three popular Open-QA benchmarks, and find that we outperform all previous methods by a significant margin (4-16% absolute accuracy), while also providing qualitative benefits such as interpretability and modularity.",
+    "authors": [
+      "Kelvin Guu",
+      "Kenton Lee",
+      "Zora Tung",
+      "Panupong Pasupat",
+      "Ming-Wei Chang"
+    ],
+    "publish_time": "20200210",
+    "link": "https://www.arxiv.org/abs/2002.08909"
+  },
+  {
+    "arxiv_id": "2210.02928",
+    "title": "MuRAG: Multimodal Retrieval-Augmented Generator for Open Question Answering over Images and Text",
+    "filepath": "all_paper1_downloads/2210.02928_MuRAG Multimodal Retrieval-Augmented Generator for.pdf",
+    "score": 0.40694475173950195,
+    "abstract": "While language Models store a massive amount of world knowledge implicitly in their parameters, even very large models often fail to encode information about rare entities and events, while incurring huge computational costs. Recently, retrieval-augmented models, such as REALM, RAG, and RETRO, have incorporated world knowledge into language generation by leveraging an external non-parametric index and have demonstrated impressive performance with constrained model sizes. However, these methods are restricted to retrieving only textual knowledge, neglecting the ubiquitous amount of knowledge in other modalities like images -- much of which contains information not covered by any text. To address this limitation, we propose the first Multimodal Retrieval-Augmented Transformer (MuRAG), which accesses an external non-parametric multimodal memory to augment language generation. MuRAG is pre-trained with a mixture of large-scale image-text and text-only corpora using a joint contrastive and generative loss. We perform experiments on two different datasets that require retrieving and reasoning over both images and text to answer a given query: WebQA, and MultimodalQA. Our results show that MuRAG achieves state-of-the-art accuracy, outperforming existing models by 10-20\\% absolute on both datasets and under both distractor and full-wiki settings.",
+    "authors": [
+      "Wenhu Chen",
+      "Hexiang Hu",
+      "Xi Chen",
+      "Pat Verga",
+      "William W. Cohen"
+    ],
+    "publish_time": "20221006",
+    "link": "https://www.arxiv.org/abs/2210.02928"
+  }
+]

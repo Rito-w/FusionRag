@@ -1,0 +1,1109 @@
+Title: LevelRAG: Enhancing Retrieval-Augmented Generation with Multi-hop Logic Planning over Rewriting Augmented Searchers
+arXiv ID: 2502.18139
+Score: 0.9949
+Total Pages: 11
+Extraction Time: 2025-06-21 01:03:08
+================================================================================
+
+
+--- Page 1 ---
+LevelRAG: Enhancing Retrieval-Augmented Generation with
+Multi-hop Logic Planning over Rewriting Augmented Searchers
+Zhuocheng Zhang1, 3, Yang Feng1, 2, 3 *, Min Zhang4
+1Key Laboratory of Intelligent Information Processing,
+Institute of Computing Technology, Chinese Academy of Sciences (ICT/CAS)
+2Key Laboratory of AI Safety, Chinese Academy of Sciences
+3University of Chinese Academy of Sciences, Beijing, China
+4Harbin Institute of Technology (Shenzhen), Shenzhen, China
+zhangzhuocheng20z@ict.ac.cn, fengyang@ict.ac.cn, zhangminmt@hotmail.com
+Abstract
+Retrieval-Augmented Generation (RAG) is a crucial method
+for mitigating hallucinations in Large Language Models
+(LLMs) and integrating external knowledge into their re-
+sponses. Existing RAG methods typically employ query
+rewriting to clarify the user intent and manage multi-hop
+logic, while using hybrid retrieval to expand search scope.
+However, the tight coupling of query rewriting to the dense
+retriever limits its compatibility with hybrid retrieval, im-
+peding further RAG performance improvements. To address
+this challenge, we introduce a high-level searcher that de-
+composes complex queries into atomic queries, independent
+of any retriever-specific optimizations. Additionally, to har-
+ness the strengths of sparse retrievers for precise keyword re-
+trieval, we have developed a new sparse searcher that employs
+Lucene syntax to enhance retrieval accuracy. Alongside web
+and dense searchers, these components seamlessly collabo-
+rate within our proposed method, LevelRAG . In LevelRAG,
+the high-level searcher orchestrates the retrieval logic, while
+the low-level searchers (sparse, web, and dense) refine the
+queries for optimal retrieval. This approach enhances both the
+completeness and accuracy of the retrieval process, overcom-
+ing challenges associated with current query rewriting tech-
+niques in hybrid retrieval scenarios. Empirical experiments
+conducted on five datasets, encompassing both single-hop
+and multi-hop question answering tasks, demonstrate the su-
+perior performance of LevelRAG compared to existing RAG
+methods. Notably, LevelRAG outperforms the state-of-the-art
+proprietary model, GPT4o, underscoring its effectiveness and
+potential impact on the RAG field.
+Code — https://github.com/ictnlp/LevelRAG
+Introduction
+The introduction of scaling laws (Kaplan et al. 2020; Hoff-
+mann et al. 2022) has led to significant advancements in
+Large Language Models (LLMs) (Brown et al. 2020; Tou-
+vron et al. 2023a,b; Dubey et al. 2024; Abdin et al. 2024),
+enabling them to achieve remarkable successes across a
+wide range of tasks (Zhang et al. 2023; Jiang et al. 2024a;
+Yang et al. 2023; Yao et al. 2023; Lee et al. 2024). Despite
+their extensive training and vast knowledge base, LLMs con-
+tinue to encounter challenges in accurately handling certain
+*Corresponding author: Yang Feng.types of information, including less commonly known facts,
+specialized domain knowledge, and events that occurred af-
+ter their pre-training phase (Mallen et al. 2023a; Huang et al.
+2023). In these cases, LLMs often fail to provide accurate re-
+sponses and may even produce hallucinated answers. Hence
+Retrieval-Augmented Generation (RAG) is proposed to en-
+hance LLM-generated responses by appending real-time re-
+trieval of relevant external knowledge to user input of LLMs,
+offering a promising solution to address these challenges
+(Gao et al. 2024; Ding et al. 2024). However, due to the
+constraints of the search techniques and the coverage of
+databases, the retrieval results are often inaccurate and in-
+complete, affecting the effectiveness of RAG systems.
+Many researchers have made efforts to optimize RAG sys-
+tems by improving the accuracy and completeness of re-
+trieval results. To improve accuracy, researchers have devel-
+oped numerous query rewriting techniques (Ma et al. 2023;
+Asai et al. 2023; Chan et al. 2024) which try to refine the
+query fed to a retriever to make the query better match with
+the retriever and better align to user intents. On the other
+hand, to improve completeness, hybrid retrieval is employed
+to broaden the scope of retrieval, which integrates multiple
+retrievers and databases to maximize the advantages of di-
+verse retrievers (Lu et al. 2022; Wang et al. 2023; Yu et al.
+2022; Zhang et al. 2020; Li et al. 2024).
+To enhance both the completeness and accuracy of the re-
+trieval process, it is a good choice to combine the superi-
+ority of the two methods mentioned above. However, a key
+challenge arises from the fact that current query rewriting
+techniques are closely tied to the dense retriever, rendering
+them unsuitable for hybrid retrieval scenarios. Meanwhile,
+to achieve complete retrieval results, we need to sort out
+all the retrieval results for hybrid retrieval to avoid over-
+lapping and contradictory knowledge input to LLMs. Be-
+sides, multi-hop planning for retrieval is also necessary as
+not all the user intents can be satisfied with one retrieval
+when fed with complex user input. To address these limi-
+tations, we propose LevelRAG , a novel approach that de-
+couples retrieval logic from retriever-specific rewriting to al-
+low for greater flexibility for either function to achieve bet-
+ter expertise, and meanwhile involves interactions between
+them for global optimization. As shown in Figure 1, Level-
+RAG is composed of a high-level searcher which is respon-arXiv:2502.18139v1  [cs.CL]  25 Feb 2025
+
+--- Page 2 ---
+Sparse Retriever
+Dense Retriever
+Web Search EngineOverall Pipeline
+① Rewrite
+/ Refine ② Search
+③ FeedbackLocal Database
+Documents① Decompose /
+Supplement ② Search
+③ Summarize
+& FeedbackLow-Level Searchers
+Documents
+Atomic QueryDocuments
+Documents
+DocumentsHigh-Level SearcherSparse Searcher
+Specialized Query
+Atomic Queries
+Dense Searcher
+Web SearcherLow-Level SearcherHigh-Level Searcher
+User QueryUser Query
+Generator① Decompose
+/ Supplement 
+② Summarize
+& Verify 
+Heterogeneous Low-Level Searchers
+Hierarchical Retrieval W orkflowIterative Atomic
+Query RewritingIterative Multi-hop
+Question Decomposition
+Information
+Aggregation Figure 1: Overview of the LevelRAG. The user query is initially processed by the high-level searcher. The decomposed atomic
+queries are handled by low-level searchers, which may rewrite and refine the queries before sending them into their correspond-
+ing retrievers. The retrieved documents are aggregated and summarized by the high-level searcher, then fed to the generator to
+generate the response. Both the high-level searcher and low-level searchers employs the feedback from the retrieved documents
+to refine or supplement their outputs.
+sible for multi-hop logic planning along with information
+combing, and multiple low-level searchers which is the op-
+erator supporting query rewriting. The high-level searcher
+conducts planning to decompose the user query into atomic
+queries for low-level searchers to retrieve, then summarizes
+the retrieved results of low-level searchers for information
+combing. In the process of summarization, it also determines
+whether to invoke next-hop planning to supplement new
+atomic queries according to the completeness of summa-
+rized information for the user input. The low-level searchers
+operate the real retrieval over databases with atomic queries
+from the high-level searcher, which may be rewritten to bet-
+ter fit the corresponding retriever. Specifically, we employ
+a sparse searcher, a dense searcher, and a web searcher as
+the low-level searchers, among which the sparse searcher is
+good at exact retrieval for entities with Lucene syntax, the
+dense searcher is skilled at retrieval with complex queries
+which are transformed into pseudo-documents, and the web
+searcher is employed to leverage the vast knowledge from
+the internet to supplement the local database. In conjunc-
+tion with the high-level searcher, these searchers collectively
+guarantee the completeness and accuracy of the retrieval
+process.
+We conducted empirical experiments on five datasets,
+including both single-hop question answering (QA) tasks
+and multi-hop QA tasks. The experimental results demon-
+strate that LevelRAG significantly outperforms current RAG
+methods across these tasks. Notably, the response quality of
+our proposed method surpasses the state-of-the-art propri-
+etary model, GPT4o, providing strong evidence for the su-
+periority of our approach. Additionally, the mere utilization
+of our proposed sparse searcher outperforms numerous ex-isting methods, which further reveals the effectiveness of our
+novel rewriting approach.
+In conclusion, our key contributions are as follows:
+• To address the challenge associated with the tight cou-
+pling of query rewriting to dense retrievers in hybrid
+retrieval scenarios, we propose LevelRAG, a method
+that integrates the high-level searcher with low-level
+searchers (sparse, web, and dense). This integration al-
+lows for optimal retrieval by refining queries across dif-
+ferent retrievers, enhancing both the breadth and accu-
+racy of the retrieval process.
+• Targeting leveraging the strengths of sparse retrieval
+methods, particularly in precise keyword-based searches,
+we develop a new sparse searcher that leverages Lucene
+syntax to enhance retrieval accuracy.
+Related Works
+Query Rewriting
+Traditional RAG directly employs the user input as the query
+to the retriever to retrieve relevant information. However, the
+ambiguity of the user query and the misalignment between
+the query and the retriever prevent the retriever from retriev-
+ing supporting documents. To improve the retrieval accu-
+racy, query rewriting techniques rephrase or extend the user
+query into a more precise and searchable query. Specifically,
+Ma et al. (2023) and Mao et al. (2024) proposed to enhance
+the query by training a specialized rewriting model. Gao
+et al. (2022); Wang, Yang, and Wei (2023) suggested that
+using pseudo contexts generated by large language models
+(LLMs) as queries can significantly improve the relevance
+of retrieved documents. Compared to the original user query,
+
+--- Page 3 ---
+pseudo contexts contain more relevant information, thereby
+increasing the semantic overlap between the supporting doc-
+uments and the initial query. To further refine the query,
+iterative refinement was introduced by Feng et al. (2023);
+Trivedi et al. (2023); Shao et al. (2023); Wang, Zhao, and
+Gao (2024) to employ the retrieved contexts as feedback.
+Additionally, query decomposition was proposed by Chan
+et al. (2024) to convert the complex multi-hop question into
+multiple searchable sub-questions.
+Hybrid Retrieval
+Different types of retrievers excel at retrieving specific kinds
+of information. For instance, sparse retrievers are particu-
+larly effective at identifying relevant content based on ex-
+plicit entities mentioned in the query. Dense retrievers, on
+the other hand, are adept at handling fuzzy queries, and cap-
+turing semantic meanings. Web search engines leverage the
+vast breadth of information available online, offering exten-
+sive knowledge retrieval. Consequently, employing a com-
+bination of these retrievers allows for a more comprehensive
+search strategy, capitalizing on the strengths of each method
+and broadening the scope of retrieval. Specifically, Lu et al.
+(2022); Wang et al. (2023); Yu et al. (2022); Zhang et al.
+(2020) employed both BM25 retriever and dense retriever
+to retrieve the relevant snippets for better code generation.
+Wang et al. (2024) proposed leveraging large language mod-
+els to route information from various sources, thereby en-
+hancing the effectiveness of personalized knowledge-based
+dialogue systems. Different from simply concatenating all
+the retrievers, Yan et al. (2024) employed a web search en-
+gine as the supplement of the dense retriever. Ensemble of
+Retrievers (EoR), introduced by Li et al. (2024), leverages
+ensemble learning to optimize collaboration among multi-
+ple retrievers.
+Concurrent Work
+Similar to our proposed LevelRAG, MindSearch (Chen et al.
+2024) also employs a two-level retrieval architecture. At the
+upper level, MindSearch utilizes WebPlanner, which decom-
+poses the user query into a directed acyclic graph (DAG).
+The lower level, known as WebSearcher, performs hierarchi-
+cal information retrieval using web search engines, gather-
+ing relevant information for the WebPlanner. While Mind-
+Search shares similarities with our proposed LevelRAG,
+three key distinctions set them apart:
+• The motivation is different. MindSearch is designed to
+address the challenge of adapting the vast amount of web
+information to the limited context window of LLMs dur-
+ing internet searches. In contrast, LevelRAG is motivated
+by the need to overcome limitations in current query
+rewriting techniques that are inadequate for hybrid re-
+trieval systems.
+• The methods differ significantly in their implementa-
+tion. MindSearch employs a code interpreter to decom-
+pose user queries, whereas LevelRAG leverages natural
+language processing for the decomposition process. Ad-
+ditionally, while MindSearch incorporates only a Web-
+Searcher at the lower level, LevelRAG is capable of in-
+ 
+ Are director of  lm Move (1970 Film) and director of  lm Méditerranée (1963 Film)
+from the same country?User Query
+Decompose
+[1] Who direct the  lm Move (1970 Film)?
+[2] Who direct the  lm Méditerranée (1963 Film)?
+ [1] Move is a 1970 American comedy  lm starring Elliott Gould, Paula Prentiss and
+Geneviève Waïte, and directed by Stuart Rosenberg. The screenplay was written ...
+[2] Méditerranée is a 1963 French experimental  lm directed by Jean-Daniel Pollet with
+assistance from Volker Schlöndor . It was written by Philippe Sollers and ...
+...Contexts Retrieved by Low-Level Searchers
+ Supplement
+[1] What nationality was Stuart Rosenberg?
+[2] What nationality was Jean-Daniel Pollet?
+ [1] Stuart Rosenberg (August 11, 1927 – March 15, 2007) was an American  lm and
+television director whose motion pictures include ...
+[2] Jean-Daniel Pollet (French: [p ɔ l ɛ ]; 1936–2004) was a French  lm director and
+screenwriter who was most active in the 1960s and 1970s. He was associated with ...
+...Contexts Retrieved by Low-Level Searchers
+ Verify
+No additional information is required. 
+[1] Move (1970 Film) was directed by Stuart Rosenberg.
+[2] Méditerranée (1963 Film) was directed by Jean-Daniel Pollet.Summarize
+ 
+[1] Stuart Rosenberg is an American.
+[2] Jean-Daniel Pollet is a French.Summarize Verify
+Current Information is not enough to answer the user query.Figure 2: An example of how the high-level searcher pro-
+cesses a user query. The high-level searcher performs four
+key actions: decompose ,summarize ,verify , and supplement .
+Actions within blue boxes are carried out by the high-level
+searcher, while those within grey boxes are performed by the
+low-level searchers and user.
+tegrating multiple low-level searchers to gather valuable
+information.
+• The contributions are fundamentally different. Mind-
+Search introduces a multi-agent framework for complex
+web information-seeking and integration tasks, whereas
+our work presents a novel approach that combines the
+strengths of both hybrid retrieval and query rewriting
+techniques. Additionally, to the best of our knowledge,
+our proposed sparse searcher is the first rewriting frame-
+work designed for sparse retrievers.
+LevelRAG
+LevelRAG achieves accurate retrieval through close col-
+laboration between a high-level searcher and several low-
+level searchers. The high-level searcher is responsible for
+planning which sub-questions need to be retrieved to meet
+the user intent, while the low-level searchers, in collabora-
+tion with its retriever, gather relevant information for these
+sub-questions as comprehensively as possible. In this sec-
+tion, we first provide a detailed explanation of the high-
+level searcher, followed by a description of each low-level
+searcher individually.
+
+--- Page 4 ---
+High-Level Searcher
+The high-level searcher orchestrates the overall search pro-
+cess, managing low-level searchers by decomposing the
+original query into atomic queries. Before delving into the
+retrieval process, we will first introduce four key actions
+taken by the high-level searcher:
+•Decompose : The high-level searcher breaks down the
+user query qinto simpler, more specific atomic queries
+q= [q1, ...,qm]that are easier to address individually. m
+represent the number of atomic queries, which is deter-
+mined automatically by the high-level searcher.
+•Summarize : After retrieving relevant documents Di=
+[D1
+i, ..., Dk
+i]for atomic query qi, the high-level searcher
+condenses them into a brief summary siby directly an-
+swering the atomic query qi.
+•Verify : The high-level searcher checks whether the sum-
+marized information s= [s1, ..., s m]is sufficient to an-
+swer the original user query. If the information is not
+enough, this step triggers further supplementation.
+•Supplement : As some specific information needs be-
+comes apparent only after the preliminary atomic ques-
+tions being answered, the high-level searcher identifies
+additional atomic queries to fully address the user query
+based on the summaries s.
+Figure 2 illustrates the overall retrieval pipeline of the
+high-level searcher when dealing with a complex user query.
+The high-level searcher begins by taking the complex user
+query qas input and decomposes it into multiple single-
+hop queries q. Each low-level searcher then interacts with
+its corresponding retriever to collect the most relevant doc-
+uments Difor the atomic query qi. Due to the large vol-
+ume of retrieved documents and the potential noise they con-
+tain, concatenating them directly into the prompt for subse-
+quent processes may result in context length overflow and
+the ”lost-in-the-middle” phenomenon. To address this, the
+high-level searcher performs a summarize operation of these
+documents. However, we observed that directly summariz-
+ing these contexts can lead to the loss of information crucial
+for answering the user query. Therefore, we implemented
+a strategy that summarizes the context by answering the
+atomic query. This approach ensures the conciseness of the
+contexts while preserving the information necessary for ac-
+curately addressing the user query. Subsequently, the sum-
+marized contexts are then aggregated to verify their suffi-
+ciency in addressing the original user query. If the collated
+summaries provide comprehensive coverage, they are used
+as the context for the generator to generate the final re-
+sponse. Otherwise, the high-level searcher will supplement
+new atomic queries to retrieve further information. The pro-
+cess iterates until the summaries are comprehensive enough
+to answer the user query.
+Low-Level Searchers
+Low-level searchers are employed to retrieve relevant docu-
+ments for each atomic query. Since low-level searchers inter-
+act directly with their corresponding retrievers, the accuracy
+of retrieval can be further improved by aligning the queryAlgorithm 1: Sparse Search Pipeline
+Input: Atomic query q
+Input: Maximum rewrite times N
+Output: Retrieved documents D= [d1, . . . , d k]
+1:Initialize Q=∅.
+2:Initialize n= 0
+3:q0=Rewrite (q).
+4:Add ˜q0toQ.
+5:while n < N do
+6: Let˜q=POP(Q).
+7: LetD=Retrieve (˜q).
+8: if Verify (D,q)then
+9: return D.
+10: end if
+11: ˜q1=Extend (˜q,D).
+12: ˜q2=Emphasize (˜q,D).
+13: ˜q3=Filter (˜q,D).
+14: Add ˜q1toQ.
+15: Add ˜q2toQ.
+16: Add ˜q3toQ.
+17:end while
+with the specific retriever. In this paper, we implement three
+low-level searchers: the sparse searcher, the dense searcher,
+and the web searcher.
+Sparse Searcher. Sparse retrievers offer the distinct ad-
+vantage of precisely retrieving keywords such as named en-
+tities. To further leverage this capability, we leverage the
+Lucene syntax, a powerful and widely supported query lan-
+guage for searching and indexing text data. Lucene offers
+a rich set of operators and features that enable precise and
+flexible searches across large text datasets. Based on this,
+we introduce a novel iterative query rewriting process for
+the sparse retriever. As shown in Algorithm 1, the atomic
+query is first reformulated into retriever-friendly keywords
+and enqueued in the query queue Q. A breadth-first search
+(BFS) is then initiated to further refine this query. During
+this process, queries are dequeued from the queue Qat a
+time, and the sparse retriever is employed to retrieve rele-
+vant documents D. Similar to the high-level searcher, the
+sparse searcher will assess the sufficiency of the retrieved
+documents. Once the retrieved documents are sufficient to
+address the atomic query q, they are returned to the high-
+level searcher. Otherwise, three feedback operations will be
+applied to the current query ˜q, including extend ,emphasize ,
+andfilter .
+•extend : The sparse searcher appends an additional key-
+word to the query ˜q, thereby broadening the scope of
+retrieval. To protect the keyword from being incorrectly
+processed by the tokenizer inside the sparse retriever, we
+employ the quotation operator to mark the new keyword.
+•filter : To filter out noisy documents, the sparse searcher
+appends a filter word to the query using the Lucene oper-
+ator ”-”.
+•emphasize : This operation first selects a specific keyword
+in the current query ˜q. Then the Lucene operator ” ˆ” is
+
+--- Page 5 ---
+adopted to increase the weight of this keyword.
+These enhanced queries will be added to the query queue
+Qfor further retrieval. This process continues until the re-
+trieved documents are comprehensive enough or the maxi-
+mum number of loop Nis reached.
+Dense Searcher. Compared to sparse retrievers, dense re-
+trievers are more adept at capturing semantic information
+within queries. To further leverage this strength, we imple-
+mented a query rewriting process inspired by ITRG (Feng
+et al. 2023) and HyDE (Gao et al. 2022), which iteratively
+enriches the semantic content of the query. Specifically, our
+approach involves constructing a pseudo-document to aug-
+ment the semantic details of the query, particularly when
+the original query fails to retrieve relevant documents. If the
+context retrieved using the enhanced query still fails to ad-
+equately address the atomic query, a new pseudo-document
+will be constructed based on the retrieved information. Simi-
+lar to the sparse searcher, this iterative process continues un-
+til the retrieved information is sufficient to answer the atomic
+question.
+Web Searcher. With the development of the internet,
+search engines have become indispensable tools for peo-
+ple. To enhance the quality of search results, major com-
+panies have undertaken extensive optimizations of search
+engines. Given that search engines inherently offer strong
+performance and that their APIs are relatively expensive, in
+our Web Searcher, we directly input atomic queries into the
+search engine and return the abstracts provided by the search
+engine as the context for the high-level searcher.
+Experimental Settings
+Evaluation Tasks and metrics
+We conduct extensive experiments across 5 widely used
+knowledge-intensive QA tasks, including three single-hop
+QA tasks and two multi-hop QA tasks. For the single-hop
+QA tasks, we utilize PopQA (Mallen et al. 2023b), Natual
+Questions (NQ) (Kwiatkowski et al. 2019), and TriviaQA
+(Joshi et al. 2017). Following previous work (Asai et al.
+2023), we use the long-tail subset of the PopQA and the full
+test set of NQ and TriviaQA. For multi-hop QA tasks, we
+employ HotpotQA (Yang et al. 2018) and 2WikimultihopQA
+(Ho et al. 2020) development sets. All these datasets are col-
+lected from the FlashRAG repository1. Our experiments are
+conducted
+To evaluate performance across these tasks, we use re-
+trieval success rate, response accuracy, and response F1
+score to assess both the retrieval process and response qual-
+ity, with the exception of the NQ dataset. Both retrieval
+success rate and response accuracy are computed based on
+whether gold answers are included in the text. For NQ, in
+line with established practices (Jin et al. 2024; Yu et al.
+2024), we substitute response accuracy with Exact Match
+(EM), as EM is widely used in prior studies. Following Jin
+et al. (2024), we lowercase all the responses before calculat-
+ing the metrics.
+1https://huggingface.co/datasets/RUC-
+NLPIR/FlashRAG datasetsBaselines
+We evaluate our approach against a wide range of strong
+baselines, which we categorize into two main groups: gener-
+ation without retrieval and generation with retrieval. For the
+generation without retrieval group, we consider both leading
+open-source model series, Llama 3.1 (Dubey et al. 2024) se-
+ries and Qwen 2 (Yang et al. 2024) series, as well as propri-
+etary models from OpenAI. In the generation with retrieval
+group, we compare our method with several advanced ap-
+proaches, including ITRG (Feng et al. 2023) and IR-COT
+(Trivedi et al. 2023), which employ iterative refinement to
+optimize query performance; SelfRAG (Asai et al. 2023),
+which performs adaptive retrieval based on the reflection to-
+ken; RQ-RAG (Chan et al. 2024), which utilizes query de-
+composition to enhance performance in multi-hop QA tasks;
+ReSP (Jiang et al. 2024b), which incorporates a summarizer
+to improve iterative retrieval process; and two specialized
+RAG models, namely ChatQA and RankRAG (Liu et al.
+2024; Yu et al. 2024).
+Additionally, we conduct experiments using the vanilla
+RAG method, where contexts are retrieved directly through
+a sparse retriever, a dense retriever, and a web search engine,
+respectively. As Lee et al. (2024); Xu et al. (2024) demon-
+strated that current LLMs have a strong ability to select the
+supporting facts from the noisy contexts, we concatenate all
+the retrieved documents into the prompt to generate the final
+response.
+Implementation Details of LevelRAG
+In our primary experiments, we employ Qwen2 7B as the
+base model of our LevelRAG. For models with a parameter
+fewer than 10 billion, we deploy them using VLLM2on two
+NVIDIA RTX 3090 GPUs. For models with more than 70
+billion parameters, we utilize Ollama3to deploy the quan-
+tized models on two NVIDIA L40 GPUs. In all our exper-
+iments, we set the temperature to zero to ensure the repro-
+ducibility of the results.
+For the sparse retriever, we build the index using Elastic-
+Search4. For the dense retriever, we employ the contriever5
+(Izacard et al. 2022a) finetuned on MS-MARCO to encode
+the corpus and SCaNN6to index the encoded embeddings.
+Following the previous study (Asai et al. 2023), we use the
+pre-processed Wikipedia corpus7processed by Izacard et al.
+(2022b) where all the Wikipedia pages are split into chunks
+of 100 words. We utilize the Bing Web Search API provided
+by Azure8as our web search engine. Unless otherwise spec-
+ified, we retrieve 10 documents per query for all retrievers.
+In the case of the sparse searcher, we limit the breadth-first
+search (BFS) depth to 3, allowing for a maximum of 27 re-
+finements. For the dense searcher, we restrict the number of
+2https://github.com/vllm-project/vllm
+3https://github.com/ollama/ollama
+4https://github.com/elastic/elasticsearch
+5https://huggingface.co/facebook/contriever-msmarco
+6https://github.com/google-research/google-
+research/tree/master/scann
+7https://github.com/facebookresearch/atlas
+8https://azure.microsoft.com/
+
+--- Page 6 ---
+MethodsPopQA NQ TriviaQA HotpotQA 2WikimultihopQA
+Succ Acc F1 Succ EM F1 Succ Acc F1 Succ Acc F1 Succ Acc F1
+Generation without Retrieval
+Qwen2 7B (Yang et al. 2024) - 25.80 21.53 - 15.21 23.42 - 46.65 47.66 - 21.80 27.76 - 33.12 32.58
+Qwen2 72B (Yang et al. 2024) - 24.18 23.42 - 30.00 41.34 - 77.26 73.74 - 31.94 39.38 - 37.52 38.08
+Llama3.1 8B (Dubey et al. 2024) - 25.38 21.96 - 22.74 34.25 - 63.82 64.50 - 35.58 31.61 - 24.27 29.10
+Llama3.1 70B (Dubey et al. 2024) - 31.45 28.70 - 28.09 44.31 - 77.26 78.30 - 33.38 39.18 - 39.27 35.27
+GPT4o-mini (Ouyang et al. 2022) - 31.81 26.47 - 27.20 41.10 - 73.31 73.49 - 33.40 38.62 - 35.15 33.76
+GPT4o (Ouyang et al. 2022) - 45.96 40.61 - 28.61 44.37 - 82.53 82.66 - 43.93 48.58 - 49.64 44.50
+Generation with Retrieval
+Self-RAG 7B (Asai et al. 2023) - 54.90 - - - - - 66.40 - - - - - - -
+Self-RAG 13B (Asai et al. 2023) - 55.80 - - - - - 69.30 - - - - - - -
+ITRG 7B* (Feng et al. 2023) 43.86 41.10 34.65 55.03 20.64 33.32 71.69 67.21 60.80 43.14 35.69 37.14 38.23 33.37 33.45
+IR-COT 7B* (Trivedi et al. 2023) 41.12 39.81 26.96 47.84 16.43 25.92 65.90 58.91 39.33 41.17 33.80 22.75 40.95 35.81 19.72
+RQ-RAG 7B (Chan et al. 2024) - - 57.10 - - - - - - - - 62.60 - - 44.80
+ReSP 8B (Jiang et al. 2024b) - - - - - - - - - - - 38.30 - - 47.20
+ChatQA 8B (Liu et al. 2024) - 59.80 - - 42.40 - - 87.60 - - - 44.60 - - 31.90
+ChatQA 70B (Liu et al. 2024) - 58.30 - - 47.00 - - 91.40 - - - 54.40 - - 37.40
+RankRAG 8B (Yu et al. 2024) - 64.10 - - 50.60 - - 89.50 - - - 46.70 - - 36.90
+RankRAG 70B (Yu et al. 2024) - 65.40 - - 54.20 - - 92.30 - - - 55.40 - - 43.90
+Qwen2 7B + BM25 59.04 51.32 47.57 58.37 30.72 39.36 75.40 64.80 66.72 52.19 35.41 43.53 57.72 43.66 44.79
+Qwen2 7B + Dense 83.06 65.83 63.93 73.74 37.01 47.30 78.12 66.58 68.81 49.32 32.88 40.65 49.03 39.39 40.47
+Qwen2 7B + Web 60.97 50.82 48.97 68.45 36.73 48.65 76.86 70.80 73.17 38.81 29.70 37.54 38.20 35.35 36.21
+Our Proposed methods
+Sparse Searcher 7B 73.84 63.26 61.77 61.41 32.55 41.89 74.92 65.44 67.35 52.36 36.07 44.38 58.34 48.31 48.84
+Dense Searcher 7B 77.06 62.19 60.23 74.93 38.81 49.35 79.35 69.06 71.40 53.46 35.69 43.86 53.81 44.92 45.59
+LevelRAG 7B 85.42 66.98 65.52 86.51 41.58 53.24 88.23 76.12 78.21 51.22 43.78 52.28 73.18 70.50 69.33
+Table 1: Results of our proposed LevelRAG and baselines on single-hop and multi-hop tasks. Results unavailable in public
+reports are marked as ”-”. The ”*” mark indicates the results are reproduced using FlexRAG9with Qwen2 7B as the generator.
+Bold number indicates the best performance among all methods. Succ, Acc, F1 and EM represent the success rate of retrieval,
+the accuracy of responses, the F1 score of responses, and the Exact Match metrics, respectively.
+query rewrites to a maximum of 3.
+Results and Analysis
+Main Results
+As shown in Table 1, our proposed LevelRAG achieves the
+best overall performance when compared to the methods
+with similar model sizes. Specifically, LevelRAG surpasses
+the state-of-the-art method by 1.58 and 22.13 on PopQA and
+2WikimultihopQA respectively when using the F1 metric.
+As for non-retrieval models, we notice that the perfor-
+mance of the model improves significantly as the scale of the
+parameters increases. Specifically, GPT4o surpasses several
+retrieval-based methods. When compared with non-retrieval
+models, including GPT4o, LevelRAG demonstrates a sub-
+stantial performance advantage, with the exception of the
+TriviaQA dataset. However, we found that Llama3.1 70B
+and GPT4o can correctly answer more than 75% of the ques-
+tions in the TriviaQA dataset, which is even higher than the
+retrieval success rate of the vanilla RAG system. This result
+clearly indicates that generating the response for this dataset
+does not heavily rely on external knowledge. In addition,
+the relatively lower performance of the Qwen2 7B, the base
+model of LevelRAG, is also an important reason why our
+method fails to outperform all the non-retrieval models on
+this dataset.
+When compared with retrieval-based methods, the F1
+score of LevelRAG surpasses all other methods across
+9https://github.com/ictnlp/flexragthe PopQA, NQ, and 2WikimultihopQA datasets. Notably,
+when compared to RankRAG 70B, the strongest specialized
+model we could find, LevelRAG achieves comparable per-
+formance while utilizing only one-tenth of the parameters.
+Moreover, the response accuracy and the F1 score of Lev-
+elRAG on the 2WikimultihopQA significantly outperform
+those of the state-of-the-art method, ReSP, which also lever-
+ages the feedback to refine the query. These results under-
+score the effectiveness of our high-level searcher in address-
+ing complex multi-hop reasoning tasks. However, the failure
+of our approach to achieving the best results on TriviaQA
+also reveals a weakness of our approach: the lack of adap-
+tive mechanisms to determine when retrieval is necessary.
+Our proposed method demonstrates a significant improve-
+ment in retrieval success rates compared to the vanilla RAG
+system, which directly uses the user query to retrieve con-
+text documents. Specifically, for single-hop QA tasks, the
+sparse searcher outperforms the naive BM25 search by 14.8
+points on PopQA and 1.83 points on NQ. Similarly, the
+dense searcher enhances the retrieval success rate by 1.19
+and 1.23 points on NQ and TriviaQA, respectively. Fur-
+thermore, when the retrieved documents are aggregated by
+the high-level searcher, the retrieval success rate shows ad-
+ditional improvement. For the 2WikimultihopQA dataset,
+LevelRAG demonstrates a significantly higher retrieval suc-
+cess rate compared to using only the low-level searcher, un-
+derscoring the effectiveness of the high-level searcher. No-
+tably, although the retrieval success rate of LevelRAG is
+lower than that of both the sparse and dense searchers, its
+
+--- Page 7 ---
+Operations Succ F1 Acc
+vanilla BM25 44.50 40.26 38.10
++decompose 56.90 41.44 40.10
++summarize 41.00 42.08 39.90
++supplement 62.80 52.83 51.90
+Table 2: The ablation studies for key executed by the high-
+level searcher on the first 1,000 samples of 2Wikimulti-
+hopQA dataset.
+Operations Succ F1 Acc
+vanilla BM25 63.40 47.90 53.10
++rewrite 73.70 58.21 60.30
++feedback 75.30 59.50 61.70
+Table 3: The ablation studies for key operations executed
+by the sparse searcher on the first 1,000 samples of PopQA
+dataset.
+response accuracy and F1 score surpass those of the other
+methods. We attribute this discrepancy to the summarization
+process employed by the high-level searcher, which, while
+potentially leading to some information loss, also effectively
+reduces noise in the context, thereby enhancing the overall
+quality of the responses.
+Ablation Study
+High-level searcher. To further analyze the effectiveness
+of each operation in our proposed high-level searcher, we
+conduct a series of experiments on the first 1,000 sam-
+ples of the 2Wikimultihopqa dataset. To exclude the influ-
+ence of low-level searchers, we do not use the low-level
+searchers we proposed but instead directly utilize Elastic-
+Search to search for the atomic query generated by the high-
+level searcher. As shown in Table 2, we start by using BM25
+directly and gradually add decompose ,summarize , and sup-
+plement operations to the searcher to observe the impact of
+these operations. The experimental results demonstrate that
+both the decompose andsupplement operations increase the
+retrieval success rate significantly. However, by applying the
+summarize operation, the retrieval success rate decreases.
+This decline is partly because the summarize operation still
+loses some information, and partly because there are more
+false positive examples of success rate in longer contexts.
+Notably, the F1 score even improved after applying the sum-
+marize operation, which clearly demonstrates that the sum-
+marize operation is beneficial for subsequent processes.
+Sparse searcher. Similarly, we also conduct an experi-
+ment on the first 1,000 samples of the PopQA dataset to
+analyze the effectiveness of key operations executed by our
+sparse searcher. As shown in Table 3, we mainly explore
+the impact of the two key operations, rewrite andfeedback ,
+where the former modifies the atomic queries into keywords,
+while the latter further refines the keywords based on the re-
+trieval results. The experimental results show that both oper-
+ations are beneficial in improving the retrieval success rateBase Model Succ F1 Acc
+Qwen2 7B 62.80 52.83 51.90
+Qwen2 72B 75.40 65.28 68.20
+GPT4o mini 69.60 60.28 63.20
+Table 4: The impact of the base model in high-level searcher.
+The experiments are conducted on the first 1,000 samples of
+the 2WikimultihopQA dataset.
+Base model Succ F1 Acc
+Qwen2 7B 75.30 59.50 61.70
+Qwen2 72B 74.50 58.99 63.00
+GPT4o mini 77.00 60.68 65.40
+Table 5: The impact of the base model in sparse searcher.
+The experiments are conducted on the first 1,000 samples of
+the PopQA dataset.
+and response quality. Specifically, rewrite contributes more
+to improving the retrieval success rate.
+The Impact of The Base Model
+To figure out the impact of the selection of the base model on
+LevelRAG, we conduct experiments on 2WikimultihopQA
+and PopQA tasks. Similar to the previous section, we use
+the first 1,000 samples from each dataset to reduce the in-
+ference cost. As shown in Table 4, switching the base model
+from Qwen2 7B to either Qwen2 72B or GPT4o mini can
+improve the performance of the high-level searcher signifi-
+cantly. Notably, using Qwen2 72B yields better results than
+using GPT-4o mini, indicating that the capability of the base
+model is an important factor affecting the performance of
+our high-level searcher.
+Similarly, employing Qwen2 72B and GPT4o mini can
+also improve the overall performance of the sparse searcher.
+However, in this case, the improvements from using GPT-
+4o mini and Qwen2 72B are both relatively small, suggest-
+ing that the sparse searcher we proposed is not sensitive to
+the base model capability. The reason for this difference is
+that the high-level searcher needs to control the search logic,
+making the reasoning ability of the base model more criti-
+cal. In contrast, the tasks of the sparse searcher are relatively
+simple, and it can achieve good results without using a more
+powerful base model.
+Conclusion
+In this work, we propose LevelRAG, a hierarchical approach
+that contains a high-level searcher and several low-level
+searchers. In LevelRAG, the high-level searcher plans the
+multi-hop logic while low-level searchers optimize the query
+to align with their corresponding retrievers. Our experimen-
+tal results demonstrate that LevelRAG not only surpasses
+all counterparts across three single-hop QA tasks but also
+exhibits superior performance in complex multi-hop QA
+scenarios. Further analysis shows the effectiveness of each
+component in our high-level searcher and sparse searcher.
+
+--- Page 8 ---
+We hope this work can contribute to the development of
+retrieval-augmented generation.
+References
+Abdin, M.; Jacobs, S. A.; Awan, A. A.; Aneja, J.; Awadal-
+lah, A.; Awadalla, H.; Bach, N.; Bahree, A.; Bakhtiari,
+A.; Behl, H.; et al. 2024. Phi-3 Technical Report: A
+Highly Capable Language Model Locally on Your Phone.
+ArXiv:2404.14219 [cs].
+Asai, A.; Wu, Z.; Wang, Y .; Sil, A.; and Hajishirzi, H.
+2023. Self-RAG: Learning to Retrieve, Generate, and Cri-
+tique through Self-Reflection. ArXiv:2310.11511 [cs].
+Brown, T. B.; Mann, B.; Ryder, N.; Subbiah, M.; Kaplan, J.;
+Dhariwal, P.; Neelakantan, A.; Shyam, P.; Sastry, G.; Askell,
+A.; et al. 2020. Language Models are Few-Shot Learners.
+ArXiv:2005.14165 [cs].
+Chan, C.-M.; Xu, C.; Yuan, R.; Luo, H.; Xue, W.; Guo, Y .;
+and Fu, J. 2024. RQ-RAG: Learning to Refine Queries for
+Retrieval Augmented Generation. ArXiv:2404.00610 [cs].
+Chen, B.; Shu, C.; Shareghi, E.; Collier, N.; Narasimhan,
+K.; and Yao, S. 2023. Fireact: Toward language agent fine-
+tuning. arXiv preprint arXiv:2310.05915 .
+Chen, Z.; Liu, K.; Wang, Q.; Liu, J.; Zhang, W.; Chen, K.;
+and Zhao, F. 2024. MindSearch: Mimicking Human Minds
+Elicits Deep AI Searcher. ArXiv:2407.20183 [cs].
+Ding, Y .; Fan, W.; Ning, L.; Wang, S.; Li, H.; Yin, D.; Chua,
+T.-S.; and Li, Q. 2024. A Survey on RAG Meets LLMs:
+Towards Retrieval-Augmented Large Language Models.
+ArXiv:2405.06211 [cs].
+Dubey, A.; Jauhri, A.; Pandey, A.; Kadian, A.; Al-Dahle,
+A.; Letman, A.; Mathur, A.; Schelten, A.; Yang, A.;
+Fan, A.; et al. 2024. The Llama 3 Herd of Models.
+ArXiv:2407.21783 [cs].
+Feng, Z.; Feng, X.; Zhao, D.; Yang, M.; and Qin, B. 2023.
+Retrieval-Generation Synergy Augmented Large Language
+Models. ArXiv:2310.05149 [cs].
+Gao, L.; Ma, X.; Lin, J.; and Callan, J. 2022. Pre-
+cise Zero-Shot Dense Retrieval without Relevance Labels.
+ArXiv:2212.10496 [cs].
+Gao, Y .; Xiong, Y .; Gao, X.; Jia, K.; Pan, J.; Bi, Y .; Dai, Y .;
+Sun, J.; Guo, Q.; Wang, M.; and Wang, H. 2024. Retrieval-
+Augmented Generation for Large Language Models: A Sur-
+vey. ArXiv:2312.10997 [cs].
+Ho, X.; Nguyen, A.-K. D.; Sugawara, S.; and Aizawa, A.
+2020. Constructing A Multi-hop QA Dataset for Compre-
+hensive Evaluation of Reasoning Steps. ArXiv:2011.01060
+[cs].
+Hoffmann, J.; Borgeaud, S.; Mensch, A.; Buchatskaya, E.;
+Cai, T.; Rutherford, E.; Casas, D. d. L.; Hendricks, L. A.;
+Welbl, J.; Clark, A.; et al. 2022. Training Compute-Optimal
+Large Language Models. arXiv:2203.15556 [cs] . ArXiv:
+2203.15556 version: 1.
+Huang, L.; Yu, W.; Ma, W.; Zhong, W.; Feng, Z.; Wang,
+H.; Chen, Q.; Peng, W.; Feng, X.; Qin, B.; and Liu, T.2023. A Survey on Hallucination in Large Language Mod-
+els: Principles, Taxonomy, Challenges, and Open Questions.
+ArXiv:2311.05232 [cs].
+Izacard, G.; Caron, M.; Hosseini, L.; Riedel, S.; Bo-
+janowski, P.; Joulin, A.; and Grave, E. 2022a. Unsuper-
+vised Dense Information Retrieval with Contrastive Learn-
+ing. ArXiv:2112.09118 [cs].
+Izacard, G.; Lewis, P.; Lomeli, M.; Hosseini, L.; Petroni, F.;
+Schick, T.; Dwivedi-Yu, J.; Joulin, A.; Riedel, S.; and Grave,
+E. 2022b. Atlas: Few-shot Learning with Retrieval Aug-
+mented Language Models. ArXiv:2208.03299 [cs].
+Jiang, J.; Wang, F.; Shen, J.; Kim, S.; and Kim, S. 2024a.
+A Survey on Large Language Models for Code Generation.
+ArXiv:2406.00515 [cs].
+Jiang, Z.; Sun, M.; Liang, L.; and Zhang, Z. 2024b. Retrieve,
+Summarize, Plan: Advancing Multi-hop Question Answer-
+ing with an Iterative Approach. ArXiv:2407.13101 [cs].
+Jin, J.; Zhu, Y .; Yang, X.; Zhang, C.; and Dou, Z. 2024.
+FlashRAG: A Modular Toolkit for Efficient Retrieval-
+Augmented Generation Research. ArXiv:2405.13576 [cs]
+version: 1.
+Joshi, M.; Choi, E.; Weld, D.; and Zettlemoyer, L. 2017.
+TriviaQA: A Large Scale Distantly Supervised Challenge
+Dataset for Reading Comprehension. In Barzilay, R.; and
+Kan, M.-Y ., eds., Proceedings of the 55th Annual Meeting
+of the Association for Computational Linguistics (Volume 1:
+Long Papers) , 1601–1611. Vancouver, Canada: Association
+for Computational Linguistics.
+Kaplan, J.; McCandlish, S.; Henighan, T.; Brown, T. B.;
+Chess, B.; Child, R.; Gray, S.; Radford, A.; Wu, J.; and
+Amodei, D. 2020. Scaling Laws for Neural Language Mod-
+els.arXiv:2001.08361 [cs, stat] . ArXiv: 2001.08361.
+Kwiatkowski, T.; Palomaki, J.; Redfield, O.; Collins, M.;
+Parikh, A.; Alberti, C.; Epstein, D.; Polosukhin, I.; Devlin,
+J.; Lee, K.; Toutanova, K.; Jones, L.; Kelcey, M.; Chang, M.-
+W.; Dai, A. M.; Uszkoreit, J.; Le, Q.; and Petrov, S. 2019.
+Natural Questions: A Benchmark for Question Answering
+Research. Transactions of the Association for Computa-
+tional Linguistics , 7: 452–466.
+Lee, J.; Chen, A.; Dai, Z.; Dua, D.; Sachan, D. S.; Boratko,
+M.; Luan, Y .; Arnold, S. M. R.; Perot, V .; Dalmia, S.; et al.
+2024. Can Long-Context Language Models Subsume Re-
+trieval, RAG, SQL, and More? ArXiv:2406.13121 [cs].
+Li, M.; Li, X.; Chen, Y .; Xuan, W.; and Zhang, W.
+2024. Unraveling and Mitigating Retriever Inconsis-
+tencies in Retrieval-Augmented Large Language Models.
+ArXiv:2405.20680 [cs].
+Liu, Z.; Ping, W.; Roy, R.; Xu, P.; Lee, C.; Shoeybi, M.; and
+Catanzaro, B. 2024. ChatQA: Surpassing GPT-4 on Con-
+versational QA and RAG. ArXiv:2401.10225 [cs].
+Lu, S.; Duan, N.; Han, H.; Guo, D.; Hwang, S.-w.; and
+Svyatkovskiy, A. 2022. ReACC: A Retrieval-Augmented
+Code Completion Framework. In Muresan, S.; Nakov, P.;
+and Villavicencio, A., eds., Proceedings of the 60th Annual
+Meeting of the Association for Computational Linguistics
+(Volume 1: Long Papers) , 6227–6240. Dublin, Ireland: As-
+sociation for Computational Linguistics.
+
+--- Page 9 ---
+Ma, X.; Gong, Y .; He, P.; Zhao, H.; and Duan, N. 2023.
+Query Rewriting for Retrieval-Augmented Large Language
+Models. ArXiv:2305.14283 [cs].
+Mallen, A.; Asai, A.; Zhong, V .; Das, R.; Khashabi, D.;
+and Hajishirzi, H. 2023a. When Not to Trust Language
+Models: Investigating Effectiveness of Parametric and Non-
+Parametric Memories. ArXiv:2212.10511 [cs].
+Mallen, A.; Asai, A.; Zhong, V .; Das, R.; Khashabi, D.;
+and Hajishirzi, H. 2023b. When Not to Trust Language
+Models: Investigating Effectiveness of Parametric and Non-
+Parametric Memories. ArXiv:2212.10511 [cs].
+Mao, S.; Jiang, Y .; Chen, B.; Li, X.; Wang, P.; Wang, X.;
+Xie, P.; Huang, F.; Chen, H.; and Zhang, N. 2024. RaFe:
+Ranking Feedback Improves Query Rewriting for RAG.
+ArXiv:2405.14431 [cs].
+Ouyang, L.; Wu, J.; Jiang, X.; Almeida, D.; Wainwright,
+C. L.; Mishkin, P.; Zhang, C.; Agarwal, S.; Slama, K.; Ray,
+A.; Schulman, J.; Hilton, J.; Kelton, F.; Miller, L.; Simens,
+M.; Askell, A.; Welinder, P.; Christiano, P.; Leike, J.; and
+Lowe, R. 2022. Training language models to follow instruc-
+tions with human feedback. ArXiv:2203.02155 [cs].
+Shao, Z.; Gong, Y .; Shen, Y .; Huang, M.; Duan, N.; and
+Chen, W. 2023. Enhancing Retrieval-Augmented Large
+Language Models with Iterative Retrieval-Generation Syn-
+ergy. In Bouamor, H.; Pino, J.; and Bali, K., eds., Findings
+of the Association for Computational Linguistics: EMNLP
+2023 , 9248–9274. Singapore: Association for Computa-
+tional Linguistics.
+Touvron, H.; Lavril, T.; Izacard, G.; Martinet, X.; Lachaux,
+M.-A.; Lacroix, T.; Rozi `ere, B.; Goyal, N.; Hambro, E.;
+Azhar, F.; et al. 2023a. LLaMA: Open and Efficient Foun-
+dation Language Models. arXiv preprint arXiv:2302.13971 .
+TitleTranslation: titleTranslation:.
+Touvron, H.; Martin, L.; Stone, K.; Albert, P.; Almahairi, A.;
+Babaei, Y .; Bashlykov, N.; Batra, S.; Bhargava, P.; Bhosale,
+S.; et al. 2023b. Llama 2: Open Foundation and Fine-Tuned
+Chat Models. arXiv preprint arXiv:2307.09288 . TitleTrans-
+lation:.
+Trivedi, H.; Balasubramanian, N.; Khot, T.; and Sabhar-
+wal, A. 2023. Interleaving Retrieval with Chain-of-Thought
+Reasoning for Knowledge-Intensive Multi-Step Questions.
+ArXiv:2212.10509 [cs].
+Wang, H.; Huang, W.; Deng, Y .; Wang, R.; Wang, Z.; Wang,
+Y .; Mi, F.; Pan, J. Z.; and Wong, K.-F. 2024. UniMS-RAG: A
+Unified Multi-source Retrieval-Augmented Generation for
+Personalized Dialogue Systems. ArXiv:2401.13256 [cs].
+Wang, H.; Zhao, T.; and Gao, J. 2024. BlendFilter:
+Advancing Retrieval-Augmented Large Language Models
+via Query Generation Blending and Knowledge Filtering.
+ArXiv:2402.11129 [cs].
+Wang, L.; Yang, N.; and Wei, F. 2023. Query2doc:
+Query Expansion with Large Language Models.
+ArXiv:2303.07678 [cs].
+Wang, W.; Wang, Y .; Joty, S.; and Hoi, S. C. 2023. RAP-
+Gen: Retrieval-Augmented Patch Generation with CodeT5
+for Automatic Program Repair. In Proceedings of the31st ACM Joint European Software Engineering Confer-
+ence and Symposium on the Foundations of Software En-
+gineering , 146–158. San Francisco CA USA: ACM. ISBN
+9798400703270.
+Xu, P.; Ping, W.; Wu, X.; McAfee, L.; Zhu, C.; Liu, Z.; Sub-
+ramanian, S.; Bakhturina, E.; Shoeybi, M.; and Catanzaro,
+B. 2024. Retrieval meets Long Context Large Language
+Models. ArXiv:2310.03025 [cs].
+Yan, S.-Q.; Gu, J.-C.; Zhu, Y .; and Ling, Z.-H. 2024. Correc-
+tive Retrieval Augmented Generation. ArXiv:2401.15884
+[cs].
+Yang, A.; Yang, B.; Hui, B.; Zheng, B.; Yu, B.; Zhou, C.;
+Li, C.; Li, C.; Liu, D.; Huang, F.; Dong, G.; Wei, H.; Lin,
+H.; Tang, J.; Wang, J.; Yang, J.; Tu, J.; Zhang, J.; Ma, J.;
+Yang, J.; Xu, J.; Zhou, J.; Bai, J.; He, J.; Lin, J.; Dang, K.;
+Lu, K.; Chen, K.; Yang, K.; Li, M.; Xue, M.; Ni, N.; Zhang,
+P.; Wang, P.; Peng, R.; Men, R.; Gao, R.; Lin, R.; Wang, S.;
+Bai, S.; Tan, S.; Zhu, T.; Li, T.; Liu, T.; Ge, W.; Deng, X.;
+Zhou, X.; Ren, X.; Zhang, X.; Wei, X.; Ren, X.; Liu, X.;
+Fan, Y .; Yao, Y .; Zhang, Y .; Wan, Y .; Chu, Y .; Liu, Y .; Cui,
+Z.; Zhang, Z.; Guo, Z.; and Fan, Z. 2024. Qwen2 Technical
+Report. ArXiv:2407.10671 [cs].
+Yang, C.; Wang, X.; Lu, Y .; Liu, H.; Le, Q. V .; Zhou, D.;
+and Chen, X. 2023. Large Language Models as Optimizers.
+ArXiv:2309.03409 [cs].
+Yang, Z.; Qi, P.; Zhang, S.; Bengio, Y .; Cohen, W. W.;
+Salakhutdinov, R.; and Manning, C. D. 2018. HotpotQA:
+A Dataset for Diverse, Explainable Multi-hop Question An-
+swering. ArXiv:1809.09600 [cs].
+Yao, S.; Zhao, J.; Yu, D.; Du, N.; Shafran, I.; Narasimhan,
+K.; and Cao, Y . 2023. ReAct: Synergizing Reasoning and
+Acting in Language Models. ArXiv:2210.03629 [cs].
+Yu, C.; Yang, G.; Chen, X.; Liu, K.; and Zhou, Y . 2022.
+BashExplainer: Retrieval-Augmented Bash Code Comment
+Generation based on Fine-tuned CodeBERT. In 2022 IEEE
+International Conference on Software Maintenance and
+Evolution (ICSME) , 82–93. Los Alamitos, CA, USA: IEEE
+Computer Society.
+Yu, Y .; Ping, W.; Liu, Z.; Wang, B.; You, J.; Zhang, C.;
+Shoeybi, M.; and Catanzaro, B. 2024. RankRAG: Unify-
+ing Context Ranking with Retrieval-Augmented Generation
+in LLMs. ArXiv:2407.02485 [cs].
+Zhang, J.; Wang, X.; Zhang, H.; Sun, H.; and Liu, X. 2020.
+Retrieval-based neural source code summarization. In Pro-
+ceedings of the ACM/IEEE 42nd International Conference
+on Software Engineering , 1385–1397. Seoul South Korea:
+ACM. ISBN 978-1-4503-7121-6.
+Zhang, S.; Fang, Q.; Zhang, Z.; Ma, Z.; Zhou, Y .; Huang,
+L.; Bu, M.; Gui, S.; Chen, Y .; Chen, X.; and Feng, Y . 2023.
+BayLing: Bridging Cross-lingual Alignment and Instruction
+Following through Interactive Translation for Large Lan-
+guage Models. ArXiv:2306.10968 [cs].
+
+--- Page 10 ---
+Prompts
+In all our experiments, we use the following prompts to gen-
+erate responses for LevelRAG. To make the output format
+of the LLM fit our requirements, we use few-shot learning
+in some actions. The prompts are shown in Figure 3, 4, 5, 6,
+7, and 8.
+ Are director of  lm Move (1970 Film) and director of  lm Méditerranée (1963 Film)
+from the same country?System Prompt
+Demonstrations
+User:
+Question: Which magazine was started  rst Arthur’s Magazine or First for Women?
+Assistant:
+[1] When Arthur’s Magazine was founded.
+[2] When First for Women was founded.
+User:
+Question: What nationality was Henry Valentine Miller’s wife?
+Assistant:
+[1] Who was Henry Valentine Miller’s wife?
+User:
+Question: Question: Are director of  lm Move (1970 Film) and director of  lm M
+´editerran´ee (1963 Film) from the same country?
+Assistant:
+[1] Who direct the  lm Move (1970 Film)?
+[2] Who direct the  lm M´editerran´ee (1963 Film)?
+User:
+Question: Who is Rhescuporis I (Odrysian)’s paternal grandfather?
+Assistant:
+[1] Who is Rhescuporis I (Odrysian)’s father?
+User:
+Question: Question: Which  lm came out  rst, The Love Route or Engal Aasan?
+Assistant:
+[1] When did The Love Route come out?
+[2] When did Engal Aasan come out?Prompt For Decomposing
+Figure 3: The prompt used for decomposing the question
+into atomic queries, which is used in the high-level searcher.
+ Please  rst indicate the additional knowledge needed to answer the following
+question. If the question can be answered without external knowledge, answer ”No
+additional information is required”.System Prompt
+Demonstrations
+User:
+Question: Which magazine was started  rst Arthur’s Magazine or First for Women?
+Context 1: Arthur’s Magazine was started in the 19th century.
+Context 2: First for Women was started in 1989.
+Assistant:
+No additional information is required.
+User:
+Question: What nationality was Henry Valentine Miller’s wife?
+Context 1: Henry Valentine Miller’s wife is June Miller.
+Assistant:
+[1] What nationality was June Miller?
+User:
+Question: Are director of  lm Move (1970 Film) and director of  lm M´editerran´ee
+(1963 Film) from the same country?
+Context 1: Move (1970 Film) was directed by Stuart Rosenberg.
+Context 2: M´editerran´ee (1963 Film) was directed by Jean-Daniel Pollet.
+Assistant:
+[1] What nationality was Stuart Rosenberg?
+[2] What nationality was Jean-Daniel Pollet?
+User:
+Question: Who is Rhescuporis I (Odrysian)’s paternal grandfather?
+Context 1: Rhescuporis I (Odrysian)’s father is Cotys III.
+Assistant:
+[1] Who is Cotys III’s father?Prompt For Supplementation
+Figure 4: The prompt used to supplement the atomic queries,
+which is used in the high-level searcher.
+Comparison with Agent Based Methods
+To further demonstrate the effectiveness of our proposed
+LevelRAG, we compare it with several agent-based meth-
+ods, including ReACT (Yao et al. 2023), FireACT (Chen
+ Suggestions for Writing Queries for BM25 Search Engine
+1. Use Descriptive Keywords: Ensure your query includes all relevant key-
+words that describe what you are searching for.
+2. Incorporate Rare Terms: If you know any speci c or rare terms related to
+your search, include them.
+3. Avoid Stop Words: Common words like ”the”, ”is”, and ”and” may dilute
+the e ectiveness of the query.
+4. Synonyms and Related Terms: Use synonyms and related terms to cover
+variations in how di erent documents might reference the same concept.
+5. Entity Searches: When searching for speci c named entity, enclose them
+in double quotes.
+Please optimize the following query for the BM25 Search Engine.
+Please only reply your query and do not output any other words.System Prompt
+Demonstrations
+User:
+What is John Mayne’s occupation?
+Assistant:
+”John Mayne” occupation job career
+User:
+how many oar athletes are in the olympics
+Assistant:
+”oar athletes” olympics number count participants
+User:
+who introduced the system of civil services in india
+Assistant:
+india civil services introduced foundation
+User:
+Which leader did Hitler meet in the Brenner Pass in WWII?
+Assistant:
+Hitler ”Brenner Pass” WWII leader meeting
+User:
+Which country does the airline Garuda come from?
+Assistant:
+Garuda airline country originPrompt For RewrittingFigure 5: The prompt used to rewrite the atomic queries into
+keywords, which is used in the sparse searcher.
+ 
+Answer the following question in a single sentence using the provided contexts if
+relevant; if not, answer directly without additional words.System PromptPrompt For Summarization
+Figure 6: The prompt used to summarize the retrieved con-
+texts, which is used in the high-level searcher.
+et al. 2023). Following these work, we conduct experiment
+on the random selected 200 samples from the HotpotQA
+dataset. The experimental results are shown in Table 6. The
+results show that our proposed LevelRAG achieves better
+performance than the agent-based methods, which indicates
+that our proposed hierarchical searcher is more effective
+than the agent-based methods.
+Method EM F1 Acc
+ReACT(GPT3.5-turbo) 25.50 35.82 32.00
+ReACT(Qwen2-7B) 30.50 42.09 35.50
+FireACT 24.00 35.35 29.00
+LevelRAG 38.00 52.20 42.50
+Table 6: The comparison between LevelRAG and agent-
+based methods on 200 random selected samples from the
+HotpotQA dataset. Bold number indicates the best perfor-
+mance among all methods.
+The Completeness of the LevelRAG
+In our paper, ”completeness” specifically refers to the abil-
+ity of retrieving relevant contexts for any given question. We
+
+--- Page 11 ---
+ 
+Your task is to verify whether any of the following contexts contains
+enough information to answer the following question. Please only reply ’yes’ or
+’no’ and do not output any other words.System PromptPrompt For Veri cationFigure 7: The prompt used to verify whether the retrieved
+contexts contain enough information to answer the given
+question, which is used in the high-level searcher, sparse
+searcher, and the dense searcher.
+ 
+Answer the question based on the given contexts. Note that the context might not
+always contain relevant information to answer the question. Only give me the answer
+and do not output any other words.System PromptPrompt For Generation
+Figure 8: The prompt used for generating the final response,
+which is used in the generator.
+argue that using a single retriever may be insufficient due to
+its inherent limitations, which hybrid retrieval helps to miti-
+gate. To demonstrate our point, we conducted an experiment
+on HotpotQA. The experimental results in Table 7 shows
+that employing hybrid retrieval can improve the complete-
+ness of the retrieval system. In addition, the performance
+of LevelRAG is also better than the hybrid retrieval system,
+which indicates that our proposed hierarchical searcher is
+even more effective than the hybrid retrieval system.
+Method EM F1 Acc
+Sparse Searcher 33.21 44.38 36.07
+Web Searcher 27.52 37.54 29.70
+Dense Searcher 32.92 43.86 35.69
+Hybrid Searcher 37.99 50.39 41.12
+LevelRAG 39.32 39.32 43.78
+Table 7: The completeness of LevelRAG and other methods
+on HotpotQA dataset.

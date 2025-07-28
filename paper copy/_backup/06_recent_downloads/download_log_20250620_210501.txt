@@ -1,0 +1,183 @@
+下载的关键论文列表
+==================================================
+
+文件: 06_recent_downloads/2506.15677v1_Embodied Web Agents Bridging Physical-Digital Realms for Int.pdf
+标题: Embodied Web Agents: Bridging Physical-Digital Realms for Integrated Agent Intelligence
+作者: Yining Hong, Rui Sun, Bingxuan Li, Xingcheng Yao, Maxine Wu, Alexander Chien, Da Yin, Ying Nian Wu, Zhecan James Wang, Kai-Wei Chang
+发布: 2025-06-18
+类别: 06_recent_downloads
+摘要: AI agents today are mostly siloed - they either retrieve and reason over vast
+amount of digital information and knowledge obtained online; or interact with
+the physical world through embodied percepti...
+--------------------------------------------------
+
+文件: 06_recent_downloads/2506.15662v1_CC-LEARN Cohort-based Consistency Learning.pdf
+标题: CC-LEARN: Cohort-based Consistency Learning
+作者: Xiao Ye, Shaswat Shrivastava, Zhaonan Li, Jacob Dineen, Shijie Lu, Avneet Ahuja, Ming Shen, Zhikun Xu, Ben Zhou
+发布: 2025-06-18
+类别: 06_recent_downloads
+摘要: Large language models excel at many tasks but still struggle with consistent,
+robust reasoning. We introduce Cohort-based Consistency Learning (CC-Learn), a
+reinforcement learning framework that impro...
+--------------------------------------------------
+
+文件: 06_recent_downloads/2506.15655v1_cAST Enhancing Code Retrieval-Augmented Generation with Stru.pdf
+标题: cAST: Enhancing Code Retrieval-Augmented Generation with Structural Chunking via Abstract Syntax Tree
+作者: Yilin Zhang, Xinran Zhao, Zora Zhiruo Wang, Chenyang Yang, Jiayi Wei, Tongshuang Wu
+发布: 2025-06-18
+类别: 06_recent_downloads
+摘要: Retrieval-Augmented Generation (RAG) has become essential for large-scale
+code generation, grounding predictions in external code corpora to improve
+actuality. However, a critical yet underexplored as...
+--------------------------------------------------
+
+文件: 06_recent_downloads/2506.15684v1_Nabla-R2D3 Effective and Efficient 3D Diffusion Alignment wi.pdf
+标题: Nabla-R2D3: Effective and Efficient 3D Diffusion Alignment with 2D Rewards
+作者: Qingming Liu, Zhen Liu, Dinghuai Zhang, Kui Jia
+发布: 2025-06-18
+类别: 06_recent_downloads
+摘要: Generating high-quality and photorealistic 3D assets remains a longstanding
+challenge in 3D vision and computer graphics. Although state-of-the-art
+generative models, such as diffusion models, have ma...
+--------------------------------------------------
+
+文件: 06_recent_downloads/2506.15683v1_PhantomHunter Detecting Unseen Privately-Tuned LLM-Generated.pdf
+标题: PhantomHunter: Detecting Unseen Privately-Tuned LLM-Generated Text via Family-Aware Learning
+作者: Yuhui Shi, Yehan Yang, Qiang Sheng, Hao Mi, Beizhe Hu, Chaoxi Xu, Juan Cao
+发布: 2025-06-18
+类别: 06_recent_downloads
+摘要: With the popularity of large language models (LLMs), undesirable societal
+problems like misinformation production and academic misconduct have been more
+severe, making LLM-generated text detection now...
+--------------------------------------------------
+
+文件: 06_recent_downloads/2506.15682v1_Evolutionary Caching to Accelerate Your Off-the-Shelf Diffus.pdf
+标题: Evolutionary Caching to Accelerate Your Off-the-Shelf Diffusion Model
+作者: Anirud Aggarwal, Abhinav Shrivastava, Matthew Gwilliam
+发布: 2025-06-18
+类别: 06_recent_downloads
+摘要: Diffusion-based image generation models excel at producing high-quality
+synthetic content, but suffer from slow and computationally expensive
+inference. Prior work has attempted to mitigate this by ca...
+--------------------------------------------------
+
+文件: 02_multimodal_retrieval/2506.15677v1_Embodied Web Agents Bridging Physical-Digital Realms for Int.pdf
+标题: Embodied Web Agents: Bridging Physical-Digital Realms for Integrated Agent Intelligence
+作者: Yining Hong, Rui Sun, Bingxuan Li, Xingcheng Yao, Maxine Wu, Alexander Chien, Da Yin, Ying Nian Wu, Zhecan James Wang, Kai-Wei Chang
+发布: 2025-06-18
+类别: 02_multimodal_retrieval
+摘要: AI agents today are mostly siloed - they either retrieve and reason over vast
+amount of digital information and knowledge obtained online; or interact with
+the physical world through embodied percepti...
+--------------------------------------------------
+
+文件: 02_multimodal_retrieval/2506.15662v1_CC-LEARN Cohort-based Consistency Learning.pdf
+标题: CC-LEARN: Cohort-based Consistency Learning
+作者: Xiao Ye, Shaswat Shrivastava, Zhaonan Li, Jacob Dineen, Shijie Lu, Avneet Ahuja, Ming Shen, Zhikun Xu, Ben Zhou
+发布: 2025-06-18
+类别: 02_multimodal_retrieval
+摘要: Large language models excel at many tasks but still struggle with consistent,
+robust reasoning. We introduce Cohort-based Consistency Learning (CC-Learn), a
+reinforcement learning framework that impro...
+--------------------------------------------------
+
+文件: 02_multimodal_retrieval/2506.15655v1_cAST Enhancing Code Retrieval-Augmented Generation with Stru.pdf
+标题: cAST: Enhancing Code Retrieval-Augmented Generation with Structural Chunking via Abstract Syntax Tree
+作者: Yilin Zhang, Xinran Zhao, Zora Zhiruo Wang, Chenyang Yang, Jiayi Wei, Tongshuang Wu
+发布: 2025-06-18
+类别: 02_multimodal_retrieval
+摘要: Retrieval-Augmented Generation (RAG) has become essential for large-scale
+code generation, grounding predictions in external code corpora to improve
+actuality. However, a critical yet underexplored as...
+--------------------------------------------------
+
+文件: 03_vector_indexing/2506.15681v1_GenRecal Generation after Recalibration from Large to Small .pdf
+标题: GenRecal: Generation after Recalibration from Large to Small Vision-Language Models
+作者: Byung-Kwan Lee, Ryo Hachiuma, Yong Man Ro, Yu-Chiang Frank Wang, Yueh-Hua Wu
+发布: 2025-06-18
+类别: 03_vector_indexing
+摘要: Recent advancements in vision-language models (VLMs) have leveraged large
+language models (LLMs) to achieve performance on par with closed-source systems
+like GPT-4V. However, deploying these models i...
+--------------------------------------------------
+
+文件: 03_vector_indexing/2506.15672v1_SwarmAgentic Towards Fully Automated Agentic System Generati.pdf
+标题: SwarmAgentic: Towards Fully Automated Agentic System Generation via Swarm Intelligence
+作者: Yao Zhang, Chenyang Lin, Shijie Tang, Haokun Chen, Shijie Zhou, Yunpu Ma, Volker Tresp
+发布: 2025-06-18
+类别: 03_vector_indexing
+摘要: The rapid progress of Large Language Models has advanced agentic systems in
+decision-making, coordination, and task execution. Yet, existing agentic system
+generation frameworks lack full autonomy, mi...
+--------------------------------------------------
+
+文件: 03_vector_indexing/2506.15666v1_Vision in Action Learning Active Perception from Human Demon.pdf
+标题: Vision in Action: Learning Active Perception from Human Demonstrations
+作者: Haoyu Xiong, Xiaomeng Xu, Jimmy Wu, Yifan Hou, Jeannette Bohg, Shuran Song
+发布: 2025-06-18
+类别: 03_vector_indexing
+摘要: We present Vision in Action (ViA), an active perception system for bimanual
+robot manipulation. ViA learns task-relevant active perceptual strategies
+(e.g., searching, tracking, and focusing) directly...
+--------------------------------------------------
+
+文件: 05_reranking/2506.15680v1_Particle-Grid Neural Dynamics for Learning Deformable Object.pdf
+标题: Particle-Grid Neural Dynamics for Learning Deformable Object Models from RGB-D Videos
+作者: Kaifeng Zhang, Baoyu Li, Kris Hauser, Yunzhu Li
+发布: 2025-06-18
+类别: 05_reranking
+摘要: Modeling the dynamics of deformable objects is challenging due to their
+diverse physical properties and the difficulty of estimating states from
+limited visual information. We address these challenges...
+--------------------------------------------------
+
+文件: 05_reranking/2506.15677v1_Embodied Web Agents Bridging Physical-Digital Realms for Int.pdf
+标题: Embodied Web Agents: Bridging Physical-Digital Realms for Integrated Agent Intelligence
+作者: Yining Hong, Rui Sun, Bingxuan Li, Xingcheng Yao, Maxine Wu, Alexander Chien, Da Yin, Ying Nian Wu, Zhecan James Wang, Kai-Wei Chang
+发布: 2025-06-18
+类别: 05_reranking
+摘要: AI agents today are mostly siloed - they either retrieve and reason over vast
+amount of digital information and knowledge obtained online; or interact with
+the physical world through embodied percepti...
+--------------------------------------------------
+
+文件: 05_reranking/2506.15670v1_Near-Field SWIPT with gMIMO in the Upper Mid-Band Opportunit.pdf
+标题: Near-Field SWIPT with gMIMO in the Upper Mid-Band: Opportunities, Challenges, and the Way Forward
+作者: Özlem Tugfe Demir, Mustafa Ozger, Ferdi Kara, Woong-Hee Lee, Emil Björnson
+发布: 2025-06-18
+类别: 05_reranking
+摘要: This paper explores the integration of simultaneous wireless information and
+power transfer (SWIPT) with gigantic multiple-input multiple-output (gMIMO)
+technology operating in the upper mid-band freq...
+--------------------------------------------------
+
+文件: 01_hybrid_retrieval/2312.10997v5_Retrieval-Augmented Generation for Large Language Models A S.pdf
+标题: Retrieval-Augmented Generation for Large Language Models: A Survey
+作者: Yunfan Gao, Yun Xiong, Xinyu Gao, Kangxiang Jia, Jinliu Pan, Yuxi Bi, Yi Dai, Jiawei Sun, Meng Wang, Haofen Wang
+发布: 2023-12-18
+类别: 01_hybrid_retrieval
+摘要: Large Language Models (LLMs) showcase impressive capabilities but encounter
+challenges like hallucination, outdated knowledge, and non-transparent,
+untraceable reasoning processes. Retrieval-Augmented...
+--------------------------------------------------
+
+文件: 02_multimodal_retrieval/2401.08808v2_lpNTK Better Generalisation with Less Data via Sample Intera.pdf
+标题: lpNTK: Better Generalisation with Less Data via Sample Interaction During Learning
+作者: Shangmin Guo, Yi Ren, Stefano V. Albrecht, Kenny Smith
+发布: 2024-01-16
+类别: 02_multimodal_retrieval
+摘要: Although much research has been done on proposing new models or loss
+functions to improve the generalisation of artificial neural networks (ANNs),
+less attention has been directed to the impact of the...
+--------------------------------------------------
+
+文件: 04_query_understanding/2311.09476v2_ARES An Automated Evaluation Framework for Retrieval-Augment.pdf
+标题: ARES: An Automated Evaluation Framework for Retrieval-Augmented Generation Systems
+作者: Jon Saad-Falcon, Omar Khattab, Christopher Potts, Matei Zaharia
+发布: 2023-11-16
+类别: 04_query_understanding
+摘要: Evaluating retrieval-augmented generation (RAG) systems traditionally relies
+on hand annotations for input queries, passages to retrieve, and responses to
+generate. We introduce ARES, an Automated RAG...
+--------------------------------------------------
+

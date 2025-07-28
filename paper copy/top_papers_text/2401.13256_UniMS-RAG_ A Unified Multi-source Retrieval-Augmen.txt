@@ -1,0 +1,1403 @@
+1
+UniMS-RAG: A Unified Multi-source
+Retrieval-Augmented Generation
+for Personalized Dialogue Systems
+Hongru Wang, Wenyu Huang, Yang Deng, Rui Wang,
+Zezhong Wang, Yufei Wang, Fei Mi, Jeff Z. Pan, Kam-Fai Wong
+Abstract —Large Language Models (LLMs) have shown excep-
+tional capabilities in many natural language understanding and
+generation tasks. However, the personalization issue still remains
+a much-coveted property, especially when it comes to the multiple
+sources involved in the dialogue system. To better plan and
+incorporate the use of multiple sources in generating personalized
+response, we firstly decompose it into three sub-tasks: Knowledge
+Source Selection, Knowledge Retrieval, and Response Genera-
+tion. We then propose a novel Unified Multi-Source Retrieval-
+Augmented Generation system (UniMS-RAG) Specifically, we
+unify these three sub-tasks with different formulations into
+the same sequence-to-sequence paradigm during the training,
+to adaptively retrieve evidences and evaluate the relevance on-
+demand using special tokens, called acting tokens and evaluation
+tokens. Enabling language models to generate acting tokens
+facilitates interaction with various knowledge sources, allowing
+them to adapt their behavior to diverse task requirements.
+Meanwhile, evaluation tokens gauge the relevance score between
+the dialogue context and the retrieved evidence. In addition, we
+carefully design a self-refinement mechanism to iteratively refine
+the generated response considering 1) the consistency scores
+between the generated response and retrieved evidence; and 2)
+the relevance scores. Experiments on two personalized datasets
+(DuLeMon and KBP) show that UniMS-RAG achieves better
+performance than previous strong baselines on the knowledge
+source selection and response generation task with itself as a
+retriever in a unified manner, and achieves new state-of-the-art
+when using more advanced external retriever. Extensive analyses
+and discussions are provided for shedding some new perspectives
+for personalized dialogue systems.
+Index Terms —Open-domain Dialogue System, Large Language
+Models, Retrieval-Augmented Generation
+I. Introduction
+TTHE emergence of large language models (LLMs) has
+revolutionized the field of natural language processing,
+including many downstream understanding and generation
+tasks [1]. While these models have undeniably advanced the
+state of the art in various applications, they also introduce
+new challenges, particularly the factual error [2, 3] and per-
+sonalization issues [4, 5] in the realm of dialogue systems. To
+alleviate this, Retrieval-Augmented Generation (RAG) meth-
+ods are usually adopted to retrieve relevant passages, aiming
+to enrich the semantic information of the dialogue context,
+Hongru Wang, Rui Wang, Zezhong Wang, and Kam-Fai Wong are with
+the Department of Systems Engineering and Engineering Management, The
+Chinese University of Hong Kong. e-mail: (hrwang, kfwong@se.cuhk.edu.hk).
+Wenyu Huang and Jeff Z. Pan is with EdinburghNLP, The University of
+Edinburgh, United Kingdom.resulting in up-to-date, factual and personalized responses.
+Furthermore, the latest Self-RAG [6] considers the cases that
+require external knowledge and the cases that do not at the
+same time, achieving a better trade-off between effectiveness
+and efficiency. In a world inundated with vast amounts of
+information, retrieval-augmented dialogue systems play a cru-
+cial role in ensuring that automated conversations are not
+only linguistically proficient but also factually reliable and
+contextually aware.
+There are two limitations. On the one hand, most of the
+existing knowledge-grounded dialogue systems either focus on
+a single source of knowledge or indiscriminately incorporate
+all sources of knowledge. In detail, previous methods usually
+interact with different external sources of knowledge to engage
+the user and provide human-like conversational experience,
+such as system persona source to maintain consistency in
+responses [7], user memory or profile source for personalized
+responses [8, 4], Wikipedia [9] or the internet [10] source to
+ensure the provision of up-to-date information. Yet, they focus
+on individual sources or tasks in isolation, overlooking the
+complexity and the potential existence of multiple sources of
+knowledge in real-world scenarios, as shown in Figure 1. In
+this way, the dialogue system needs to decide which source
+to use (or not use) dynamically, in order to provide more
+personalized and helpful responses. Furthermore, the inter-
+dependency relationship between these different sources of
+knowledge needs to be considered to guide better response
+generation [11]. For example, as shown in bottom part of
+Figure 1, the dialogue system needs to locate the specific
+persona config first according to the dialogue context, and
+then find relevant dependent documents to answer the user
+inquiry. On the other hand, previous work either independently
+train the retriever and reader [11, 12], resulting in sub-
+optimal performance and distribution shift between retriever
+and reader; or design complex architecture to optimize them at
+the same time [13, 14], which is infeasible and inefficient at the
+era of large language models due to unaffordable computing
+cost.
+To tackle the aforementioned challenges, we first decompose
+the problem of personalized knowledge-grounded dialogue
+response generation task (PerDS) into three different tasks:
+•Knowledge Source Selection (planner) aims to plan the source
+call order to guide the knowledge retrieval, considering
+both the independent or inter-dependent relationships within
+different sources.arXiv:2401.13256v3  [cs.CL]  26 Nov 2024
+2
+•Knowledge Retrieval (retriever) sequentially retrieves top-n
+evidence from external sources according to the decisions in
+the last step.
+•Response Generation (reader) produces knowledge-
+grounded natural language responses to users according to
+original dialogue context and retrieved evidence.
+Then we design a novel framework, Unified Multi-Source
+Retrieval-Augmented Dialogue System (UniMS-RAG) , that
+unifies three tasks in the above using the same large language
+models in a sequence-to-sequence (Seq2Seq) manner. In
+specific, motivated by recent work of assigning different tokens
+with different roles [11, 6], we carefully introduce two types
+of tokens: 1) acting tokens to decide the next action (e.g.,
+which source to use), aiming to call different source on-demand
+instead of incorporating all of them; and 2) and evaluation
+tokens to evaluate the relevance score between dialogue context
+and retrieved evidence (e.g., the similarity score), in order to
+force the model attention on more relevant evidence while
+overlooking noisy ones. Thus we can reformulate the above
+three tasks as token prediction tasks by generating acting tokens
+(planner), evaluation tokens (retriever) or original tokens in the
+vocabulary (reader) during the training. We randomly shuffle
+the order of retrieved evidences to prevent model learning a
+shortcut by attentions on evidences appears in specific positions.
+To further enhance the quality of generated responses, we
+incorporate a self-refinement process during the inference stage.
+This involves reassessing the generated responses by leveraging
+feedback from evaluation tokens and ensuring consistency
+between the provided evidence and the responses. To sum up,
+the contributions are summarized as follows:
+•We formally propose a multi-source personalized knowledge-
+grounded dialogue tasks, consisting of three different sub-
+tasks: knowledge source selection ,knowledge retrieval and
+final response generation . Our analysis provides detailed
+insights into the limitations and proficiencies of current LLMs
+across these sub-tasks.
+•We propose a novel method, namely, UniMS-RAG, that
+tackles all sub-tasks in PerDS with a unified model. To the
+best of our knowledge, it is the first attempt to utilize LLMs
+as the planner, retriever and reader at the same time.
+•We investigate the different strategies to get the soft label
+of evaluation tokens during the training stage, including
+prompting LLMs or using an independent fine-tuned retriever
+(a.k.a, classification-based andprompting-based methods ).
+Furthermore, we propose a self-refinement mechanism to re-
+generate the response using updated evidence according to its
+relevance with the dialogue context and previously generated
+response.
+•Experimental results on two PerDS benchmark datasets show
+that UniMS-RAG outperforms previous strong baselines,
+and achieves state-of-the-art performance with external more
+effective retriever, resulting in more personalized and factual
+responses. Extensive analyses provide some new insights
+into the future of multi-source retrieval-augmented generation
+tasks.
+User:…System: …User: Hi,
+what areugoing todotoday?Dialogue Context
+1.I took ballet classes .
+2.I go dancing on weekends .
+3.I am a chemistry major and 
+work in a bookstore .
+4.My name is Xiaowen .
+User persona (User -Per)
+1.My legs are very short .
+2.I often stay up late .
+3.I can speak English
+4.I want to go skydiving .
+5.I am from Fujian province.
+Botpersona (Bot-Per)
+Bot:Hi,Xiaowen ,I kind of want to go skydiving .
+Dialogue Resp
+“These twosources ofknowledge areindependent ”Top-nEvidences
+User:…System: …User:
+What’s your favorite food?Dialogue Context
+Dialogue Resp
+Bot:Iliketoeatfruits andvegetable.1.I amvegetarian.
+2.I comes form Foshan.
+3.I likeeating, reading, coding.
+4.……
+5.Ihave acrophobia.Botpersona (Bot-Per)
+1.Foshan belongs tothe
+region ofSouth China.
+2.Vegetarian liketoeatfruits
+andvegetable.
+3.….Documents (Document)
+“These twosources ofknowledge areinter -dependent ”
+Step1: retrieve persona
+ Step2: retrieve documentFig. 1: Two typical examples of multi-source personalized
+knowledge-grounded dialogues: upper) : An example from
+DuLeMon [7]; and bottom) : An example from KBP [11]. We
+use same color to indicate the response and corresponding
+grounded knowledge. We skip the dialogue context for sim-
+plicity.
+II. Related Work
+A. Personalized Dialogue System
+To build a personalized dialogue agent, Zhang et al. [15] firstly
+investigated this task with a new dataset Persona-Chat, where a
+pre-defined persona set is a form of multiple sentences of textual
+description. Lots of works follow this setting and have taken
+mutual persona perception [16, 17], persona-sparse scenario
+[18, 19], long-term persona memory [7], persona extending [20]
+and persona order bias [21] into consideration. Although some
+of them complement the insufficient semantics in short persona
+descriptions by further utilizing an external commonsense
+knowledge base to extend existing persona sets [22, 20], they still
+fall into the conventional framework coupling the knowledge
+selection with the response generation [23], rendering it infea-
+sible to handle various sources of knowledge. There have also
+been works showing that the combination of different knowledge
+sources such as persona descriptions and Wikipedia can further
+improve the overall performance [24, 25, 26]. However, they still
+fail to capture possible dependency between knowledge sources.
+In their framework, knowledge is not used as the role to assist
+persona-consistent response generation, but as an additional
+resource to generate a more informative response [27, 3] or select
+a suitable persona [24, 28]. Furthermore, most existing works
+overlook the possibilities that the response does not require the
+involvement of persona descriptions by simply concatenating all
+personas with the dialogue context to generate the final response
+[22, 17].
+B. Knowledge-grounded Dialogue System
+How to interact with different external sources plays a key
+role in dialogue systems to retrieve corresponding knowledge,
+resulting in more helpful, personalized, trustworthy responses
+[29, 30]. Specifically, most of previous methods rely on different
+external sources of knowledge to engage the user and improve
+the conversational experience, including but not limited to
+system persona to maintain consistency in responses [11], user
+memory or profile for personalized interactions [31, 32], and
+3
+access to sources like Wikipedia or the internet to ensure the
+provision of up-to-date information [33, 34]. However, most
+of them focus on individual sources or tasks in isolation,
+overlooking the complexity and the potential existence of
+multiple sources in practice. There is a latest work named
+TPE which regards different knowledge sources as conceptual
+tools and proposes a multi-persona collaboration framework to
+model the decision-making process of the call order for multiple
+knowledge sources [35]. We differ in exploring the capability of
+LLMs to be planner, retriever, reader in a unified manner.
+C. Retrieval-augmented Generation
+Retrieval-augmented Generation (RAG) has been considered
+as an effective method to overcome several limitations of
+LLMs, such as hallucinations [36], factuality [37] and long-
+term memory [7]. Usually, an external retriever is first used to
+retrieve relevant textual knowledge from one specific knowledge
+source (e.g., Wikipedia), then the reader takes the relevant
+textual knowledge as external context for generating knowledge-
+grounded response [38]. Most of previous works try to optimize
+the retriever and reader independently [39]. During the initial
+phases, people use sparse retriever, such as BM25 [40], to
+make relevance decisions and retrieve corresponding evidence.
+However, sparse approaches fall short in extracting the semantic
+features inherent in text content [41]. To overcome this issue,
+researchers have proposed language model-based dense retrieval
+methods by encoding documents and queries as dense vectors,
+which effectively represent the semantic features of text content
+[42, 43, 44]. For example, DPR [42] uses two pre-trained
+language models to encode documents and queries separately,
+allowing for a more nuanced understanding of the content. More
+recently, there are a handful of works exploring the performance
+of LLMs as retriever [45, 46, 47, 48]. In detail, Shen et al. [47]
+firstly prove that LLMs can be used as strong zero-shot retriever
+on several benchmark datasets, while Ma et al. [48] propose
+Listwise Reranker with a Large Language Model (LRL), which
+achieves strong reranking effectiveness without using any task-
+specific training data. Distinguishing from previous works, we
+finetune LLM itself to learn a joint distribution of dialogue and
+evidence using similarity feedbacks from current most powerful
+LLMs, such as ChatGPT and GPT-4.
+III. Problem Definition
+To consider the responses which require external knowledge
+and those which do not in practice, we provide a unified
+definition to unify the retrieval-augmented dialogue system and
+non-retrieval dialogue system, following Wang et al. [11]. Let
+𝑪𝑡={𝑢1,𝑠1,𝑢2,𝑠2,...,𝑢𝑡}denotes the dialogue context at the
+current conversation turn 𝑡, and there are different knowledge
+sources 𝑲={𝐾1,𝐾2,...,𝐾𝑖}, where𝐾𝑖={𝑘1
+𝑖,𝑘2
+𝑖,...,𝑘𝑗
+𝑖}
+indicates the 𝑖𝑡ℎsource’s name of 𝑲.𝑘𝑗
+𝑖denotes the 𝑗𝑡ℎ
+knowledge in natural language from 𝐾𝑖. The goal of retrieval-
+augmented dialogue system 1is to select suitable knowledge
+1In this context, a non-retrieval dialogue system is viewed as a specific type
+within retrieval-augmented dialogue systems, distinguished by the absence of
+a knowledge source, denoted as NULL .
+LargeLanguageModels(LLMs)DialogContext
+PERSONADOCUMENTSMEMORY...RetrievedResults
+PERSONADOCUMENTSSystemResponse
+RetrieverPERSONADOCUMENTSSystemResponseStep1:KnowledgeSourceSelectionStep3:ResponseGenerationPersona
+NULL
+Documents…
+𝐸𝑣𝑖𝑑𝑒𝑛𝑐𝑒!,𝑆𝑖𝑚!𝐸𝑣𝑖𝑑𝑒𝑛𝑐𝑒",𝑆𝑖𝑚"…
+Step2:RelevanceScorePrediction𝑺𝒊𝒎𝟏𝑺𝒊𝒎𝒏…{0.1,0.2,0.3,…,1.0}EvidenceAttentionMaskChatGPTDPR
+EvidenceAttentionMaskContext,Source,𝐸vidence!,𝑆𝑖𝑚!𝐸vidence",𝑆𝑖𝑚"𝐸vidence#,𝑆𝑖𝑚#Context,Source,𝐸vidence!,𝑆𝑖𝑚!𝐸vidence",𝑆𝑖𝑚"𝐸vidence#,𝑆𝑖𝑚#Context,Source,𝐸vidence!,𝑆𝑖𝑚!𝐸vidence",𝑆𝑖𝑚"𝐸vidence#,𝑆𝑖𝑚#SourcesàActingTokensEvaluationTokenslabelsFig. 2: Our proposed method UniMS-RAG, where three opti-
+mization tasks are carefully designed: 1) Knowledge Source
+Selection; 2) Relevance Score Prediction; and 3) Response
+Generation. We use orange to indicate acting tokens and blue to
+indicate evaluation tokens. It is worth noting we have all labels
+during training to optimize these three sub-tasks in a teacher-
+forcing way.
+sources, and then generate the helpful, informative and personal-
+ized response, depending on which source is chosen [30]. Thus,
+the problem of PerDS can be decomposed into the following
+three tasks:
+•Knowledge Source Selection. At each turn 𝑡, given the
+dialogue context 𝐶𝑡and different knowledge sources 𝑲, PerDS
+first select suitable sources denoted as 𝑆∈{𝑲,NULL}. It’s
+important to highlight that 𝑆may consist of multiple sources
+or be NULL. Notably, there are no constraints imposed on the
+relationships between different sources within 𝑆. They can
+either be independent or interdependent.
+•Knowledge Retrieval. The second task is to retrieve top-n
+corresponding evidence 𝑬={𝑒1,𝑒2,...,𝑒𝑛}for each selected
+source if there is. We simply skip this step once the PerDS
+determine there is no need to call external knowledge.
+•Response Generation. The final task is to generate a proper
+response𝑠𝑡concerning the dialogue context 𝑪𝒕and necessary
+evidences 𝑬from different external knowledge sources 𝑆if
+there is. The generated response is expected to ground on these
+evidences, being personalized, informative, up-to-date and
+helpful according to the distinctions across different sources.
+IV. Method
+In this section, we first describe the framework that reformu-
+lates each task in PerDS into the unified Seq2Seq paradigm,
+and then introduce the joint-training strategies for the retriever
+and reader modules and the inference strategy to re-evaluate the
+quality of response, respectively. The overview and examples of
+the input and output sequences for UniMS-RAG are illustrated
+in Figure 2.
+A. UniMS-RAG
+Inspired by previous work [11], we propose an innovative
+methodology termed UniMS-RAG, where 𝑈signifies the
+unification of the training process for planner, retriever and
+reader, as well as the integration of diverse tasks into a singular
+comprehensive framework. Recognizing the potential of large
+4
+language models (LLMs) in orchestrating the utilization of
+external sources of knowledge, as indicated by recent works,
+UniMS-RAG extends the capabilities of LLMs to seamlessly
+connect disparate sources within the context of personalized
+knowledge-grounded dialogues. This integration streamlines the
+traditionally separated tasks of retriever and reader training,
+enabling to adaptively retrieve evidences and evaluate the
+relevance scores in a unified manner.
+To address the interactions between different subtasks, as
+illustrated in Figure 2, the whole response generation can be
+modelled into three steps in UniMS-RAG: 1) Planning , to
+make a series of decisions about whether to use a specific
+knowledge source given relationship descriptions between
+different sources; 2) Retrieval , to retrieve top-n results from
+external databases according to the decisions; 3) Generation ,
+to incorporate all retrieved knowledge (if required) into the
+final response generation. Taking advantage of the decoupling
+of these different tasks, the UniMS-RAG framework exhibits
+versatility and scalability in its applicability to various retrieval-
+augmented response generation tasks. For example, it can be
+achieved through targeted modifications to the Planning step.
+By configuring decisions within this phase, the model can seam-
+lessly accommodate different retrieval-augmented tasks without
+necessitating extensive adjustments to other components.
+1) Planning: First of all, to incorporate the cases which
+does not require any sources of external knowledge, we define
+several additional indicate tokens, corresponding to different
+sources, including the NULL token which signifies that there is
+no requirement for any external knowledge as shown in Table I:
+M:𝒄→NULL, (1)
+whereMis parameterized by LLMs. Secondly, there are two
+different situations between these multiple knowledge sources:
+1) the𝐾1,𝐾2,...,𝐾𝑖in𝑲is independent, which means there
+is no interdependent relationship between them; and 2) Some
+or even all of they are not independent, for example, the
+results obtained from 𝐾1may be contingent on the outcomes
+derived from 𝐾2and potentially other sources. These two
+situations cater to different applications. In the first scenario,
+the independence between knowledge sources offers practical
+utility for tasks where autonomy and isolation of information
+are paramount, such as user persona and system persona, which
+are two independent knowledge sources. On the other hand, in
+the second scenario, where interdependencies appear, the model
+accommodates tasks that demand a nuanced consideration of the
+relationships between different knowledge sources. For example,
+dependencies between user memory or persona and document
+introduce a layer of complexity, reflecting real-world scenarios
+where the fact that age, hobby, education, and life experience of
+the user have a major effect on his or her personal preference
+over external document knowledge [28].
+In order to handle both independent and interdependent
+knowledge sources, thereby extending its applicability across
+a spectrum of use cases with varying degrees of complexity,
+the goal of the planning step is to make a series of decisions to
+decide whether or not the corresponding source of knowledge
+is required and determine their call order if needed. Since the
+dependency relationship is previously known, we only need tomake sure that a certain knowledge source is called after the
+sources it depends on. Thus, we formulate this task as sequence-
+to-sequence generation by directly outputting required sources
+in execution order as follows:
+M:𝒄→𝐾𝑖,𝐾𝑗,...,𝐾𝑛, (2)
+Then we strictly follow the outputed order to retrieve
+evidences from corresponding source of knowledge. To offer
+the flexibility and scalability to plug in an arbitrary number of
+sources, we can add 𝐾𝑖,...,𝐾𝑛andNULL as special tokens into
+the vocabulary of LLMs as special tokens, and expand the set of
+tokens on the fly following Hao et al. [49]. Besides that, we add
+other special tokens to indicate the different parts of the input,
+i.e.,[SOURCE] and[EOS] to indicate the start and end positions
+of sources. In this way, LLM can model the dependency between
+different sources and learn when and how to call certain sources.
+2) Retrieval: According to the output of the last planning
+step, there are two cases in this step: (1) the response does
+not need any external sources of knowledge, and the dialogue
+system can skip this step; and (2) the response needs multiple
+sources of knowledge, and it strictly follows the output source
+order to retrieve top-n related evidence 𝑘∗
+𝑖for the𝑖𝑡ℎsource
+of knowledge according to the dialogue context 𝒄. If there is
+a dependency here, it will use preceding retrieved results 𝑘∗
+𝑗in
+the planned execution order as a filter. Specifically, assuming the
+output order is PERSONA ,DOCUMENTS in the planning step for a
+persona-consistent dialogue system, we first retrieve top-1 result
+𝑝∗from PERSONA , and then we retrieve 𝑘∗from DOCUMENTS
+according to 𝒄and𝑝∗. If there is no dependency, it simply
+retrieves corresponding evidences source by source (as shown
+in Figure 1).
+To joint train the retriever and reader in a unified manner, we
+first reformulate the traditional classification task (relevant or
+irrelevant) for retrieval into a generation task. Then we define
+several similarity tokens as shown in Table I, ranging from 0 to
+1 with the internal as 0.1. In this way, we enforce the UniMS-
+RAG to predict the similarity score by generating corresponding
+tokens. To get the supervised label of similarity scores, there
+are two different ways: 1) the similarity scores are generated by
+independent trained retriever such as DPR [42]; 2) the similarity
+scores are generated by prompting LLMs [45]. The details
+can be found in §IV-B. Furthermore, we design a evidence
+attention mask mechanism to mask unrelated evidence when
+predicting the similarity score for current evidence, aiming to
+reduce unnecessary noises in the context as shown in Figure 2.
+M:𝒄,𝐾𝑖,𝑒𝑗→𝑠𝑖𝑚∈{0.1,0.2,...,1.0}, (3)
+In this way, UniMS-RAG can be used to evaluate the relevance
+between the dialogue context and retrieved evidences after
+training, serving as a retriever itself. During the inference,
+we can use it to retrieve top-n evidences {𝑒1,...,𝑒𝑛}from
+corresponding sources of knowledge according to Eq. 3.
+3) Generation: We concatenate all preceding results, includ-
+ing the names of sources, retrieved evidences and corresponding
+similarity scores, all together with the dialogue context 𝒄to
+generate the response:
+M:Inp→𝑠𝑡, (4)
+5
+TABLE I: Three types of special tokens used in UniMS-RAG, in which the former two stands for acting tokens and evaluation
+tokens, respectively. Each type uses several tokens to represent its output values.
+Token Type Input Output Definitions
+Sources 𝑪{NULL,𝐾1,𝐾2,𝐾3,...𝐾 𝑛} Decides which source to retrieve or not retrieve.
+Similarity 𝑪,𝑒𝑖{0.0,0.1,0.2,..., 1.0} 𝑒𝑖is a useful for current dialogue context.
+Indicator - {[SOURCE],[EOS],[EVIDENCE],[EOE]} Indicates the start and end position of different parts.
+where Inp={𝑪𝑡[SOURCE]𝐾𝑖,...,𝐾𝑛[EOS] [EVIDENCE]
+𝑘𝑗
+𝑖[EOE][𝑆𝑖𝑚 1],...,[EVIDENCE] 𝑘𝑚
+𝑛[EOE][𝑆𝑖𝑚𝑛]}. We use
+[EVIDENCE] and[EOE] to represent the start and end positions
+of the retrieved evidences. The [𝑆𝑖𝑚𝑖]stands for the similarity
+score of𝑖𝑡ℎevidence, calculated using the retriever ( §IV-B).
+B. General Framework
+Besides the core model, we also value the general framework
+such as different ways to collect data, unique training and
+inference strategies. Thus, we first introduce different ways to
+collect relevance score labels, and then present the training and
+inference design (Figure 3).
+1) Relevance Scores Acquisition: There are two different
+methods to get the similarity labels: 1) prompt-based method.
+which directly prompt the LLMs to assign the similarity scores
+given dialogue context and evidences [46, 48]; 2) classification-
+based method. which requires a fine-tuned retriever such as
+DPR to calculate the similarity score given the same input. In
+latter method, the evidence is feed one by one with the dialogue
+context unchanged.
+Prompt-based method. We can utilize some off-the-shelf
+methods to get the similarity score between the dialogue context
+and the evidence, including some sparse retriever such as TF-
+IDF [50] and BM25 [40], or simply hard label by assigning
+a similarity score to the evidence based on whether it is used
+(set score as 1) or unused (set score as 0). Inspired by recent
+studies which simply using LLMs as search engine to predict
+the similarity relationship between query and evidence [48],
+we choose to prompt the LLMs (i.e, ChatGPT) to predict
+the similarity score by feeding a dialogue context and several
+evidences in a zero-shot manner. The prompts are shown in
+Figure 4.
+Classification-based method. Following previous works [42],
+we can train an off-the-shelf retriever using the ground-truth
+labels. Specifically, we first build our own finetuning dataset
+by regarding (context, related evidence) as the positive and
+(context, unrelated evidence) as the negatives. The positive
+and negative samples are annotated in the original dialogue
+dataset, i.e., which persona or documents is used to generate
+the response. Then we apply the following negative log likeli-
+hood (NLL) loss to learn the retrieval-oriented representations
+following [51]:
+L𝑟𝑒𝑡𝑟𝑖𝑒𝑣𝑒𝑟 =−𝑙𝑜𝑔𝑒𝑠𝑖𝑚(𝐶𝑖,𝑑+)
+𝑒𝑠𝑖𝑚(𝐶𝑖,𝑑+)+Í
+𝑗∈B−𝑒𝑠𝑖𝑚(𝐶𝑖,𝑑−), (5)
+𝑠𝑖𝑚(𝐶,𝑑)=𝑐𝑜𝑠(𝐶,𝑑)) (6)
+Dialogue Context
+LLM
+Retriever …Evidences
+…
+…Prompting -based method
+Classification -based method
+UniMS -RAG
+…
+Shuffle Resp
+…
+ …
+UniMS -RAG
+Resp nRelevance Score Consistency Score
+Resp 
+n-1
+…Pos Neg
+xTraining stageRelevance Score Acquisition
+Inference stageFig. 3: The general framework to utilize UniMS-RAG, including
+1) relevance score acquisition; 2) training stage; and 3) inference
+stage.
+The following is a dialogue between the user and the system:{dialogue_context} There is a series of evidences that may be related to the current conversation: {evidence_1}{evidence_2}……{evidence_n} Please sort these documents according to their relevance to the current dialogue context, and please output them in evidence order. Relevance is measured as a score, with intervals of 0.1, ranging from 0 (extremely irrelevant) to 1 (extremely relevant). Please output the document serial number first, and then output the corresponding similarity score.[1]:0.2,[2]:0.3,…..[n]:0.7
+Fig. 4: The instructions for zero-shot retriever used to predict
+similarity score using off-the-shelf LLMs. The grey and yellow
+blocks indicate the inputs and outputs of the model.
+where simis a similarity function, Bis a mini-batch of
+examples,𝑑+and𝑑−are positive evidence and negative evidence
+for𝑖𝑡ℎdialogue context 𝐶𝑖. Once there are no negatives or the
+negative is the same as the positive, we directly use randomly
+sampled sample from other session. By including mini-batch
+negative candidates in the training data, the model is forced to
+learn to identify the subtle and key information required for the
+6
+current turn instead of useless or redundant ones. After training,
+we can use the fine-tuned DPR to provide relevance labels to
+train the UniMS-RAG.
+To avoid computing on the fly during training, we pre-
+compute relevance scores for all training and validation samples
+before beginning the model training process. During the infer-
+ence stage, three types of retrievers can be employed: 1) DPR,
+2) LLMs, and 3) UniMS-RAG. It is worth noting that UniMS-
+RAG can be considered a distillation derived from either DPR
+or LLMs.
+2) Training Stage: We shuffle the order of evidence during
+the training. The formation of the input in this way has
+three advantages. Firstly, the name of the sources indicates
+the type of results retrieved, which provides more signals to
+the LLMs. Secondly, it enforces the LLMs to capture the
+important evidence since it can appear in any position and
+denoise unrelated evidence. Thirdly, it allows us to train the large
+language model in a multi-task manner using teacher forcing
+as introduced in next section. The whole training objective of
+UniMS-RAG can be defined as follows:
+L=L𝑠𝑜𝑢𝑟𝑐𝑒+L𝑠𝑖𝑚+L𝑟𝑒𝑠𝑝𝑜𝑛𝑠𝑒 (7)
+Where the𝐿𝑠𝑜𝑢𝑟𝑐𝑒,𝐿𝑠𝑖𝑚,𝐿𝑟𝑒𝑠𝑝𝑜𝑛𝑠𝑒 indicate planning loss,
+relevance predication loss and the final response loss. In other
+words, we only calculate the loss at acting, evaluation and
+response tokens. By assigning different tokens different roles,
+our UniMS-RAG can serve as the planner (determine whether
+or not use external sources of knowledge and then use which
+source), retriever, and reader in a unified manner.
+3) Inference Stage: In this section, we introduce how to
+refine the generated responses, considering the similarity score
+between dialogue context and retrieved evidences and con-
+sistency score between retrieved evidences and generated re-
+sponses. Algorithm 1 shows the details of the whole processing.
+Specifically, we first calculate the consistency score between
+each retrieved evidence ( 𝑒𝑖) and current generated response
+(𝑟) using a fine-tuned natural language inference model (see
+§V-D). Next, we determine the overall score for each evidence
+by multiplying its similarity score with the consistency score.
+This combined score serves as an indicator of the evidence’s
+quality, taking into account its relevance to the dialogue context
+and its alignment with the generated response. In this way, we
+can adjust the evidences based on their determined quality and
+a predefined update number, resulting in the creation of a new
+list of evidences. This process ensures that the most relevant and
+high-quality pieces of evidence are given priority, contributing
+to the refinement of the overall generated responses. Ultimately,
+we can re-generate the responses 𝑟𝑛𝑒𝑤 using a new list of
+evidences, providing the dialogue context. Moreover, we can
+iteratively apply the self-refinement algorithm by incorporating
+the newly generated responses, denoted as 𝑟𝑛𝑒𝑤, and the updated
+list of evidences. We provide a thorough analysis at §VII-B,
+outlining the rationale behind the selection of update numbers
+and the procedural steps involved in refining the responses.Algorithm 1 Inference with Self-refinement
+Require: Dialogue Context 𝐶, UniMS-RAG model 𝑀, NLI
+model𝑁, Retriever𝑅, Generated Response 𝑟, Sources of
+Knowledge 𝑲={𝐾1,𝐾2,...,𝐾𝑚}, Retrieved Evidences 𝐸=
+{𝑒1,𝑒2,...,𝑒𝑛}, Similarity Scores 𝑆𝑐𝑒={𝑠1,𝑠2,...,𝑠𝑛},
+Update Number 𝛼
+Ensure: Refined Response 𝑟𝑛𝑒𝑤.
+1:𝑆𝑛𝑙𝑖= [] // store all nli scores
+2:for𝑗=1,2,...,𝑛 do
+3:𝑛𝑙𝑖𝑗=𝑁(𝑒𝑗,𝑟)// get the nli consistency score
+4:𝑆𝑛𝑙𝑖.𝑎𝑝𝑝𝑒𝑛𝑑(𝑛𝑙𝑖𝑗)
+5:end for
+6:S =𝑆𝑛𝑙𝑖*𝑆𝑐𝑒// element-wise product inspired by 𝑝(𝑟|𝑐)=
+𝑝(𝑒|𝑐)𝑝(𝑟|𝑐,𝑒)
+7:S = sorted (S) // sort the above scores
+8:𝐸𝑢𝑝𝑑𝑎𝑡𝑒 = Find (𝛼, S,𝐸) // find the evidences need to be
+updated according to the sorted scores
+9:𝐸=𝐸\𝐸𝑢𝑝𝑑𝑎𝑡𝑒 // pop all evidences need to be updated
+from current one
+10:while𝐸𝑢𝑝𝑑𝑎𝑡𝑒 ≠∅do
+11: Pop a evidence 𝑒𝑖from𝐸𝑢𝑝𝑑𝑎𝑡𝑒 , then𝐸𝑢𝑝𝑑𝑎𝑡𝑒 =
+𝐸𝑢𝑝𝑑𝑎𝑡𝑒\{𝑒𝑖}
+12:𝑒𝑛𝑒𝑤 = R (C, K) // retrieve next novel evidence from
+corresponding source of knowledge according to the
+dialogue context
+13:𝐸=𝐸∪{𝑒𝑛𝑒𝑤}
+14:end while
+15:𝑟𝑛𝑒𝑤=𝑀(𝐶,𝐸).
+16:return𝑟𝑛𝑒𝑤
+TABLE II: Statistics of DuLeMon and KBP Datasets
+Dataset DuLeMon KBP
+#Dialogues 3011 2477
+Train/Val/Test 19437/2407/2416 9821/1227/1229
+#Utterances 24554 48522
+Source Types NULL ,User-Per ,Bot-Per NULL ,Persona ,Document
+Resp w/ source ≈49% ≈85%
+V. Experimental Setups
+A. Research Questions
+The empirical analysis targets the following research ques-
+tions:
+•RQ1: Can large language models serve as a planner to
+determine whether or not require knowledge, which source
+of knowledge to call, and when to call?
+•RQ2: Can large language models serve as a retriever to
+retrieve highly related evidence from corresponding sources
+of knowledge?
+•RQ3: Can large language models serve as a reader to capture
+related information in the context and incorporate them into
+the final response generation?
+B. Datasets
+We consider two different situations between different knowl-
+edge sources, corresponding to two publicly available person-
+alized dialogue datasets: DuLeMon [7] and KBP [11]. The
+7
+dataset statistics are presented in Table II. We adopt the same
+train/val/test split in the original datasets.
+•DuLeMon [7] is the latest open-domain dialogue dataset with
+long-term persona memory in which a response is grounded
+on persona information that occurred in historical sessions,
+leading to better dialogue engagement. There are two versions
+of DuLemon: Self andBoth, where the persona information
+comes from only self side (user side) or both side (both
+user and chatbot side). We choose Both versions to consider
+the independent relationship between these two sources of
+persona information: User side ( User-Per ) and Chatbot Side
+(Bot-Per ).
+•Knowledge Behind Persona (a.k.a., KBP) [11] is a dialogue
+dataset, in which the response is grounded on both the
+persona ( Persona ) and its corresponding implicit knowledge
+(Document ). We choose it to consider the interdependent
+relationship between different sources of knowledge. It is
+worth noting that both of these two datasets contain cases
+which do not require any external source of knowledge,
+denoting as NULL .
+C. Baselines and Evaluation Metrics
+1) Knowledge Source Selection: We begin by discussing
+prompting-based and classification-based methods. This in-
+cludes presenting several baseline models to select different
+sources of knowledge for comparison, and we adopt F1as
+automatic evaluation metrics, following previous works [11].
+•Prompting-based methods. We mainly utilize zero-shot
+and in-context learning prompting (ICL) to directly instruct
+ChatGPT (gpt3.5-turbo-1106) and GPT4o (gpt-4o) to output
+the required knowledge sources (a.k.a, acting tokens). We use
+same demonstration for fair comparison.
+•BERT [52] We utilize BERT as the backbone to train
+a classifier, which determines the required sources. We
+formulate this task as a multi-label classification task to
+determine whether each source is required or not required.
+If none of them is required, then the used source is NULL . We
+choose different thresholds for different datasets according to
+the performance at validation dataset 2.
+•SAFARI [11] is the first work to formulate the source planning
+task as a sequence generation task, regarding different sources
+of knowledge as different tokens in vocabulary at LLMs.
+However, it does not consider relevance scores or iterative
+refinement. We copy the its best performance for better
+comparison.
+2) Knowledge Retrieval: We compare the performance of
+retrieval with different types of retrievers, and we choose
+Recall@1 as our primary evaluation metric. This selection is
+motivated by the predominant use case scenario observed in the
+original datasets, where a single evidence from each knowledge
+source is typically sufficient.
+•BM25 [40] is a type of sparse retriever, which takes into
+account term frequencies and inverse document frequency
+(TF-IDF) to score the relevance of documents to a query.
+2In detail, we set the threshold as 0.3 in kBP and 0.5 in DuLeMon datasets,
+respectively.•RocketQAv2 [53] is a type of dense retriever, which is a
+unified list-wise training approach for both the retriever and
+the re-ranker.
+•DPR [42] is a method that leverages dense vector representa-
+tions for passages in a collection. It uses pre-trained language
+models to encode passages and queries into dense vectors
+independently, allowing for a more nuanced understanding of
+the content.
+•LLMs. We utilize the same instruction as shown in Figure 4
+to prompt gpt-3.5-turbo-1106 andgpt-4o to retrieve
+top-n evidence from corresponding source of knowledge.
+Furthermore, we also employ in-context learning (ICL)
+prompting for more comprehensive comparison 3.
+3) Response Generation: We mainly compare two methods
+due to limited work focus on our target problem. Regarding the
+metrics, we choose BLEU ,Rouge-L to evaluate the gap between
+generated response with the ground truth response in the original
+datasets. Besides that, we select Persona Consistency (P.C)
+andKnowledge Consistency (K.C) to evaluate the consistency
+score using our finetuned NLI models [8] with same definition
+in [11]. It is important to note we merge the two sources of
+persona information ( User-Per ,Bot-Per ) in DuLeMon into
+one unified P.C score.
+•FoCus [54] aims to minimize the negative log-likelihood of
+language modeling and sub-tasks: persona grounding and
+knowledge grounding . It uses either the sigmoid or softmax
+functions to select evidence by concatenating evidence and
+dialogue context, and then generate the final response. We do
+not report the performance on DuLeMon dataset since most
+of responses in this dataset do not require external sources.
+•SAFARI [11] incorporates all retrieved evidences with cor-
+responding source signals to generate the final responses,
+without considering the relevance between different evidences
+and dialogue context explicitly. We report performance of both
+supervised and unsupervised SAFARI.
+D. Implementation Details
+UniMS-RAG: We mainly choose ChatGLM-6B [55, 56] as
+the backbone models during training, we set the batch size as
+8, train models with 3 epochs and save the checkpoint with
+the lowest validation loss. For other hyper-parameter settings,
+we mainly follow the corresponding official code 4. Due to the
+computation limit, we conduct training with LoRA [57] at one
+single 3090 GPU, and it costs about 4-6 hours. For the prompting
+using LLMs, we choose gpt-3.5-turbo-1106 andgpt-4o ,
+and set both the temperature and top p as 0.1 to reduce the
+randomness of LLMs. We choose only the top-ranked result
+for the main experiment to ensure a consistent setting, and
+we additionally investigate the effects of retrieving different
+numbers of results to evaluate whether UniMS-RAG can
+effectively filter out unrelated evidence. According to different
+sources of similarity scores, we have three variants: UniMS-
+RAG (ChatGPT) ,UniMS-RAG (GPT-4o) andUniMS-RAG
+3We randomly sampled three cases to cover all knowledge sources from
+the original dataset. We do not observe significant improvements with other
+demonstration selection strategies.
+4https://github.com/THUDM/ChatGLM-6B
+8
+(DPR) where the similarity scores come from ChatGPT, GPT4o
+and DPR, respectively. At the inference stage, we use self-
+predicted similarity scores to retrieve the evidence, serving as
+an indicator. More variants or analyses can be found in §VII-B.
+Others: We finetune RocketQAv2 and DPR using samples from
+corresponding dataset by regarding (context, used persona /
+document) as the positive and (context, unrelated persona
+/ document) as the negative. We set epochs as 5 and max
+sequence length as 512, and mainly follow these codebases 5
+for other parameters. For RocketQAv2, we load the weights
+of pre-trained model zhdureader dev2as introduced in
+the official homepage, which is trained on the largest Chinese
+QA dataset, and we use 12-layer bert-base-chinese with
+110M parameters as backbone model for DPR. We then
+finetune an NLI model [8] by regarding (ground persona /
+document, response) as the positive and randomly sampled
+(unrelated persona / document, response) as the negative.
+We also use bert-base-chinese as the backbone model.
+We concatenate and encode the ground persona/document 𝑘
+and response 𝑟in the form of[CLS]𝑘[SEP]𝑟[SEP], and we
+train the model to predict whether responses are consistent with
+corresponding personas or documents. The batch size for fine-
+tuning is 8. The maximal training epoch is 5, and the max
+sequence length of the encoder is 512. In the experiments, we
+use the AdamW optimizer with a learning rate of 2e-5 and an
+epsilon of 1e-6. We evaluate the NLI model on the KBP test set
+every 500 iterations during training, and we save the checkpoint
+with the highest performance on the test set. The fine-tuned NLI
+model achieves >95% accuracy for both datasets.
+VI. Experimental Results
+In this section, we present the performance of our proposed
+method UniMS-RAG at different sub-tasks, including the final
+end-to-end generation task.
+A. Performance of Planning (RQ1)
+There are different types of planning decisions in the different
+datasets: DuLeMon (using NULL ,User-Per ,Bot-Per andBoth
+sources of knowledge) and KBP (using NULL ,Persona , and
+Both ). Table III demonstrates the F1 of planning using different
+methods under these two datasets. Generally, for prompting-
+based methods , we can find that two observations: 1) in-
+context learning (ICL) prompting can not always achieves
+better performances compared with zero-shot, regardless the
+dataset and models; and 2) It is not guaranteed that GPT-4
+outperforms ChatGPT in all metrics. In detail, GPT4o tends
+to predict more NULL compared with ChatGPT, especially on
+DuLeMon dataset. On the other side, for the supervised methods ,
+the SAFARI model performed slightly worse than the BERT
+model on the DuLeMon dataset, but their performance was
+comparable on the KBP dataset. Furthermore, the UniMS-RAG
+achieves best performance on 4 out of 7 metrics. Specifically,
+for KBP, both UniMS-RAG and SAFARI most frequently
+predict Both , followed by NULL , and then the Persona case,
+5https://github.com/PaddlePaddle/RocketQA, https://github.com/
+Alibaba-NLP/Multi-CPR/tree/main/retrievalmirroring the frequency of these cases in the original dataset.
+However, UniMS-RAG predicts significantly more NULL cases
+than SAFARI. Some of these NULL predictions by UniMS-
+RAG are actually Persona in the original dataset, leading
+to a lower number of Persona predictions by UniMS-RAG.
+In addition, we also found that the original data distribution
+has a serious impact on the final planning performance. For
+example, there are less than 0.1% samples in the training set
+of DuLeMon requiring Both source of knowledge, resulting in
+poor performance of all methods at Both . A similar phenomenon
+is also observed on the KBP dataset. Another reason behind this
+could be the additional token (i.e., evaluation tokens) introduced
+during the training stage compared with SAFARI. In general, the
+planning capability of LLMs still needs to be improved to solve
+the complex multiple sources planning problem in a dialogue
+system, particularly when dealing with imbalanced or scarce
+data sources.
+B. Performance of Retrieval (RQ2)
+To investigate the RQ2, we examine different types of
+retrievers, including unsupervised methods ( BM25 ,ChatGPT
+andGPT4o ) and supervised methods ( RocketQAv2 ,DPR , and
+our proposed UniMS-RAG ), in order to evaluate the retrieval
+performance, providing the ground-truth planning labels (except
+NULL ). Table IV presents the Recall@1 (R@1) of the different
+retrievers.
+1) The performance of baselines: There are several ob-
+servations can be concluded from the results: 1) GPT4o can
+achieves better performance than ChatGPT no matter which
+prompting method is chosen (zero-shot or in-context), and the
+performance of in-context learning prompting can not always
+achieves better performance in all datasets. For example, the in-
+context learning prompting (ICL) performs worse than zero-shot
+on DuLeMon but better on KBP. We attribute this to the effects
+of demonstrations and the complexity of different datasets; 2)
+The overall performance of dense vector (e.g, RocketQAv2
+and DPR) mostly is better than ChatGPT and GPT4o, and the
+performance of ChatGPT is better than sparse retriever (e.g,
+BM25). The gap of former is bigger than the latter, indicating
+the large improvement room for current methods using LLMs
+as retriever, particularly at the context of conversational search;
+3) It is observed that DPR performs the best out of these
+retrievers on KBP datasets while RocketQAv2 performs the
+best on DuLeMon dataset, revealing the importance of dense
+retrieval models in this task. We attribute the higher performance
+of RocketQAv2 on DuLeMon to the similar distribution between
+DuLeMon dataset and pre-training corpus of RocketQAv2; 4)
+On KBP datasets, all retrievers performs best at Both-PERSONA
+and worst at Both-DOCUMENTS , indicating the difficulty to
+retrieve independent source of knowledge since the semantics
+between different knowledge from Both-DOCUMENTS are similar
+to the same underlying persona 𝑝∗, making them more difficult
+to distinguish. On the other hand, the performance on DuLeMon
+is even worse than Both-DOCUMENTS on KBP. We suspect this
+is due to the semantic gap between the dialogue context and
+used persona in DuLeMon (as shown in Figure 1).
+9
+TABLE III: The F1 of different decisions in Planning of different methods under supervised settings. 1) DuLeMon: There are
+1686 NULL , 505 USER , 219 BOTand 6 BOTH in the ground planning; 2) KBP: There are 181 NULL , 125 PERSONA and 923 BOTH in
+the ground planning.
+ModelDuLeMon KBP
+NULL User-Per Bot-Per Both NULL Persona Both
+Unsupervised Setting
+ChatGPT-Zero-shot 1.29 (14) 23.18 (953) 0.0 (0) 0.69 (1449) 11.45 (116) 20.67 (233) 74.88 (880)
+ChatGPT-ICL 1.97 (44) 34.11 (2075) 0.0 (0) 0.66 (297) 27.95 (699) 23.14 (238) 41.98 (292)
+GPT4o-Zero-shot 42.39 (1041) 20.42 (1278) 0.0 (0) 0.0 (97) 31.41 (392) 25.48 (346) 58.84 (491)
+GPT4o-ICL 57.59 (1478) 18.03 (893) 0.0 (0) 0.0 (45) 28.16 (728) 31.17 (414) 15.24 (87)
+Supervised Setting
+BERT 77.39 (1658) 46.17 (279) 39.25 (479) 0.0 (0) 1.1 (2) 42.02 (113) 86.28 (1104)
+SAFARI 75.34 (1298) 24.93 (249) 39.05 (416) 1.74 (453) 47.10 (129) 31.96 (69) 86.59 (1031)
+UniMS-RAG 85.15 (1992) 47.94 (296) 41.50 (128) 0.0 (0) 50.35 (252) 8.82 (11) 84.81 (966)
+TABLE IV: The performance (Recall@1) of Retrieval of
+different types of retrievers. It is note the UniMS-RAG (w/
+DPR) means that the similarity labels come from DPR model
+during training, and for w/ LLMs, the labels comes from zero-
+shot prompting. 1) DuLeMon: There are 511 samples require
+to use User-Per and 225 samples require to use Bot-Per ; 2)
+KBP: There are 125 samples require to use PERSONA and 923
+samples require to use BOTH .
+ModelDuLeMon KBP
+User-Per Bot-Per PERSONA Both-PERSONA Both-DOCUMENTS
+Unsupervised Setting
+BM25 15.85 24.00 36.80 48.97 15.05
+ChatGPT-Zero-shot 21.14 37.33 45.60 65.33 16.14
+ChatGPT-ICL 17.42 31.11 52.00 74.11 19.28
+GPT4o-Zero-shot 26.81 44.00 58.60 71.83 24.16
+GPT4o-ICL 23.68 42.00 65.60 80.17 36.19
+Supervised Setting
+RocketQAv2 42.85 46.22 80.00 92.31 50.49
+DPR 30.72 40.00 83.20 93.07 51.67
+UniMS-RAG
+w/ DPR 23.87 31.11 74.40 82.88 22.32
+w/ ChatGPT 21.53 33.33 42.40 67.61 14.41
+w/ GPT4o 24.07 42.22 46.56 72.05 16.58
+2) The performance of UniMS-RAG: Besides, we also
+present the performance of UniMS-RAG as a retriever using
+different similarity signals (DPR, ChatGPT or GPT4o) during
+the training. We emphasize here that this kind of functionality
+of UniMS-RAG as retriever is additional bonus due to the
+introduction of sub-task: relevance score prediction. It does not
+mean that we must use itself as retriever during inference in
+practice. Our main focus is to determine whether UniMS-RAG
+can be used as a retriever. Additionally, if it can be used as
+a retriever, we aim to evaluate its performance and potential.
+The results show that UniMS-RAG can be directly used as a
+retriever, since the performance of all variants of UniMS-RAG
+are better than sparse retriever (BM25) and some of them even
+outperforms some prompting-based methods. In detail, UniMS-
+RAG w/ DPR even achieves better performance than ChatGPT,
+revealing the great potential of UniMS-RAG as retriever once
+we use more high-quality signals (the performance of DPR is
+better than ChatGPT). Furthermore, UniMS-RAG w/ ChatGPT
+achieves comparable performance with ChatGPT on DuLeMon
+and KBP datasets. Since the performance of UniMS-RAG w/
+GPT4o is much better than UniMS-RAG w/ ChatGPT due toTABLE V: The performance of Generation of different meth-
+ods. We follow the official code of SAFARI to conduct evalu-
+ation on DuLeMon dataset. We bold the highest performance
+and underline the second-best performance.
+ModelsDuLeMon KBP
+BLEU-1 Rouge-L P.C BLEU-1 Rouge-L P.C K.C
+Unsupervised Setting
+SAFARI [11] 12.11 15.46 4.96 13.74 19.69 16.92 24.89
+Supervised Setting
+FoCus [54] - - - 22.51 25.29 64.52 17.90
+SAFARI [11] 7.81 8.72 51.18 23.81 26.70 76.99 42.39
+Using itself as retriever
+UniMS-RAG
+w/ DPR 18.43 20.32 63.18 29.65 32.48 75.51 42.07
+w/ ChatGPT 18.61 20.33 64.83 27.86 30.86 70.38 36.53
+w/ GPT4o 18.31 20.13 64.86 27.93 32.13 71.32 36.70
+Using independent retriever
+UniMS-RAG
+w/ BM25 18.52 20.34 64.07 27.30 29.22 68.99 36.29
+w/ DPR 18.95 20.87 64.28 29.72 32.85 73.56 45.00
+w/ ChatGPT 18.53 20.47 65.56 29.04 31.46 72.98 39.62
+w/ GPT4o 18.20 20.01 65.95 29.27 32.07 73.13 41.42
+more accurate similarity labels provided by GPT4o, we believe
+that UniMS-RAG can distill the capabilities of original retriever
+as much as possible if we can provide more data and more
+fine-grained signals. Therefore, we can derive the answer to
+RQ2 from this analysis: Large Language Models (LLMs) can
+serve as retrievers directly, achieving comparable performance
+compared with original retrievers, showcasing a great potential
+towards a more powerful unified RAG framework.
+C. Performance of Generation (RQ3)
+To investigate the performance of UniMS-RAG on the
+response generation task, we conduct two settings: 1) using
+itself as retriever , which means we use UniMS-RAG to retrieve
+corresponding evidences from the planned sources of knowledge
+(i.e, the output of planning step); and 2) using independent
+retriever (i.e, BM25, DPR, ChatGPT, and GPT4o) to retrieve
+corresponding evidences from the planned sources of knowledge
+(i.e, the output of planning step). Table V demonstrates the
+performance of response generation under both supervised and
+unsupervised settings.
+1) The performance of baselines: On the one hand, we can
+find that supervised methods mostly achieve better performance
+10
+than unsupervised methods except the BLEU-1 and Rouge-L
+of unsupervised SAFARI on DuLeMon dataset. We carefully
+check the outputs of unsupervised SAFARI and find that it tends
+to plan to use source of knowledge ( 70% using both User-Per
+andBot-Per ) while most of original test samples do not require
+any sources of knowledge, resulting in extremely low P.C and
+higher BLEU-1 and Rouge-L. Furthermore, it is evident that
+SAFARI outperforms FoCus. We emphasise that FoCus treats
+knowledge selection as a classification task and optimizes it
+jointly with response generation tasks, leading to efficiency and
+scalability issues compared with SAFARI and UniMS-RAG.
+2) The performance of UniMS-RAG: Referring to Tabel III
+and Table IV, the performance of the planning step and retrieval
+step largely affects the results in the final generation step.
+Specifically, when using itself as retriever, we can find that
+UniMS-RAG using signals from DPR (w/ DPR) leads to better
+performance in contrast to ChatGPT (w/ ChatGPT) or GPT4o (w
+/ GPT4o), revealing the effectiveness of better retriever signals.
+The results of GPT4o is also slightly better than ChatGPT due
+to more accurate similarity scores no matter using itself as
+retriever or using independent retriever. The gap between DPR
+and ChatGPT on DuLeMon is relatively small since most of
+cases here do not require the involvement of external sources
+of knowledge. Thus, we decide to load parameters of UniMS-
+RAG w/ DPR to conduct evaluation when using independent
+retriever. In detail, the results again validate the effectiveness
+of better retriever (w/ DPR >w/ GPT4o>w/ ChatGPT >w/
+BM25). We find that the performance gap between different
+retrievers in DuLeMon dataset is pretty small (less than 1%).
+We suspect this is highly related to the original data distribution
+in the test dataset, since most of the samples do not require
+external persona information. Furthermore, we also find that
+using independent retriever is mostly better than using itself as
+retriever except the worst BM25, which is consistent with the
+findings in the performance of retrieval step. To conclude, it
+is obvious that our proposed method UniMS-RAG outperforms
+all other baselines in at least 5 out 7 evaluation metrics no
+matter using itself as retriever or using independent retriever.
+Combining the performance of planning, retrieval, and response
+generation together, we can find that UniMS-RAG is capable of
+serving as a planner, retriever, and reader in a unified manner,
+leading to better performance in personalized dialogues.
+3) Discussion of Unified Manner: Despite the clear perfor-
+mance boost from using independent existing retrievers, we
+emphasize that the performance gain is not solely due to the
+better relevance scores provided by these retrievers. It is also
+significantly attributed to our proposed UniMS-RAG, especially
+the introduction of relevance score prediction task which makes
+it can attention on relevant evidences while overlooking noisy
+ones. This conclusion based on two observations: 1) simply
+using the existing retriever based on SAFARI cannot achieve
+state-of-the-art results. We have already selected the best-
+performing version of SAFARI, and all variants of our proposed
+UniMS-RAG (i.e., using independent retriever and using itself as
+retriever) largely outperform it, 2) The performance gap between
+variants of our proposed method is relatively smaller than the
+gap between ours with baselines, revealing the great potential
+and flexibility of UniMS-RAG. In practice, we advocate for the
+BLEU-1
+ROUGE-L P.C
+18.4318.78
+20.32
+20.8463.18
+63.96Number=1
+Number=2
+Number=3(a) DuLeMon
+BLEU-1
+ROUGE-L
+P.CK.C
+29.6533.5
+32.48 37.33
+75.51
+79.942.07 53.46Number=1
+Number=2
+Number=3 (b) KBP
+Fig. 5: The performance of Generation with different number of
+retrieved evidences on two datasets.
+unified training of these three sub-tasks in PerDS, as depicted in
+UniMS-RAG. During inference, the retriever should be selected
+on a case-by-case basis.
+VII. Analysis and Discussions
+In this section, we choose the best model as shown in our
+previous experiments to investigate the performance changes
+under different settings (UniMS-RAG w/ DPR). In detail,
+we start from the performance of our proposed model with
+different numbers of retrieved evidence ( §VII-A), then we study
+the effects of introduced self-refinement mechanism during
+the inference stage by re-evaluating the relationship between
+generated response with the dialogue context or retrieved
+evidence ( §VII-B). We present the ablation study to show the
+effectiveness and rationale of UniMS-RAG ( §VII-B), followed
+by the results of human evaluation.
+A. Different Numbers of Retrieved Results
+The number of retrieved results plays a key role in the response
+generation. Striking a balance between accuracy and recall is
+essential, as too few results may miss important semantics, while
+too many can introduce noise. Figure 5 shows the performance
+of UniMS-RAG under different numbers of retrieved results.
+In DuLeMon dataset, we observe a slight improvement in
+performance as the number of retrieved results increases. This
+improvement is likely attributed to infrequent cases requiring
+evidence in the original test dataset. On the other hand, in
+KBP dataset, it is obvious that the performance get notably
+improvement when the number of retrieved evidence increases
+from 1 to 2, but then experiences a slight decline upon further
+increase to 3. We hypothesize that this drop is a result of
+additional noise introduced as the number of retrieved evidence
+continues to increase. This suggests a delicate balance must
+be struck to optimize performance, considering the specific
+characteristics of each dataset.
+B. Additional Self-refinement during Inference
+To investigate the effects of self-refinement during the infer-
+ences, we set the number of retrieved evidence as 3 according
+to the experimental results in the previous section since it
+11
+TABLE VI: The performance of Generation with Self-
+refinement during the inference. Specifically, we first report
+the performance of different number of updated evidences 𝛼
+(Within self-refinement ); and then we fix the update number
+as 1 and iteratively refine the generated response step by step
+(Multi-step Self-refinement ).
+NumberDuLeMon KBP
+BLEU-1 Rouge-L P.C BLEU-1 Rouge-L P.C K.C
+UniMS-RAG 18.78 20.84 63.96 32.69 36.80 79.17 53.38
+Within Self-refinement
+𝛼= 1 18.28 20.16 66.50 32.60 36.76 80.23 53.45
+𝛼= 2 18.25 20.34 65.48 32.99 37.34 80.47 54.43
+𝛼= 3 18.71 20.63 65.56 33.33 37.56 81.45 54.84
+Multi-step Self-refinement
+Step = 1 18.28 20.16 66.50 32.60 36.76 80.23 53.45
+Step = 2 18.53 20.38 65.90 33.39 37.48 79.09 54.52
+Step = 3 18.30 20.46 65.54 33.52 37.35 80.63 54.84
+leads to the best performance. There are two different ways
+to refine the generated response: 1) Within self-refinement by
+providing different number of updated evidences during one-
+step refinement as shown in Algorithm 1; and 2) Multi-step self-
+refinement by refining the response step by step while keeping
+the update number fixed. Table VI presents the final results.
+On the one hand, updating the number of evidence within the
+self-refinement mostly leads to improvement on the consistency
+scores, e.g., the P.C in DuLeMon, and P.C, K.C in KBP. We
+suspect this is due to the introduction of novel high-quality and
+related evidences. Balancing remaining evidence with newly
+updated evidence introduces a trade-off. If the count of updated
+evidences surpasses a certain threshold, which unfortunately
+depends heavily on the number of ground truth evidences
+employed in each sample, there is a risk of filtering out important
+information from the remaining evidences. In addition, since
+we do not refine the response if UniMS-RAG considers it does
+not require any external sources of knowledge (i.e., NULL ), the
+performance of BLEU-1 and Rouge-L on DuLeMon dataset get
+slightly drop.
+On the other hand, similar patterns emerge when we progres-
+sively enhance the response through iterative refinement with
+an update number of 1, underscoring the efficacy of multi-
+step self-refinements. However, it becomes evident that the
+advancement achieved through multi-step self-refinement is not
+uniformly consistent in comparison to within self-refinement .
+This inconsistency is attributed to the interplay between multiple
+pieces of evidence, given our choice to set the update number
+as 1. In summary, we posit that integrating these two distinct
+refinement mechanisms can synergistically augment the quality
+of generated responses, rendering them more personalized and
+aligned with existing knowledge.
+C. Ablation Study
+We investigate the effects of individual steps by providing
+UniMS-RAG model the ground-truth labels from each step to
+generate the response, enabling us to analyze and understand
+the specific effects of each step in a clear and systematic way.
+Table VII shows the final results.
+Upper bound of UniMS-RAG. First, we note that the inclusion
+of ground-truth planning labels or retrieval results casts a
+positive impact on performance. Planning primarily enhancesTABLE VII: Ablation study on the impact of different steps and
+modules in UniMS-RAG.
+ModelDuLeMon KBP
+BLEU1 RougeL P.C BLEU1 RougeL P.C K.C
+UniMS-RAG 18.43 20.32 63.18 29.65 32.48 75.51 42.07
++ Ground Planning 18.27 20.43 70.92 29.82 32.73 87.88 60.21
++ Ground Retrieval 18.76 20.86 65.89 37.30 41.71 81.53 66.64
++ Ground P & R 19.44 21.89 71.29 37.93 42.67 95.52 87.63
+w/o Attention Mask 18.32 20.20 62.70 28.69 31.44 74.53 40.93
+w/o Planning
+always use all sources 17.45 19.29 1.23 29.47 32.64 73.80 36.21
+always do not use source 17.40 19.20 69.78 26.99 28.91 14.73 24.89
+consistency scores, while grounding retrieval results contributes
+to BLEU1 and Rouge-L scores. The best results are obtained
+when both signals are combined, serving as the upper bound of
+our proposed UniMS-RAG.
+The effects of evidence attention mask. There are two notable
+advantages of adding the evidence attention mask: 1) removing
+the noise of irrelevant evidence to predict the similarity score;
+and 2) the UniMS-RAG can effectively operate as a retriever,
+as it directly captures the relationship between individual
+contexts and corresponding evidence, optimizing its retrieval
+capabilities. We can clearly find that removing the evidence
+attention mask leads to performance degradation, especially on
+KBP dataset since there are more cases that require external
+sources of knowledge.
+Compared with simple planning strategies. We addition-
+ally conduct experiments by adopting two simple planning
+strategies: 1) always use all sources, User-Per and Bot-Per in
+DuLeMon, and Both in KBP; and 2) always do not use sources,
+to investigate the effectiveness of the introduced planning step.
+The results show that the performance is decreased by 63.18%-
+1.23% on DuLeMon and 42.07%-36.21% on KBP respectively
+when using all sources. This highlights that indiscriminate use
+of all sources not only significantly hampers performance when
+the majority of samples do not necessitate external references
+(DuLeMon), but also results in a decline even when a substantial
+portion of samples requires the utilization of sources (KBP).
+Conversely, a parallel trend is observed when abstaining from
+using any external sources. When the majority of samples do not
+require external references, refraining from their usage leads to
+notable improvement. However, this approach adversely impacts
+performance when external sources are essential.
+D. Human Evaluation
+Human evaluation is conducted to evaluate the quality of
+generated response in terms of three metrics: coherence score
+(Coh. ), persona consistency score ( Per.Cs for both DuLeMon
+and KBP), and knowledge consistency score ( Know.Cs only for
+KBP). We randomly sample 100 responses from each dataset
+with grounding information for each model (We choose UniMS-
+RAG w/ DPR or w/ ChatGPT and using itself as retriever) and
+ask three well-educated annotators 6to indicate its coherence
+score (1-5) and whether the response is consistent with the
+given persona (1/0), and knowledge (1/0). Table VIII shows
+6The human inspection and annotation were conducted by a reputable data
+annotation company, and the annotators are compensated fairly based on the
+market price without revealing any personal information
+12
+TABLE VIII: The results of human evaluation. The inter-
+agreement is about 82%.
+ModelDuLeMon KBP
+Coh. Per.Cs (%) Coh. Per.Cs (%) Know.Cs (%)
+FoCus - - 3.53 54.2 33.8
+SAFARI 2.84 14.0 4.06 68.0 59.1
+UniMS-RAG Number of retrieved evidence = 1
+w/ DPR 3.22 25.0 4.18 68.1 60.5
+w/ ChatGPT 3.35 23.0 4.10 65.2 54.3
+Number of retrieved evidence = 3
+w/ DPR 3.38 62.0 4.20 84.8 66.7
+w/ ChatGPT 3.46 61.3 4.15 83.2 61.4
+the final result. When the number of retrieved evidence is one,
+we observe there is a significant improvement on DuLeMon
+and a slight improvement on KBP datasets when using UniMS-
+RAG w/ DPR. Moreover, when the number of retrieved evidence
+increases, it is obvious that the performance is largely improved.
+This observation reveals the effectiveness and robustness of
+UniMS-RAG to denoise unrelated information, and capture
+relevant evidences, thanks to the introduction of task and unique
+training strategies. In addition, UniMS-RAG w/ ChatGPT
+performs slightly worse than UniMS-RAG w/ DPR due to worse
+similarity signals. We also observe that human is more likely to
+find persona-inconsistent cases [11]. There are some responses
+that have intra-sentence or intra-context contradictions [58], for
+example, the dialogue responds: “Yes, our license plate starts
+with ‘Yun A’” to the last user turn: “Does your license plate start
+with ‘Yun B’?”.
+VIII. Conclusion
+In this paper, we focus on personalized knowledge-grounded
+dialogue tasks in a multi-source setting and decompose the
+problem into three sub-tasks: knowledge source selection ,
+knowledge retrieval and response generation . We discern a
+notable gap in none of the existing literature concerning the
+multiple sources planning and auto-regressive retriever with
+LLMs themselves as backbone. To fill this gap, we propose
+a Unified Multi-Source Retrieval-Augmented Dialogue System
+(UniMS-RAG), aiming to build a unified personalized dialogue
+system with LLM serving as planner, retriever and reader simul-
+taneously. Experimental results on two popular personalized
+datasets show that the UniMS-RAG framework can generate
+more personalized and factual responses and establish a better
+performance with self-refinement during inference, significantly
+outperforming strong baseline models under both automatic and
+human evaluations.
+Acknowledgment
+This paper was partially supported by grants from the
+RGC General Research Funding Scheme (GRF) 14222922
+(CUHK 2151185). Work done when Hongru Wang is visiting
+EdinburghNLP.
+References
+[1] Y. Bang and et al., “A multitask, multilingual, multimodal
+evaluation of chatgpt on reasoning, hallucination, and
+interactivity,” 2023.[2] M. Alex and et al., “When not to trust language models: In-
+vestigating effectiveness of parametric and non-parametric
+memories,” in ACL, 2023.
+[3] X. Boyang and et al., “Improving factual consistency
+for knowledge-grounded dialogue systems via knowledge
+enhancement and alignment,” in Findings. of EMNLP ,
+2023.
+[4] A. Salemi and et al., “Lamp: When large language models
+meet personalization,” 2023.
+[5] W. Hongru and et al., “Cue-CoT: Chain-of-thought
+prompting for responding to in-depth dialogue questions
+with LLMs,” in Findings. of EMNLP , 2023.
+[6] A. Asai and et al., “Self-rag: Learning to retrieve, generate,
+and critique through self-reflection,” 2023.
+[7] X. Xinchao and et al., “Long time no see! open-domain
+conversation with long-term persona memory,” in Find-
+ings. of ACL , 2022.
+[8] M. Andrea and et al., “Personalizing dialogue agents via
+meta-learning,” in ACL, 2019.
+[9] E. Dinan and et al., “Wizard of wikipedia: Knowledge-
+powered conversational agents,” 2019.
+[10] K. Mojtaba and et al., “Internet-augmented dialogue
+generation,” in ACL, 2022.
+[11] W. Hongru and et al., “Large language models as source
+planner for personalized knowledge-grounded dialogues,”
+inFindings of ACL: EMNLP 2023 , 2023.
+[12] O. Ram and et al., “In-context retrieval-augmented lan-
+guage models,” 2023.
+[13] G. Kelvin and et al., “Realm: Retrieval-augmented lan-
+guage model pre-training,” in ICML , ser. ICML ’20, 2020.
+[14] O. Rubin and et al., “Long-range language modeling with
+self-retrieval,” 2023.
+[15] Z. Saizheng and et al., “Personalizing dialogue agents: I
+have a dog, do you have pets too?” in ACL, 2018.
+[16] L. Qian and et al., “You impress me: Dialogue generation
+via mutual persona perception,” in ACL, 2020.
+[17] C. Xu and et al., “COSPLAY,” in SIGIR , 2022.
+[18] S. Haoyu and et al., “BoB: BERT over BERT for training
+persona-based dialogue models from limited personalized
+data,” in ACL, 2021.
+[19] W. Charles and et al., “Leveraging similar users for
+personalized language modeling with limited data,” in
+ACL, 2022.
+[20] Y. Liu and et al., “Improving personality consistency in
+conversation by persona extending,” in Proceedings of the
+31st ACM International Conference on Information &
+Knowledge Management , 2022.
+[21] C. Liang and et al., “Towards robust personalized dialogue
+generation via order-insensitive representation regulariza-
+tion,” in Findings. of ACL , 2023.
+[22] M. B. Prasad and et al., “Like hiking? you probably
+enjoy nature: Persona-grounded dialog with commonsense
+expansions,” in EMNLP , 2020.
+[23] W. Sixing and et al., “KSAM: Infusing multi-source
+knowledge into dialogue generation via knowledge source
+aware multi-head decoding,” in Findings. of ACL , 2022.
+[24] J. Yoonna and et al., “Call for customized conversation:
+Customized conversation grounding persona and knowl-
+13
+edge,” in AAAI , 2022.
+[25] W. Sixing and et al., “More is better: Enhancing open-
+domain dialogue generation via multi-source heteroge-
+neous knowledge,” in EMNLP , 2021.
+[26] ——, “Section-aware commonsense knowledge-grounded
+dialogue generation with pre-trained language model,”
+inProceedings of the 29th International Conference on
+Computational Linguistics , 2022.
+[27] E. Dinan and et al., “Wizard of wikipedia: Knowledge-
+powered conversational agents,” 2019.
+[28] F. Tingchen and et al., “There are a thousand hamlets in a
+thousand people’s eyes: Enhancing knowledge-grounded
+dialogue with personal memory,” in ACL 2022 , 2022.
+[29] H. Minlie and et al., “Challenges in building intelligent
+open-domain dialog systems,” ACM Trans. Inf. Syst. ,
+2020.
+[30] H. Wang and et al., “A survey of the evolution of language
+model-based dialogue systems,” 2023.
+[31] X. Xinchao and et al., “Long time no see! open-domain
+conversation with long-term persona memory,” in Find-
+ings. of ACL , 2022.
+[32] Z. Zheng and et al., “Memory-augmented dialogue man-
+agement for task-oriented dialogue systems,” ACM Trans.
+Inf. Syst. , 2019.
+[33] M. Chuan and et al., “Dukenet: A dual knowledge in-
+teraction network for knowledge-grounded conversation,”
+inProceedings of the 43rd International ACM SIGIR
+Conference on Research and Development in Information
+Retrieval , ser. SIGIR ’20, 2020.
+[34] R. Nakano and et al., “Webgpt: Browser-assisted question-
+answering with human feedback,” 2022.
+[35] H. Wang and et al., “Tpe: Towards better compositional
+reasoning over conceptual tools with multi-persona col-
+laboration,” 2023.
+[36] S. Kurt and et al., “Retrieval augmentation reduces
+hallucination in conversation,” in Findings. of EMNLP ,
+2021.
+[37] C. Wang and et al., “Survey on factuality in large language
+models: Knowledge, retrieval and domain-specificity,”
+2023.
+[38] L. Patrick and et al., “Retrieval-augmented generation
+for knowledge-intensive nlp tasks,” in Proceedings of
+the 34th International Conference on Neural Information
+Processing Systems , ser. NIPS’20, 2020.
+[39] Y. Gao and et al., “Retrieval-augmented generation for
+large language models: A survey,” 2024.
+[40] R. Stephen and et al., “The probabilistic relevance frame-
+work: Bm25 and beyond,” Foundations and Trends ®in
+Information Retrieval , 2009.
+[41] G. Jiafeng and et al., “Semantic models for the first-stage
+retrieval: A comprehensive review,” ACM Trans. Inf. Syst. ,
+2022.
+[42] K. Vladimir and et al., “Dense passage retrieval for open-
+domain question answering,” in EMNLP , 2020.
+[43] L. Hang and et al., “Pseudo relevance feedback with
+deep language models and dense retrievers: Successes and
+pitfalls,” ACM Trans. Inf. Syst. , 2023.
+[44] B. Sebastian and et al., “An analysis of fusion functionsfor hybrid retrieval,” ACM Trans. Inf. Syst. , 2023.
+[45] Y. Zhu and et al., “Large language models for information
+retrieval: A survey,” 2023.
+[46] S. Weiwei and et al., “Is ChatGPT good at search?
+investigating large language models as re-ranking agents,”
+inEMNLP , 2023.
+[47] T. Shen and et al., “Large language models are strong zero-
+shot retriever,” 2023.
+[48] X. Ma and et al., “Zero-shot listwise document reranking
+with a large language model,” 2023.
+[49] S. Hao and et al., “Toolkengpt: Augmenting frozen
+language models with massive tools via tool embeddings,”
+2023.
+[50] K. Sparck Jones, “A statistical interpretation of term
+specificity and its application in retrieval,” Journal of
+documentation , 1972.
+[51] Y. Shi and et al., “Few-shot conversational dense retrieval,”
+inProceedings of the 44th International ACM SIGIR
+Conference on Research and Development in Information
+Retrieval , ser. SIGIR ’21, 2021.
+[52] D. Jacob and et al., “BERT: Pre-training of deep bidi-
+rectional transformers for language understanding,” in
+NAACL-HLT , 2019.
+[53] R. Ruiyang and et al., “RocketQAv2: A joint training
+method for dense passage retrieval and passage re-
+ranking,” in EMNLP , 2021.
+[54] J. Yoonna and et al., “Call for customized conversation:
+Customized conversation grounding persona and knowl-
+edge,” in AAAI , 2022.
+[55] D. Zhengxiao and et al., “Glm: General language model
+pretraining with autoregressive blank infilling,” in ACL,
+2022.
+[56] A. Zeng and et al., “GLM-130b: An open bilingual pre-
+trained model,” in The Eleventh International Conference
+on Learning Representations (ICLR) , 2023.
+[57] E. J. Hu and et al., “Lora: Low-rank adaptation of large
+language models,” 2021.
+[58] Z. Chujie and et al., “CDConv: A benchmark for contra-
+diction detection in Chinese conversations,” in EMNLP ,
+2022.

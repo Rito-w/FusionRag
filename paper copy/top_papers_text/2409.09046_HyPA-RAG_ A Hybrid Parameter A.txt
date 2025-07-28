@@ -1,0 +1,1028 @@
+Title: HyPA-RAG: A Hybrid Parameter Adaptive Retrieval-Augmented Generation System for AI Legal and Policy Applications
+arXiv ID: 2409.09046
+Score: 0.9805
+Total Pages: 19
+Extraction Time: 2025-06-21 01:03:09
+================================================================================
+
+
+--- Page 1 ---
+HyPA-RAG: A Hybrid Parameter Adaptive Retrieval-Augmented
+Generation System for AI Legal and Policy Applications
+Rishi Kalra1,2, Zekun Wu1,2∗, Ayesha Gulley1, Airlie Hilliard1,
+Xin Guan1,Adriano Koshiyama1,Philip Treleaven2∗
+1Holistic AI,2University College London
+Abstract
+Large Language Models (LLMs) face limita-
+tions in AI legal and policy applications due
+to outdated knowledge, hallucinations, and
+poor reasoning in complex contexts. Retrieval-
+Augmented Generation (RAG) systems address
+these issues by incorporating external knowl-
+edge, but suffer from retrieval errors, ineffec-
+tive context integration, and high operational
+costs. ThispaperpresentstheHybridParameter-
+Adaptive RAG (HyPA-RAG) system, designed
+fortheAIlegaldomain,withNYCLocalLaw
+144 (LL144) as the test case. HyPA-RAG in-
+tegrates a query complexity classifier foradap-
+tive parameter tuning, a hybrid retrieval ap-
+proachcombiningdense,sparse,andknowledge
+graph methods, and a comprehensive evalua-
+tion framework with tailored question types
+and metrics. Testing on LL144 demonstrates
+that HyPA-RAG enhances retrieval accuracy,
+responsefidelity,andcontextualprecision,of-
+fering a robust and adaptable solution for high-
+stakes legal and policy applications.
+1 Introduction
+Large Language Models (LLMs) like GPT (Brown
+etal.,2020;OpenAI,2023), Gemini(Teametal.,
+2023), and Llama(Touvronetal., 2023a,b;Meta,
+2024) have advanced question answering across
+domains(Brownetal.,2020;Singhaletal.,2023;
+Wu et al., 2023). However, they face challenges
+in domains like law and policy due to outdated
+knowledge limited to pre-training data (Yang et al.,
+2023) and hallucinations, where outputs appear
+plausible but are factually incorrect (Ji et al., 2022;
+Huangetal.,2023). Empiricalevidenceindicates
+thatmanyAItoolsforlegalapplicationsoverstate
+theirabilitytopreventhallucinations(Mageshetal.,
+2024). Cases of lawyers penalized for using hallu-
+cinated court documents (Fortune, 2023; Business
+Insider, 2023) highlight the need for reliable AI
+systems in legal and policy contexts.
+∗Corresponding authorRetrieval-Augmented Generation (RAG) inte-
+grates external knowledge into LLMs to address
+theirlimitationsbutfaceschallenges. Theseinclude
+missing content, where relevant documents are not
+retrieved; context limitations, where retrieved doc-
+uments are poorly integrated into responses; and
+extractionfailuresduetonoiseorconflictingdata
+(Barnett et al., 2024). Advanced techniques like
+query rewriters and LLM-based quality checks im-
+prove quality but increase token usage and costs.
+This research presents the Hybrid Parameter-
+Adaptive RAG (HyPA-RAG) system to address
+RAG challenges in AI policy, using NYC Local
+Law 144 as a test corpus. HyPA-RAG includes
+adaptiveparameterselectionwithaquerycomplex-
+ityclassifiertoreducetokenusage,ahybridretrieval
+system combining dense, sparse, and knowledge
+graph methods to improve accuracy, and an evalua-
+tionframeworkwithagolddataset,customquestion
+types, and RAG-specific metrics. These compo-
+nentsaddresscommonRAGfailuresandenhance
+AI applications in legal and policy domains.
+2 Background and Related Work
+Recent LLM advancements have influenced law
+and policy, where complex language and large text
+volumes are common (Blair-Stanek et al., 2023;
+Choietal.,2023;Hargreaves,2023). LLMshave
+been applied to legal judgment prediction, docu-
+ment drafting, and contract analysis, improving
+efficiency and accuracy (Shui et al., 2023; Sun,
+2023; Šavelka and Ashley,2023). Techniques like
+fine-tuning, retrieval augmentation, prompt engi-
+neering,andagenticmethodshavefurtherenhanced
+performance in summarization, drafting, and in-
+terpretation (Trautmann et al., 2022; Cui et al.,
+2023).
+RAGenhanceslanguagemodelsbyintegrating
+external knowledge through indexing, retrieval,
+and generation, using sparse (e.g., BM25) andarXiv:2409.09046v2  [cs.IR]  25 Feb 2025
+
+--- Page 2 ---
+Figure 1: Hybrid Parameter Adaptive RAG (HyPA-RAG) System Diagram
+dense (e.g., vector) techniques with neural embed-
+dingstoimproveresponsespecificity,accuracy,and
+grounding (Lewis et al., 2020; Gao et al., 2023;
+Jones, 2021; Robertson and Zaragoza, 2009; De-
+vlin et al., 2019; Liu et al., 2019). To overcome
+naiveRAG’slimitations,suchaspoorcontextand
+retrieval errors, advanced methods like hybrid re-
+trieval, query rewriters, and rerankers have been
+developed (Muennighoff et al., 2022; Ding et al.,
+2024; Xiao et al., 2023). Hybrid retrieval com-
+binesBM25withsemanticembeddingsforbetter
+keyword matching and contextual understanding
+(Luo et al., 2023; Ram et al., 2022; Arivazhagan
+etal.,2023),whileknowledgegraphretrievaland
+composedretrieversimproveaccuracyandcompre-
+hensiveness(Rackauckas,2024;Sanmartin,2024;
+Edge et al., 2024). Recently, RAG systems have
+advanced from basic retrieval to dynamic methods
+involvingmulti-sourceintegrationanddomainadap-
+tation(Gaoetal.,2023;Jietal.,2022). Innovations
+likeSelf-RAGandKG-RAGimproveresponsequal-
+ity and minimize hallucinations through adaptive
+retrievalandknowledgegraphs(Asaietal.,2023;
+Sanmartin,2024). FrameworksforevaluatingRAG
+systemsincludeRagas,whichusesreference-free
+metrics like faithfulness and relevancy (Shahul
+etal.,2023b),Giskard,whichleveragessynthetic
+QAdatasets(AI,2023),andARES,whichemploys
+prediction-powered inference with LLM judges for
+precise evaluation (AI, 2023; Saad-Falcon et al.,2023).
+3 System Design
+TheHybridParameter-AdaptiveRAG(HyPA-RAG)
+system, shown in Figure 1, integrates vector-based
+textchunksandaknowledgegraphofentitiesand
+relationshipstoimproveretrievalaccuracy. Item-
+ploysahybridretrievalprocessthatcombinessparse
+(BM25)anddense(vector)methodstoretrievean
+initial top-𝑘set of results, refined using reciprocal
+rank fusion based on predefined parameter map-
+pings. Aknowledgegraph(KG)retrieverdynam-
+ically adjusts retrieval depth and keyword selec-
+tion based on query complexity, retrieving relevant
+triplets. ResultsarecombinedwiththeKGresults
+appending it to the retrieved chunks to generate
+an final set of 𝑘chunks. Optional components
+includeaqueryrewritertoenhanceretrievalwith
+reformulatedqueriesandarerankerforfurtherrefin-
+ingchunk ranking. De-duplicated rewrittenquery
+resultsareintegratedintothefinalset,which,along
+with knowledge graph triplets, is processed within
+the LLM’s context window for precise, contextu-
+ally relevant responses. The framework has two
+variations: Parameter-Adaptive(PA)RAG,which
+excludes knowledge graph retrieval, and Hybrid
+Parameter-Adaptive(HyPA)RAG,whichincorpo-
+rates it.
+
+--- Page 3 ---
+4 AI Legal and Policy Corpus
+LocalLaw144(LL144)of2021,enactedbyNew
+YorkCity’sDepartmentofConsumerandWorker
+Protection(DCWP),regulatesautomatedemploy-
+ment decision tools (AEDTs). This study uses a
+15-page version of LL144, combining the original
+law with DCWP enforcement rules. As an early
+AI-specific law, LL144 is included in GPT-4 and
+GPT-4otrainingdata,verifiedviamanualprompt-
+ing,andservesasabaselineinthisresearch. The
+complexityofLL144motivatesoursystem’sdesign
+forseveralreasons: (1)itrequiresmulti-stepreason-
+ingandconceptlinkingduetoitsmixofqualitative
+and quantitative requirements—definitions, proce-
+dural guidelines, and compliance metrics—that
+semanticsimilarityalonecannotcapture,addressed
+throughourknowledgegraph;(2)seeminglysim-
+ple queries can be ambiguous or require multiple
+information chunks, making a query rewriter and
+classifier necessary; and (3) while not specific to
+our adaptive classifier, the evolving nature of AI
+lawslimitstheeffectivenessofstaticpre-training,
+makingretrieval-augmentedsystemsbettersuited
+to handle frequent updates. These factors go be-
+yond what standard LLMs and basic RAG systems
+can manage, justifying the need for our approach.
+5 Performance Evaluation
+The evaluation process starts by generating custom
+questionstailoredtoAIpolicyandlegalquestion-
+answering,thenintroducesandverifiesevaluation
+metrics(seeevaluationsectionofFigure5inAp-
+pendixA.2). Forreproducibility,theLLM tem-
+perature is set to zero for consistent responses
+and all other parameters are set to defaults.
+5.1 Dataset Generation
+We created a "gold standard" evaluation set to
+assess system performance, leveraging GPT-3.5-
+Turbo and Giskard (AI, 2023) for efficient question
+generation. Thedatasetincludesvariousquestion
+types, such as ’simple’, ’complex’, ’situational’,
+and novel types like ’comparative’, ’complex situa-
+tional’,’vague’,and’rule-conclusion’(inspiredby
+LegalBench (Guha etal., 2023)). These questions
+testmulti-contextretrieval,user-specificcontexts,
+query interpretation, and legal reasoning. Gen-
+erated questions were deduplicated and refined
+through expert review to ensure accuracy and com-
+pleteness,usingthecriteriaoutlinedinTable4in
+Appendix A.5.5.2 Evaluation Metrics
+To evaluate our RAG system, we utilise RAGAS
+metrics (Shahul et al., 2023a) based on the LLM-
+as-a-judgeapproach(Zhengetal.,2023),including
+Faithfulness,AnswerRelevancy,ContextPrecision,
+Context Recall, and an adapted Correctness metric.
+Faithfulness evaluatesthefactualconsistencybe-
+tweenthegeneratedanswerandthecontext,defined
+asFaithfulness Score =|𝐶inferred|
+|𝐶total|, where𝐶inferredis
+thenumberofclaimsinferredfromthecontext,and
+𝐶totalis the total claims in the answer.
+Answer Relevancy measures the alignment
+between the generated answer and the original
+question, calculated as the mean cosine similar-
+ity between the original question and generated
+questions from the answer: Answer Relevancy =
+1
+𝑁Í𝑁
+𝑖=1𝐸𝑔𝑖·𝐸𝑜
+∥𝐸𝑔𝑖∥∥𝐸𝑜∥, where𝐸𝑔𝑖and𝐸𝑜are embed-
+dings of the generated and original questions.
+Context Recall measures the proportion of
+ground truth claims covered by the retrieved con-
+text, definedas Context Recall =|𝐶attr|
+|𝐶GT|, where𝐶attr
+isthenumberofgroundtruthclaimsattributedto
+the context, and 𝐶GTis the total number of ground
+truth claims.
+Context Precision evaluates whether relevant
+items are ranked higher within the context, de-
+fined asContext Precision =Í𝐾
+𝑘=1(𝑃𝑘×𝑣𝑘)
+|𝑅𝑘|. Here,
+𝑃𝑘=𝑇𝑃𝑘
+𝑇𝑃𝑘+𝐹𝑃𝑘istheprecisionatrank 𝑘,𝑣𝑘isthe
+relevance indicator, |𝑅𝑘|is the total relevant items
+in the top𝐾,𝑇𝑃𝑘represents true positives, and
+𝐹𝑃𝑘false positives.
+5.3 Correctness Evaluation
+We assess correctness using a refined metric to
+address the limitations of Giskard’s binary classifi-
+cation,whichfailstoaccountforpartiallycorrect
+answers or minor variations. Our adapted met-
+ric,Absolute Correctness , based on LLamaIn-
+dex (LlamaIndex, 2024), uses a 1 to 5 scale: 1
+indicates an incorrect answer, 3 denotes partial
+correctness, and 5 signifies full correctness. For
+binary evaluation, we use a high threshold of 4,
+reflectingourlowtoleranceforinaccuracies. The
+Correctness Score is computed as the average
+of these binary outcomes across all responses:
+Correctness Score =1
+𝑁Í𝑁
+𝑖=11(𝑆𝑖≥4),where𝑆𝑖
+represents the absolute correctness score of the 𝑖th
+response, 1(𝑆𝑖≥4)is an indicator function that
+is 1 if𝑆𝑖≥4and 0 otherwise, and 𝑁is the total
+number of responses.
+The Spearman coefficient(Figure 2) showshow
+
+--- Page 4 ---
+Figure2: SpearmanCoefficientComparison ,showing
+the correlation between model performance and human
+evaluation.
+ourpromptedLLMcorrectnessjudgealignswith
+human judgment. Prompts 1 and 2 (Appendix A.7)
+employ different methods: the baseline prompt
+providesgeneralscoringguidelines,Prompt1offers
+detailed refinements, and Prompt 2 includes one-
+shot examples and edge cases.
+Additional metrics, including macro precision,
+recall, F1 score, and percentage agreement with
+humanlabels,areshowninFigure7(AppendixA.8).
+Adetailedbreakdownof theSpearmancoefficient
+metrics is provided in Figure 8 (Appendix A.8).
+6 Chunking Method
+Weevaluatethreechunkingtechniques: sentence-
+level, semantic, and pattern-based chunking.
+Sentence-level chunking splits text at sentence
+boundaries, adhering to token limits and overlap
+constraints. Semantic chunking uses cosine simi-
+larity to set a dissimilarity threshold for splitting
+and includes a buffer size to define the minimum
+numberofsentencesbeforeasplit. Pattern-based
+chunkingemploysacustomdelimiterbasedontext
+structure; for LL144, this is " \n§".
+Figure 3 shows that pattern-based chunking
+achievesthehighestcontextrecall(0.9046),faith-
+fulness (0.8430), answer similarity (0.8621), and
+correctness (0.7918) scores. Sentence-level chunk-
+ing, however, yieldsthehighestcontextprecision
+andF1scores. Semanticchunkingperformsreason-
+ably well with increased buffer size but generally
+Figure3: RAGEvaluationMetricsforSentence-Level,
+Semantic, and Pattern-Based Chunking Methods
+underperforms compared to the simpler methods.
+Further hyperparameter tuning may improve its
+effectiveness. These findings suggest that a corpus-
+specific delimiter can enhance performance over
+standard chunking methods.
+For subsequent experiments, we adopt sentence-
+level chunking with a default chunk size of 512
+tokens and an overlap of 200 tokens.
+7 Query Complexity Classifier
+We developed a domain-specific query complexity
+classifier for adaptive parameter selection, map-
+pingqueriestospecifichyper-parameters. Unlike
+Adaptive RAG ( ?), our classifier influences not
+only the top- 𝑘but also knowledge graph and query
+rewriterparameters. Ouranalysisoftop- 𝑘selection
+indicated different optimal top- 𝑘values for various
+question types, as shown in Figure 6 (Appendix
+A.4).
+7.1 Training Data
+To train a domain-specific query complexity classi-
+fier, we generated a dataset using a GPT-4o model
+on legal documents. Queries were categorised into
+three classes based on the number of contexts re-
+quired: one context (0), two contexts (1), and three
+or more contexts (2). This classification resulted in
+varyingtokencounts,keywords,andclausesacross
+
+--- Page 5 ---
+Model Precision Recall F1 Score
+Random Labels 0.34 0.34 0.34
+BART Large ZS 0.31 0.32 0.29
+DeBERTa-v3 ZS 0.39 0.39 0.38
+LR TF-IDF 0.84 0.84 0.84
+SVM TF-IDF 0.86 0.86 0.86
+distilBERT Finetuned 0.90 0.90 0.90
+Table 1: 3-Class Classification Results
+classes, which could bias models toward associ-
+ating these features with complexity. To mitigate
+this, we applied data augmentation techniques to
+diversifythedataset. Toenhancerobustness,67%
+of the queries were modified. We increased vague-
+ness in10% ofthe questions while preserving their
+informationalcontent,addedrandomnoisewords
+or punctuation to another 10%, and applied both
+wordandpunctuationnoisetoafurther10%. Ad-
+ditionally,5%ofquestionshadphrasesreordered,
+andanother5%containedrandomspellingerrors.
+For label-specific augmentation, 25% of label 0
+queries were made more verbose, and 25% of label
+2querieswereshortened,ensuringtheyretainedthe
+necessaryinformationalcontent. Theaugmentation
+prompts are in Appendix A.9.
+7.2 Model Training
+We employed multiple models as baselines for
+classification tasks: Random labels, Logistic Re-
+gression (LR), Support Vector Machine (SVM),
+zero-shotclassifiers,andafine-tunedDistilBERT
+model. The Logistic Regression model used TF-
+IDF features, with a random state of 5 and 1000
+iterations. The SVM model also used TF-IDF
+features with a linear kernel. Both models were
+evaluated on binary (2-class) and multi-class (3-
+class) tasks. Zero-shot classifiers (BART Large ZS
+and DeBERTa-v3 ZS) were included as additional
+baselines, mapping "simple question," "complex
+question," and "overview question" to labels 0, 1,
+and 2, respectively; forbinary classification, only
+"simplequestion"(0)and"complexquestion"(1)
+wereused. TheDistilBERTmodelwasfine-tuned
+with a learning rate of 2e-5, batch size of 32, 10
+epochs, and a weight decay of 0.01 to optimize
+performance and generalization to the validation
+set.
+7.3 Classifier Results
+Tables 1 and 7 in Appendix A.10 summarise the
+classification results. We compare performance
+using macro precision, recall and F1 score. Thefine-tuned DistilBERT model achieved the highest
+F1 scores, 0.90 for the 3-class task and 0.92 for the
+2-class task, highlighting the benefits of transfer
+learning andfine-tuning. The SVM (TF-IDF)and
+Logistic Regression models also performed well,
+particularlyinbinaryclassification,indicatingtheir
+effectiveness in handling sparse data. Zero-shot
+classifiers performed lower.
+8 RAG System Architecture
+8.1 Parameter-Adaptive RAG (PA-RAG)
+The Parameter-Adaptive RAG system integrates
+our fine-tuned DistilBERT model to classify query
+complexity and dynamically adjusts retrieval pa-
+rameters accordingly, as illustrated in Figure 1, but
+excluding the knowledge graph component. The
+PA-RAGsystemadaptivelyselectsthenumberof
+query rewrites ( 𝑄) and the top- 𝑘value based on
+the complexity classification, with specificparam-
+eter mappings provided in Table 5 in Appendix
+A.6.1. In the 2-class model, simpler queries (label
+0)useatop-𝑘of5and3queryrewrites,whilemore
+complexqueries(label1)useatop- 𝑘of10and5
+rewrites. The3-classmodelusesatop- 𝑘of7and7
+rewrites for the most complex queries (label 2).
+8.2 Hybrid Parameter-Adaptive RAG
+Building on the PA-RAG system, the Hybrid
+Parameter-AdaptiveRAG(HyPA-RAG)approach
+enhances the retrieval stage by addressing issues
+suchasmissingcontent,incompleteanswers,and
+failures of the language model to extract correct
+answers from retrieved contexts. These challenges
+often arise from unclear relationships within le-
+galdocuments,whererepeatedtermsleadtofrag-
+mented retrieval results (Barnett et al., 2024). Tra-
+ditional(e.g. dense)retrievalmethodsmayretrieve
+only partial context, causing missing critical infor-
+mation. To overcome these limitations, this system
+incorporates a knowledge graph (KG) representa-
+tion of LL144. Knowledge graphs, structured with
+entities, relationships, and semantic descriptions,
+integrate information from multiple data sources
+(Hogan et al., 2020; Ji et al., 2020), and recent
+advancements suggest that combining KGs with
+LLMs can produce more informed outputs using
+KG triplets as added context.
+The HyPA-RAG system uses the architecture
+outlined in Figure 1. The knowledge graph is
+constructedbyextractingtriplets(subject,predicate,
+object) from raw text using GPT-4o. Parameter
+
+--- Page 6 ---
+Method Faithfulness Answer
+RelevancyAbsolute
+Correctness (1-5)Correctness
+(Threshold=4.0)
+LLM Only
+GPT-3.5-Turbo 0.2856 0.4350 2.6952 0.1973
+GPT-4o-Mini 0.3463 0.6319 3.3494 0.4572
+Fixed𝑘
+𝑘=3 0.7748 0.7859 4.0372 0.7546
+𝑘=5 0.8113 0.7836 4.0520 0.7584
+𝑘=7 0.8215 0.7851 4.0520 0.7621
+𝑘=10 0.8480 0.7917 4.0595 0.7658
+Adaptive
+PA:𝑘,𝑄(2 class) 0.9044 0.7910 4.2491 0.8104
+PA:𝑘,𝑄(3 class) 0.8971 0.7778 4.2528 0.8141
+HyPA:𝑘,𝑄,𝐾,𝑆 (2 class) 0.8328 0.7800 4.0558 0.7770
+HyPA:𝑘,𝑄,𝐾,𝑆 (3 class) 0.8465 0.7734 4.1338 0.7918
+Table2: PerformancemetricsforLLMOnly,Fixed 𝑘,Parameter-Adaptive(PA),andHybridParameterAdaptive
+(HyPA)RAGimplementationsforthe2and3-classclassifierconfigurations. 𝑘isthetop-𝑘value,𝑄thenumber
+of query rewrites, 𝑆the maximum knowledge graph depth, and 𝐾the maximum keywords for knowledge graph
+retrieval.
+mappingsspecifictothisimplementation,suchas
+themaximumnumberofkeywordsperquery( 𝐾)
+and maximum knowledge sequence length ( 𝑆), are
+detailed in Table 6, extending those provided in
+Table 5.
+8.3 RAG Results
+Adaptive methods consistently outperform fixed
+𝑘baselines. PA-RAG 𝑘,𝑄(2 class) achieves the
+highestfaithfulnessscoreof0.9044,a0.0564im-
+provement over the best fixed method ( 𝑘=10,
+0.8480). Similarly, PA 𝑘,𝑄(3 class) achieves
+0.8971,surpassingallfixed 𝑘methods. Foranswer
+relevancy,PA 𝑘,𝑄(2class)scores0.7910,nearly
+matching the best fixed method (0.7917), while PA
+𝑘,𝑄(3 class) scores slightly lower at 0.7778. In
+absolute correctness, PA 𝑘,𝑄(2 class) and 𝑘,𝑄
+(3 class) achieve 4.2491 and 4.2528, respectively,
+improvingby0.1896and0.1933overthebestfixed
+method (𝑘=10, 4.0595). Correctness scores fur-
+therhighlighttheadvantage,withPA 𝑘,𝑄(3class)
+scoring0.8141,0.0483higherthanthefixedbase-
+line (0.7658). HyPA results are more variable.
+HyPA𝑘,𝑄,𝐾,𝑆 (2 class) achieves a correctness
+score of 0.7770, a modest 0.0112 improvement
+over fixed𝑘=7, indicating potential for further
+optimization.8.4 System Ablation Study
+We evaluate the impact of adaptive parameters, a
+reranker (bge-reranker-large), and a query rewriter
+on model performance using PA and HyPA RAG
+methodswith2-class(Table9inAppendixA.12)
+and3-class classifiers(Table 8in AppendixA.11).
+Adaptiveparameters,queryrewriting,andrerank-
+ingsignificantlyinfluenceRAGperformance. Vary-
+ing the top-𝑘chunks alone achieves the highest
+Answer Relevancy (0.7940), while adapting the
+top-𝑘andnumberofqueryrewriteswithareranker
+(𝑘,𝑄+reranker)deliversthehighestFaithfulness
+(0.9098) and improves Correctness Score from
+0.8141to0.8178. Addingaknowledgegraph( 𝑘,𝐾,
+𝑆)maintainsthesameCorrectnessScore(0.8141)
+but lowers Absolute Correctness. The HyPA ( 𝑘,𝐾,
+𝑆,𝑄+reranker)setupachievesthehighestCorrect-
+ness Score (0.8402), showing the value of adaptive
+parameters and rerankingin improving correctness.
+9 Overall Results and Discussion
+Our analysis demonstrates that adaptive methods
+outperform fixed baselines, particularly in faith-
+fulness and answer quality. Adaptive parameters,
+suchasqueryrewritesandreranking,enhancere-
+sponse accuracy and relevance, though reranking
+mayslightlyreduceoverallcorrectnessscores,in-
+dicatingatrade-offbetweenprecisionandquality.
+Addingaknowledgegraphmaintainscorrectness
+
+--- Page 7 ---
+but introduces complexity, potentially lowering
+response quality. However, combining adaptive
+parameters with reranking maximizes correct re-
+sponses,evenifitdoesn’tachievethehighestscores
+across allmetrics. These findingsdemonstrate the
+effect of adaptivity and parameter tuning to bal-
+ance performance, enabling effective handling of
+diverse and complex queries. This suggests our
+system could also apply to other domains where
+queries demand complex, multi-step reasoning and
+non-obvious concept relationships. Limitations
+and future work are detailed in Appendix A.13.
+10 Ethical Considerations
+The deployment of the Hybrid Parameter-Adaptive
+RAG(HyPA-RAG)systeminAIlegalandpolicy
+contexts raises critical ethical and societal con-
+cerns,particularlyregardingtheaccuracy,reliabil-
+ity, and potential misinterpretation of AI-generated
+responses. The high-stakes nature of legal infor-
+mationmeansinaccuraciescouldhavesignificant
+consequences,highlightingthenecessityforcare-
+ful evaluation. We emphasize transparency and
+reproducibility,providingdetaileddocumentation
+of data generation, retrieval methods, and evalua-
+tion metrics to facilitate replication and scrutiny.
+TheenvironmentalimpactofNLPmodelsisalso
+aconcern. Oursystememploysadaptiveretrieval
+strategies to optimize computational efficiency, re-
+duce energy consumption, and minimize carbon
+footprint, promoting sustainable AI development.
+Our findings enhance the understanding of RAG
+systems in legal contexts but are intended for re-
+searchpurposesonly. HyPA-RAGoutputsshould
+not be used for legal advice or decision-making,
+emphasizing the need for domain expertise and
+oversight in applying AI to sensitive legal domains.
+References
+GiskardAI.2023. Giskard: Automatedqualitymanager
+for llms. https://www.giskard.ai/ . Accessed:
+2024-08-19.
+Manoj Ghuhan Arivazhagan, Lan Liu, Peng Qi, Xinchi
+Chen, William Yang Wang, and Zhiheng Huang.
+2023. Hybrid hierarchical retrieval for open-domain
+question answering. In Findings of the Association
+for Computational Linguistics: ACL 2023 .
+Akari Asai, Zeqiu Wu, Yizhong Wang, Avirup Sil, and
+Hannaneh Hajishirzi. 2023. Self-rag: Learning to
+retrieve,generate,andcritiquethroughself-reflection.
+ArXiv.Yuntao Bai, Andy Jones, Kamal Ndousse, Amanda
+Askell, Anna Chen, Nova Dassarma, Dawn Drain,
+Stanislav Fort, Deep Ganguli, Tom Henighan,
+Nicholas Joseph, Saurav Kadavath, John Kernion,
+TomConerly,SheerEl-Showk,NelsonElhage,Zac
+Hatfield-Dodds, Danny Hernandez, Tristan Hume,
+Scott Johnston, Shauna Kravec, Liane Lovitt, Neel
+Nanda, Catherine Olsson, Dario Amodei, Tom B.
+Brown, Jack Clark, Sam McCandlish, Christopher
+Olah, Benjamin Mann, and Jared Kaplan. 2022.
+Training a helpful and harmless assistant with re-
+inforcement learning from human feedback. ArXiv,
+abs/2204.05862.
+ScottBarnett,StefanusKurniawan,SrikanthThudumu,
+Zach Brannelly, and Mohamed Abdelrazek. 2024.
+Seven failure points when engineering a retrieval
+augmentedgeneration system. 2024IEEE/ACM 3rd
+InternationalConferenceonAIEngineering–Soft-
+ware Engineering for AI (CAIN) , pages 194–199.
+Andrew Blair-Stanek, Nils Holzenberger, and Ben-
+jaminVanDurme.2023. Cangpt-3performstatutory
+reasoning? Proceedings of the Nineteenth Inter-
+national Conference on Artificial Intelligence and
+Law.
+TomB.Brown,BenjaminMann,NickRyder,Melanie
+Subbiah, Jared Kaplan, Prafulla Dhariwal, Arvind
+Neelakantan,Pranav Shyam,GirishSastry, Amanda
+Askell, Sandhini Agarwal, Ariel Herbert-Voss,
+Gretchen Krueger, Tom Henighan, Rewon Child,
+AdityaRamesh,DanielM.Ziegler,JeffWu,Clemens
+Winter,ChristopherHesse,MarkChen,EricSigler,
+Mateusz Litwin, Scott Gray, Benjamin Chess, Jack
+Clark, Christopher Berner, Sam McCandlish, Alec
+Radford, Ilya Sutskever, and Dario Amodei. 2020.
+Language models are few-shot learners. ArXiv,
+abs/2005.14165.
+BusinessInsider.2023. Michaelcohenusedaichatbot
+to find bogus legal cases. Accessed: 2024-06-10.
+JonathanH.Choi,KristinE.Hickman,AmyB.Monahan,
+and Daniel Benjamin Schwarcz. 2023. Chatgpt goes
+to law school. SSRN Electronic Journal .
+Jiaxi Cui, Zongjia Li, Yang Yan, Bohua Chen, and
+Li Yuan. 2023. Chatlaw: A multi-agent collabora-
+tive legal assistant with knowledge graph enhanced
+mixture-of-experts large language model.
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and
+Kristina Toutanova. 2019. Bert: Pre-training of deep
+bidirectional transformers for language understand-
+ing. InNorth American Chapter of the Association
+for Computational Linguistics .
+Dujian Ding, Ankur Mallick, Chi Wang, Robert Sim,
+Subhabrata Mukherjee, Victor Rühle, Laks V. S.
+Lakshmanan,andAhmedHassanAwadallah.2024.
+Hybrid llm: Cost-efficient and quality-aware query
+routing.ArXiv, abs/2404.14618.
+DarrenEdge,HaTrinh,NewmanCheng,JoshuaBradley,
+AlexChao,ApurvaMody,StevenTruitt,andJonathan
+
+--- Page 8 ---
+Larson. 2024. From local to global: A graph rag
+approach to query-focused summarization. ArXiv,
+abs/2404.16130.
+Fortune. 2023. Lawyers fined for filing chatgpt halluci-
+nations in court. Accessed: 2024-06-10.
+Yunfan Gao, Yun Xiong, Xinyu Gao, Kangxiang Jia,
+Jinliu Pan, Yuxi Bi, Yi Dai, Jiawei Sun, Qianyu Guo,
+Meng Wang, and Haofen Wang. 2023. Retrieval-
+augmentedgenerationforlargelanguagemodels: A
+survey.ArXiv, abs/2312.10997.
+NeelGuha,JulianNyarko,DanielE.Ho,ChristopherRé,
+AdamChilton,AdityaNarayana,AlexChohlas-Wood,
+Austin M. K. Peters, Brandon Waldon, Daniel N.
+Rockmore, Diego A. Zambrano, Dmitry Talisman,
+EnamHoque,FaizSurani,FrankFagan,GalitSarfaty,
+GregoryM.Dickinson,HaggaiPorat,JasonHegland,
+Jessica Wu, Joe Nudell, Joel Niklaus, John J. Nay,
+Jonathan H. Choi, Kevin Patrick Tobia, Margaret
+Hagan, Megan Ma, Michael A. Livermore, Nikon
+Rasumov-Rahe,NilsHolzenberger,NoamKolt,Peter
+Henderson,SeanRehaag,SharadGoel,Shangsheng
+Gao, Spencer Williams, Sunny G. Gandhi, Tomer
+Zur,VarunJ.Iyer,andZehuaLi.2023. Legalbench:
+A collaboratively built benchmark for measuring
+legal reasoning in large language models. ArXiv,
+abs/2308.11462.
+Stuart Hargreaves. 2023. ‘words are flowing out like
+endless rain into a paper cup’: Chatgpt & law school
+assessments. SSRN Electronic Journal .
+Aidan Hogan, Eva Blomqvist, Michael Cochez, Clau-
+dia d’Amato, Gerard de Melo, Claudio Gutierrez,
+José Emilio Labra Gayo, S. Kirrane, Sebastian
+Neumaier, Axel Polleres, Roberto Navigli, Axel-
+Cyrille Ngonga Ngomo, Sabbir M. Rashid, Anisa
+Rula, Lukas Schmelzeisen, Juan Sequeda, Steffen
+Staab, and Antoine Zimmermann. 2020. Knowledge
+graphs.ACM Computing Surveys (CSUR) , 54:1 – 37.
+LeiHuang,WeĳiangYu,WeitaoMa,WeihongZhong,
+Zhangyin Feng, Haotian Wang, Qianglong Chen,
+WeihuaPeng,XiaochengFeng,BingQin,andTing
+Liu.2023. Asurveyonhallucinationinlargelanguage
+models: Principles, taxonomy, challenges, and open
+questions. ArXiv, abs/2311.05232.
+Shaoxiong Ji, Shirui Pan, E. Cambria, Pekka Marttinen,
+and Philip S. Yu. 2020. A survey on knowledge
+graphs: Representation,acquisition,andapplications.
+IEEETransactionsonNeuralNetworksandLearning
+Systems, 33:494–514.
+ZiweiJi,NayeonLee,RitaFrieske,TiezhengYu,Dan
+Su, Yan Xu, Etsuko Ishii, Yejin Bang, Delong Chen,
+Wenliang Dai, Andrea Madotto, and Pascale Fung.
+2022. Survey of hallucination in natural language
+generation. ACM Computing Surveys , 55:1 – 38.
+Karen Spärck Jones. 2021. A statistical interpretation
+oftermspecificityanditsapplicationinretrieval. J.
+Documentation , 60:493–502.HarrisonLee,SamratPhatale,HassanMansoor,Kellie
+Lu, Thomas Mesnard, Colton Bishop, Victor Car-
+bune, and Abhinav Rastogi. 2023. Rlaif: Scaling
+reinforcement learning from human feedback with ai
+feedback. ArXiv, abs/2309.00267.
+PatrickLewis,EthanPerez,AleksandaraPiktus,Fabio
+Petroni,VladimirKarpukhin,NamanGoyal,Heinrich
+Kuttler, Mike Lewis, Wen tau Yih, Tim Rocktäschel,
+Sebastian Riedel, and Douwe Kiela. 2020. Retrieval-
+augmented generation for knowledge-intensive nlp
+tasks.ArXiv, abs/2005.11401.
+YinhanLiu,MyleOtt,NamanGoyal,JingfeiDu,Mandar
+Joshi, Danqi Chen, Omer Levy, Mike Lewis, Luke
+Zettlemoyer,andVeselinStoyanov.2019. Roberta: A
+robustly optimized bert pretraining approach. ArXiv,
+abs/1907.11692.
+LlamaIndex. 2024. Llamaindex. Accessed: August 19,
+2024.
+Man Luo, Shashank Jain, Anchit Gupta, Arash Einol-
+ghozati, Barlas Oguz, Debojeet Chatterjee, Xilun
+Chen, Chitta Baral, and Peyman Heidari. 2023. A
+study on the efficiency and generalization of light
+hybrid retrievers. ArXiv, abs/2210.01371.
+Xinbei Ma, Yeyun Gong, Pengcheng He, Hai Zhao,
+and Nan Duan. 2023. Query rewriting for
+retrieval-augmented large language models. ArXiv,
+abs/2305.14283.
+VarunMagesh, FaizSurani, MatthewDahl,Mirac Suz-
+gun, Christopher D. Manning, and Daniel E. Ho.
+2024. Hallucination-free? assessing the reliability of
+leading ai legal research tools.
+Shengyu Mao, Yong Jiang, Boli Chen, Xiao Li, Peng
+Wang,XinyuWang,PengjunXie,FeiHuang,Huajun
+Chen, and Ningyu Zhang. 2024. Rafe: Ranking
+feedback improves query rewriting for rag. ArXiv,
+abs/2405.14431.
+Meta. 2024. The llama 3 herd of models.
+Niklas Muennighoff, Nouamane Tazi, Loïc Magne, and
+Nils Reimers. 2022. Mteb: Massive text embedding
+benchmark. arXiv preprint arXiv:2210.07316 .
+OpenAI. 2023. Gpt-4 technical report.
+Zackary Rackauckas. 2024. Rag-fusion: a new
+take on retrieval-augmented generation. ArXiv,
+abs/2402.03367.
+OriRam,GalShachaf,OmerLevy,JonathanBerant,and
+AmirGloberson.2022. Learningtoretrievepassages
+without supervision. In Proceedings of the 2022
+Conference of the North American Chapter of the
+AssociationforComputationalLinguistics: Human
+Language Technologies .
+Stephen E. Robertson and Hugo Zaragoza. 2009. The
+probabilisticrelevanceframework: Bm25andbeyond.
+Found. Trends Inf. Retr. , 3:333–389.
+
+--- Page 9 ---
+Jon Saad-Falcon, O. Khattab, Christopher Potts, and
+Matei Zaharia. 2023. Ares: An automated evalua-
+tion framework for retrieval-augmented generation
+systems.ArXiv, abs/2311.09476.
+Diego Sanmartin. 2024. Kg-rag: Bridging the
+gap between knowledge and creativity. ArXiv,
+abs/2405.12035.
+Jaromír Šavelka and Kevin D. Ashley. 2023. The un-
+reasonable effectiveness of large language models in
+zero-shotsemanticannotationoflegaltexts. Frontiers
+in Artificial Intelligence , 6.
+ES Shahul, Jithin James, Luis Espinosa Anke, and
+S. Schockaert. 2023a. Ragas: Automated evaluation
+of retrieval augmented generation. ArXiv.
+ESShahul,JithinJames,LuisEspinosaAnke,andSteven
+Schockaert. 2023b. Ragas: Automated evaluation of
+retrieval augmented generation. In Conference of the
+European Chapter of the Association for Computa-
+tional Linguistics .
+Ruihao Shui, Yixin Cao, Xiang Wang, and Tat-Seng
+Chua. 2023. A comprehensive evaluation of large
+languagemodelsonlegaljudgmentprediction. ArXiv,
+abs/2310.11761:7337–7348.
+K. Singhal, Tao Tu, Juraj Gottweis, Rory Sayres, Ellery
+Wulczyn, Le Hou, Kevin Clark, Stephen R. Pfohl,
+HeatherJ.Cole-Lewis,DarleneNeal,MikeSchaek-
+ermann, Amy Wang, Mohamed Amin, S. Lachgar,
+P. A. Mansfield, Sushant Prakash, Bradley Green,
+Ewa Dominowska, Blaise Agüera y Arcas, Nenad
+Tomašev, Yun Liu, Renee C. Wong, Christopher
+Semturs, Seyedeh Sara Mahdavi, Joëlle K. Barral,
+Dale R. Webster, Greg S. Corrado, Yossi Matias,
+Shekoofeh Azizi, Alan Karthikesalingam, and Vivek
+Natarajan. 2023. Towards expert-level medical ques-
+tion answering with large language models. ArXiv,
+abs/2305.09617.
+Feifan Song, Yu Bowen, Minghao Li, Haiyang Yu,
+Fei Huang, Yongbin Li, and Houfeng Wang. 2023.
+Preferencerankingoptimizationforhumanalignment.
+ArXiv, abs/2306.17492.
+ZhongXiang Sun. 2023. A short survey of view-
+ing large language models in legal aspect. ArXiv,
+abs/2303.09136.
+GeminiTeam,RohanAnil,SebastianBorgeaud,Yonghui
+Wu, Jean-Baptiste Alayrac, Jiahui Yu, Radu Soricut,
+Johan Schalkwyk, Andrew M Dai, Anja Hauth, et al.
+2023. Gemini: afamilyofhighlycapablemultimodal
+models.
+Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier
+Martinet, Marie-Anne Lachaux, Timothée Lacroix,
+Baptiste Rozière, Naman Goyal, Eric Hambro, Faisal
+Azhar, Aurelien Rodriguez, Armand Joulin, Edouard
+Grave, and Guillaume Lample. 2023a. Llama: Open
+and efficient foundation language models. ArXiv,
+abs/2302.13971.Hugo Touvron, Louis Martin, Kevin R. Stone, Peter
+Albert, Amjad Almahairi, Yasmine Babaei, Niko-
+lay Bashlykov, Soumya Batra, Prajjwal Bhargava,
+ShrutiBhosale,DanielM.Bikel,LukasBlecher,Cris-
+tian Cantón Ferrer, Moya Chen, Guillem Cucurull,
+David Esiobu, Jude Fernandes, Jeremy Fu, Wenyin
+Fu, Brian Fuller, Cynthia Gao, Vedanuj Goswami,
+Naman Goyal, Anthony S. Hartshorn, Saghar Hos-
+seini,RuiHou,HakanInan,MarcinKardas,Viktor
+Kerkez, Madian Khabsa, Isabel M. Kloumann, A. V.
+Korenev,PunitSinghKoura,Marie-AnneLachaux,
+Thibaut Lavril, Jenya Lee, Diana Liskovich, Yinghai
+Lu,YuningMao,XavierMartinet,TodorMihaylov,
+PushkarMishra,IgorMolybog,YixinNie,Andrew
+Poulton,JeremyReizenstein,RashiRungta,Kalyan
+Saladi, Alan Schelten, Ruan Silva, Eric Michael
+Smith, R. Subramanian, Xia Tan, Binh Tang, Ross
+Taylor, Adina Williams, Jian Xiang Kuan, Puxin Xu,
+Zhengxu Yan, Iliyan Zarov, Yuchen Zhang, Angela
+Fan,MelanieKambadur,SharanNarang,AurelienRo-
+driguez, Robert Stojnic, Sergey Edunov, and Thomas
+Scialom. 2023b. Llama 2: Open foundation and
+fine-tuned chat models. ArXiv, abs/2307.09288.
+Dietrich Trautmann, AlinaPetrova, and Frank Schilder.
+2022. Legal prompt engineering for multilingual
+legal judgement prediction. ArXiv, abs/2212.02199.
+ShĳieWu,OzanIrsoy,StevenLu,VadimDabravolski,
+MarkDredze,SebastianGehrmann,PrabhanjanKam-
+badur, David Rosenberg, and Gideon Mann. 2023.
+Bloomberggpt: Alargelanguagemodelforfinance.
+ArXiv, abs/2303.17564.
+Shitao Xiao, Zheng Liu, Peitian Zhang, and Niklas
+Muennighoff. 2023. C-pack: Packaged resources
+to advance general chinese embedding. Preprint,
+arXiv:2309.07597.
+Jingfeng Yang, Hongye Jin, Ruixiang Tang, Xiaotian
+Han,QizhangFeng,HaomingJiang,BingYin,and
+Xia Hu. 2023. Harnessing the power of llms in
+practice: A survey on chatgpt and beyond. ACM
+Transactions on Knowledge Discovery from Data ,
+18:1 – 32.
+LianminZheng,Wei-LinChiang,YingSheng,Siyuan
+Zhuang, Zhanghao Wu, Yonghao Zhuang, Zi Lin,
+Zhuohan Li, Dacheng Li, Eric P. Xing, Haotong
+Zhang, Joseph Gonzalez, and Ion Stoica. 2023. Judg-
+ingllm-as-a-judgewithmt-benchandchatbotarena.
+ArXiv, abs/2306.05685.
+
+--- Page 10 ---
+A Appendix
+A.1 RAG Demonstration User Interface
+(a) Demo Screenshot: Entering the user query and generating a response.
+(b) Demo Screenshot: The generated response.
+(c) Demo Screenshot: Information on retrieved node metadata and content.
+Figure 4: Demo screenshots showing each key stage of the user experience.
+
+--- Page 11 ---
+A.2 Overall Workflow Diagram
+Figure 5: Overall RAG Development Workflow Diagram
+
+--- Page 12 ---
+A.3 Question Types
+Question
+TypeDescription Example
+QuestionTarget RAG
+Components
+Simple Requires retrieval of one
+concept from the contextWhat is a bias audit? Generator,
+Retriever,
+Router
+Complex Moredetailedandrequires
+more specific retrievalWhat is the purpose of a bias audit for
+automated employment decision tools?Generator,
+Retriever
+Distracting Includesanirrelevantdis-
+tracting elementItalyisbeautifulbutwhatisabiasaudit? Generator,
+Retriever,
+Rewriter
+Situational Includes user context to
+produce relevant answersAsanemployer,whatinformationdoI
+needtoprovidebeforeusinganAEDT?Generator
+Double Twodistinctpartstoevalu-
+ate query rewriterWhat are the requirements for a bias
+audit of an AEDT and what changes
+weremadein thesecondversionofthe
+proposed rules?Generator,
+Rewriter
+Conversational Partofaconversationwith
+context provided in a pre-
+vious message(1) I would like to know about bias
+audits. (2) What is it?Rewriter
+Complex situa-
+tionalIntroducesfurthercontext
+andoneormorefollow-up
+questionswithinthesame
+messageIn case I need to recover a civil penalty,
+what are the specific agencies within
+the office of administrative trials and
+hearings where the proceeding can be
+returnedto? Also,arethereothercourts
+where such a proceeding can be initi-
+ated?Generator
+Out of scope Non-answerable question
+that should be rejectedWho developed the AEDT software? Generator,
+Prompt
+Vague Avaguequestionthatlacks
+complete information to
+answer fullyWhat calculations are required? Generator,
+Rewriter
+Comparative Encourages comparison
+and identifying relation-
+shipsWhatarethedifferencesandsimilarities
+between ’selection rate’ and ’scoring
+rate’, and how do they relate to each
+other?Generator,
+Rewriter
+Ruleconclusion Providesascenario,requir-
+ing a legal conclusionAn employer uses an AEDT to screen
+candidates for a job opening. Is the
+selection rate calculated based on the
+number of candidates who applied for
+thepositionorthenumberofcandidates
+who were screened by the AEDT?Generator,
+Rewriter
+Table 3: Question types and their descriptions with targeted RAG components.
+
+--- Page 13 ---
+A.4 Evaluation Results for Varied Top- 𝑘
+Figure 6: RAG Evaluation Metrics for Varied Top- 𝑘
+A.5 Human Annotation Criteria
+No. Criterion Description
+1Faithfulness Are all claims in the answer inferred from the context?
+2AnswerRelevancy Is the answer relevant to the question?
+3Context Relevancy Is the context relevant to the question?
+4Correctness Is the answer correct, given the context?
+5Clarity Is the answer clear and free of extensive jargon?
+6Completeness Does the answer fully address all parts and sub-questions?
+Table 4: Criteria for evaluating the quality of QA pairs.
+A.6 Parameter Mappings
+A.6.1 Top- 𝑘(𝑘) and Number of Query Rewrites ( 𝑄)
+Parameter Symbol Description 2-Class
+Mappings3-Class
+Mappings
+Number of Query
+Rewrites𝑄 Numberofsub-queriesgeneratedfor
+the original query0:𝑄=30:𝑄=3
+1:𝑄=51:𝑄=5
+2:𝑄=7
+Top-𝑘Value 𝑘 Number of top documents or con-
+texts retrieved for processing0:𝑘=50:𝑘=3
+1:𝑘=101:𝑘=5
+2:𝑘=7
+Table 5: Parameter Symbols, Descriptions, and Mappings
+
+--- Page 14 ---
+A.6.2 Maximum Keywords ( 𝐾) and Maximum Sequence Length ( 𝑆)
+Parameter Symbol Description 2-Class
+Mappings3-Class
+Mappings
+Max Keywords per
+Query𝐾 Maximumnumberofkeywordsused
+per query for KG retrieval0:𝐾=40:𝐾=3
+1:𝐾=51:𝐾=4
+2:𝐾=5
+Max Knowledge Se-
+quence𝑆 Maximum sequence length for
+knowledge graph paths0:𝑆=20:𝑆=1
+1:𝑆=31:𝑆=2
+2:𝑆=3
+Table 6: Parameter Symbols, Descriptions, and Mappings (Part 2)
+
+--- Page 15 ---
+A.7 Correctness Evaluator Prompts
+A.7.1 Method 1: LLamaIndex
+CorrectnessEvaluator
+Youareanexpertevaluation systemforaquestionanswering
+chatbot. You are given the following information:
+•a user query,
+•a reference answer, and
+•a generated answer.
+Your job is to judge the relevance and correctness of the
+generated answer. Output a single score that represents a
+holistic evaluation. You must return your response in a line
+withonlythescore. Donotreturnanswersinanyotherformat.
+On a separate line, provide your reasoning for the score as
+well.
+Follow these guidelines for scoring:
+•Yourscorehastobebetween1and5,where1 istheworst
+and 5 is the best.
+•Ifthegeneratedanswerisnotrelevanttotheuserquery,give
+a score of 1.
+•If the generated answer is relevant but contains mistakes,
+give a score between 2 and 3.
+•Ifthegeneratedanswerisrelevantandfullycorrect,givea
+score between 4 and 5.
+A.7.2 Method 2: Custom Prompt 1
+Youareanexpertevaluation systemforaquestionanswering
+chatbot. You are given the following information:
+•a user query,
+•a reference answer, and
+•a generated answer.
+Yourjobistojudgethecorrectnessofthegeneratedanswer.
+Outputasinglescorethatrepresentsaholisticevaluation. You
+must return your response in a line with only the score. Do
+not return answers in any other format. On a separate line,
+provide your reasoning for the score as well.
+Follow these guidelines for scoring:
+•Yourscorehastobebetween1and5,where1 istheworst
+and 5 is the best.
+•Use the following criteria for scoring correctness:
+1. Score of 1:
+–The generated answer is completely incorrect.–Contains major factual errors or misconceptions.
+–Does not address any components of the user query
+correctly.
+2. Score of 2:
+–The generated answer has significant mistakes.
+–Addresses at least one component of the user query
+correctly but has major errors in other parts.
+3. Score of 3:
+–The generated answer is partially correct.
+–Addressesmultiplecomponentsoftheuserquerycorrectly
+but includes some incorrect information.
+–Minor factual errors are present.
+4. Score of 4:
+–The generated answer is mostly correct.
+–Correctlyaddressesallcomponentsoftheuserquerywith
+minimal errors.
+–Errors do not substantially affect the overall correctness.
+5. Score of 5:
+–The generated answer is completely correct.
+–Addresses all components of the user query correctly
+without any errors.
+–Theanswerisfactuallyaccurateandalignsperfectlywith
+the reference answer.
+A.7.3 Method 3: Custom Prompt 2
+Youareanexpertevaluationsystem foraquestionanswering
+chatbot. You are given the following information:
+•a user query,
+•a reference answer, and
+•a generated answer.
+Yourjobistojudgethecorrectnessofthegeneratedanswer.
+Outputasinglescorethatrepresentsaholisticevaluation. You
+must return your response in a line with only the score. Do
+not return answers in any other format. On a separate line,
+provide your reasoning for the score as well. The reasoning
+must not exceed one sentence.
+Follow these guidelines for scoring:
+•Yourscorehastobebetween1and5,where1 istheworst
+and 5 is the best.
+•Use the following criteria for scoring correctness:
+1. Score of 1:
+–The generated answer is completely incorrect.
+–Contains major factual errors or misconceptions.
+–Does not address any components of the user query
+correctly.

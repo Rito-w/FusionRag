@@ -1,0 +1,1044 @@
+MuRAG: Multimodal Retrieval-Augmented Generator
+for Open Question Answering over Images and Text
+Wenhu Chen, Hexiang Hu, Xi Chen, Pat Verga, William W. Cohen
+Google Research
+{wenhuchen,hexiang,patverga,wcohen}@google.com
+Abstract
+While language Models store a massive
+amount of world knowledge implicitly in their
+parameters, even very large models often fail
+to encode information about rare entities and
+events, while incurring huge computational
+costs. Recently, retrieval-augmented models,
+such as REALM, RAG, and RETRO, have
+incorporated world knowledge into language
+generation by leveraging an external non-
+parametric index and have demonstrated im-
+pressive performance with constrained model
+sizes. However, these methods are restricted
+to retrieving only textual knowledge, neglect-
+ing the ubiquitous amount of knowledge in
+other modalities like images – much of which
+contains information not covered by any text.
+To address this limitation, we propose the
+ﬁrst Multimodal Retrieval-Augmented Trans-
+former (MuRAG), which accesses an external
+non-parametric multimodal memory to aug-
+ment language generation. MuRAG is pre-
+trained with a mixture of large-scale image-
+text and text-only corpora using a joint con-
+trastive and generative loss. We perform ex-
+periments on two different datasets that re-
+quire retrieving and reasoning over both im-
+ages and text to answer a given query: We-
+bQA, and MultimodalQA. Our results show
+that MuRAG achieves state-of-the-art accu-
+racy, outperforming existing models by 10-
+20% absolute on both datasets and under both
+distractor and full-wiki settings.
+1 Introduction
+Pre-trained language models like GPT-3 (Brown
+et al., 2020), PaLM (Chowdhery et al., 2022), etc
+have been shown to capture a massive amount
+of world knowledge implicitly in their parame-
+ters. However, using such large models incurs an
+extremely high computation cost. As an alterna-
+tive to a singular monolithic transformer, retrieval-
+augmented architectures like KNN-LM (Khandel-
+wal et al., 2019), REALM (Guu et al., 2020),
+Figure 1: Visual information-seeking queries : These
+queries are unanswerable with text-only retrieval and
+require retrieving and reasoning over images.
+RAG (Lewis et al., 2020), FiD (Izacard and Grave,
+2021), and RETRO (Borgeaud et al., 2021) have
+been proposed to decouple world knowledge from
+the model’s parameters. More speciﬁcally, these
+models are trained to access an external mem-
+ory to enhance the model’s predictions. Such
+retrieval-augmented architectures have multiple
+beneﬁcial properties including: decreased model
+size (Borgeaud et al., 2021), better attribution/-
+explanation for model predictions (Lewis et al.,
+2020), and adaptability to new information with-
+out retraining (Verga et al., 2021). However, pre-
+vious retrieval-augmented models are limited to
+memories that contain only text or structured data
+and hence cannot make use of the massive amount
+of multimodal knowledge available on the web—
+much of which contains information only available
+in non-text modalities.
+Figure 1, shows several information-seeking
+queries that require retrieving and reasoning over
+visual knowledge. Here, a user ﬁrst poses a ques-
+tion such as “What can be found on the White
+House balconies at Christmas” . The system then
+retrieves relevant items from its memory, for exam-arXiv:2210.02928v2  [cs.CL]  20 Oct 2022
+ple, the ﬁrst image of Figure 1 with the caption
+“White House during Christmas” , which it uses to
+produce the answer “wreaths and garlands” . Ex-
+isting text retrieval-augmented models would strug-
+gle with such queries because, in many cases, they
+would simply not have access to the answer as some
+knowledge does not exist in text form. That, cou-
+pled with the abundance of multimodal knowledge
+that exists, leads to the conclusion that retrieval-
+augmented models should ultimately be developed
+to retrieve and reason over multiple modalities.
+Figure 2: Model Overview : retrieval-and-predict pro-
+cess of MuRAG on downstream datasets.
+In this paper, we are speciﬁcally interested in
+endowing pre-trained language models with a non-
+parametric multimodal memory containing images,
+text, or image-text pairs. To accomplish this, we
+ﬁrst combine pre-trained T5 (Raffel et al., 2020)
+and ViT (Dosovitskiy et al., 2020) models to build
+a backbone encoder (Figure 3), which encodes
+image-text pairs, image-only, and text-only inputs
+into a multimodal representation. MuRAG uses the
+backbone encoder to embed items into an external
+memory as well as queries to retrieve multimodal
+knowledge from that memory. These retrievals
+then augment a language model to generate more
+visually-grounded outputs.
+We pre-train MuRAG with a mixture of
+image-text and text-only datasets including
+LAION (Schuhmann et al., 2021), Conceptual-
+Caption (Sharma et al., 2018), VQA (An-
+tol et al., 2015) and Probably-Asked-Questions
+(PAQ) (Lewis et al., 2021). More speciﬁcally, we
+reformulate these datasets in a retrieve-and-predict
+format. Here, the model’s input is an image along
+with a text prompt. The model then retrieves from
+a memory containing captions and passages, which
+it uses to generate a target token sequence. The
+model is trained with both a contrastive and a gen-erative loss; this teaches the model to discriminate
+relevant from irrelevant memory entries, and guides
+the model to leverage the multimodal knowledge
+into generation.
+Unlike the pre-training stage, during ﬁne-
+tuning Figure 2 the model’s input is a question,
+and the memory contains a collection of captioned
+images and text snippets. We ﬁne-tune MuRAG
+on the downstream datasets with a contrastive and
+generative loss similar to pre-training. To avoid ex-
+cessive computation cost, we develop a two-stage
+training pipeline to ﬁrst train with small in-batch
+memory, and then with a statically encoded and
+indexed large global memory.
+Our experiments show that MuRAG achieves
+state-of-the-art performance on two different open-
+multimodal-QA datasets, both of which require
+retrieving images and text from a large corpus to
+answer factoid questions: WebQA (Chang et al.,
+2022) and MultimodalQA (Talmor et al., 2021). On
+both datasets, we outperform sophisticated base-
+lines (Li et al., 2020; Radford et al., 2021; Zhang
+et al., 2021) by 10-20% accuracy under both dis-
+tractor (from 40+ candidates) and full-wiki settings
+(from 1M candidates). We also perform a compre-
+hensive study to ablate different components of the
+pre-training to see their contributions. These em-
+pirical results demonstrate the effectiveness of our
+proposed models to integrate multimodal knowl-
+edge into pre-trained generation models and pave
+the way to uniﬁed retrieval-augmented frameworks.
+2 Related Work
+Retrieval Augmented Models Retrieval aug-
+mented models are hybrid models containing
+both parameterized sequence models and a non-
+parametric memory, infusing world knowledge into
+existing language models. Among them, KNN-
+LM (Khandelwal et al., 2019) was ﬁrst proposed
+to retrieve instances from a text training corpus to
+help language modeling. Later, RETRO (Borgeaud
+et al., 2021) was proposed to scale up the text cor-
+pus to trillions of tokens, enabling the model to
+achieve similar perplexity to GPT-3 (Brown et al.,
+2020) with 25x fewer model parameters. Another
+family of models, such as REALM (Guu et al.,
+2020), RAG (Lewis et al., 2020), and FiD (Izacard
+and Grave, 2021), integrate Wikipedia passages as
+a datastore to beneﬁt downstream knowledge in-
+tensive tasks ( e.g.Question Answering). REALM
+is an encoder-only model trained with masked lan-
+guage modeling, while RAG and FiD adopt an
+encoder-decoder model with a generative language
+modeling objective. Compared to them, MuRAG
+is the ﬁrst retrieval-augmented model that is ca-
+pable of using knowledge presented in multiple
+modalities ( i.e.visual and textual knowledge data),
+whereas all prior methods are restricted to using
+text-only knowledge.
+Multimodal Transformers Multimodal trans-
+formers have demonstrated strong performances
+in learning cross-modal representation that are gen-
+erally beneﬁcial on downstream vision and lan-
+guage tasks, such as image-text retrieval (Karpa-
+thy and Fei-Fei, 2015), image captioning (Chen
+et al., 2015), and VQA (Antol et al., 2015). These
+methods typically learn a joint transformer model
+on top of unimodal visual and textual backbones,
+via fusing deep features from each modality. The
+early version of multimodal transformers (Lu et al.,
+2019; Chen et al., 2020; Li et al., 2020) usually
+learns a Transformer on pre-extracted unimodal
+features for contextualization, which makes it im-
+possible to adjust those unimodal features to the
+target tasks. Recently, SimVLM (Wang et al., 2022)
+and COCA (Yu et al., 2022) proposed end-to-end
+training for both deep multimodal transformers and
+unimodal featurization networks and demonstrated
+strong performance in both multimodal and uni-
+modal downstream tasks. The multimodal memory
+encoder of MuRAG is broadly similar to SimVLM
+and CoCa, but has a different focus to encode and
+retrieve multimodal knowledge ( i.e.images and
+texts) to augment language generation models.
+Multimodal Question Answering The problem
+of multimodal question answering has been ex-
+tensively studied. VQA was the ﬁrst proposed to
+answer questions from visual-only inputs. Later,
+OK-VQA (Marino et al., 2019) enlarged VQA’s
+scope to annotate questions requiring both image
+and implicit textual/common-sense knowledge to
+answer. More recently, MuMuQA (Reddy et al.,
+2021), ManyModelQA (Hannan et al., 2020) and
+MIMOQA (Singh et al., 2021) provide questions
+which require reasoning over images and explicitly
+provided text snippets. However, these datasets
+are restricted to dealing with given text and images
+without requiring any retrieval from the web: they
+are analogous to machine-reading approaches to
+QA from text like SQuAD, rather than open-book
+QA. To study the more realistic open multimodal
+QA task, WebQA (Chang et al., 2022) and Multi-modalQA (Talmor et al., 2021) have been proposed
+to evaluate answers to open queries which require
+retrieving and reasoning over a large-scale web
+multimodal corpus. Our model uses these datasets
+to study open-world multimodal question answer-
+ing, obtaining state-of-the-art results.
+3 Model
+3.1 Backbone Encoder
+Figure 3: Backbone encoder: ViT encodes image
+patches into a sequence of vectors eI, while word em-
+bedding converts text tokens into another sequence of
+vectors eT. These vectors are concatenated to form
+f(e)and fed to a decoder for text generation.
+MuRAG is built on top of a simpler model we
+call a “backbone” model, which is pre-trained to
+encode image-text pairs such that they are suitable
+for both answer generation and retrieval. The back-
+bone model’s encoder is used as a component of
+the MuRAG model. The backbone model is built
+with a pre-trained visual Transformer (Dosovitskiy
+et al., 2020) and a T5 text Transformer (Raffel et al.,
+2020), and consists of a multimodal encoder fand
+decoder g. The encoder takes as input a sequence
+of image-text pairs, where either the image or the
+text component can be empty to accommodate text-
+only and image-only cases.
+As depicted in Figure 3, the encoder can take a
+sequence of images and text. For image input, we
+ﬁrst split each into 16x16 patches and feed them
+to a ViT (Dosovitskiy et al., 2020) transformer to
+generate a sequence of visual embedding denoted
+aseI2RLiD, where Liis the length of the im-
+age tokens. For text input, we use word embedding
+to produce another sequence of textual embedding
+eT2RLtD. Forkimages and ntext inputs, we
+concatenate all their embeddings in the input or-
+der as e= [e1
+I;e1
+T;;ek
+I;en
+T]2R(kLt+nLi)D,
+which is fed to another bi-directional transformer
+finitialized from T5. We enable cross-attention
+between the two modalities to produce a fused rep-
+resentation, denoted as f(e)2R(kLt+nLi)D.
+We add a [CLS] token to obtain a pooled repre-
+sentation f(e)[CLS]2RDfor dense retrieval.
+3.2 MuRAG
+We build MuRAG (shown in Figure 4) on top of
+the backbone model. During the retriever stage,
+MuRAG takes a query qof any modality as in-
+put and retrieves from a memory Mof image-text
+pairs. Speciﬁcally, we apply the backbone encoder
+fto encode a query q, and use maximum inner
+product search (MIPS (Guo et al., 2020)) over all of
+the memory candidates m2M to ﬁnd the Top-K
+nearest neighbors TopK(Mjq) = [m1;; mk].
+Formally, we deﬁne TopK(Mjq)as follows:
+TopK(Mjq) =TopK
+m2Mf(q)[CLS]f(m)[CLS]
+During the reader stage, the retrievals (the raw im-
+age patches) are combined with the query qas
+an augmented input [m1;; mk; q], which is fed
+to the backbone encoder fto produce retrieval-
+augmented encoding. The decoder model guses
+attention over this representation to generate tex-
+tual outputs y=y1;; yntoken by token.
+p(yijyi 1) =g(yijf(TopK(Mjq);q);y1:i 1)
+where yis decoded from a given vocabulary V.
+3.3 Pre-training
+The pre-training implementation is depicted in the
+upper portion of Figure 4, where the input query
+is an image xIplus a text prompt xp. The exter-
+nal memoryMcontains textual-only entries mT.
+The Top-K retrievals mT
+1;; mT
+kare leveraged to
+generate the textual output. To avoid the excessive
+computation cost of backpropagation over the mas-
+sive external memory, we adopt an in-batch mem-
+oryMB, dynamically constructed from the input
+examples in a batch. The small in-batch memory
+enables MuRAG to continuously update the mem-
+ory encoder efﬁciently similar to TOME (de Jong
+et al., 2022) and QAMAT (Chen et al., 2022).
+Dataset The pre-training corpus consists of
+LAION (Schuhmann et al., 2021), Conceptual-
+Caption-12M+3M (CC) (Sharma et al., 2018;
+Changpinyo et al., 2021), VQA (Antol et al., 2015)
+and PAQ (Lewis et al., 2021) Table 1. LAION is
+a publicly-released image-text dataset containingcrawled image-text pairs ﬁltered by CLIP (Rad-
+ford et al., 2021). We apply rules to ﬁlter LAION
+from 400M to 200M by removing text with HTTP-
+URLs or image width/height beyond 1000 pixels.
+CC contains 15M (image, anonymized alt-text)
+pairs crawled from the web but ﬁltered more ex-
+tensively to maintain high alignment quality. VQA
+contains annotated QA pairs aligned to MSCOCO
+images. We further add captions to each image
+from MSCOCO-Captioning (Lin et al., 2014) to
+create (Image, Caption, QA) triples. PAQ is a text-
+only dataset containing 65M machine-generated
+QA pairs along with their source Wikipedia pas-
+sage.
+Dataset #Size Format Source
+CC 15M (Image, Caption) Crawled
+LAION 200M (Image, Alt-Text) Crawled
+PAQ 65M (Passage, QA) Generated
+VQA 400K (Image, Caption, QA) Annotated
+Table 1: Pre-training Dataset Statistics
+For LAION and CC, we use the input image as
+xI, and ‘generate caption:’ as the text prompt xp.
+For VQA, we use the input image as xIand the
+question as the prompt xp. For PAQ, we use an
+empty array as the input image and the question
+as the prompt. The in-batch memory MBis con-
+structed by stacking the captions associated with
+the input images in LAION/CC/VQA and the pas-
+sages associated with the questions in PAQ. Each
+textual memory entry is denoted as mT. The de-
+coder is optimized to generate either a caption or
+an answer, depending on the source dataset. Since
+the four dataset sizes are highly unbalanced, we
+use ﬁxed mixture sampling ratios to balance their
+presence during pre-training.
+We train the model with a joint loss L=Lgen+
+Lconas follows:
+Lcon= logexp(f(xI; xp)f(mT))P
+m2MBexp(f(xI; xp)f(mT))
+Lgen= logg(yjf(Mp;xI;xp))
+Mp=(
+TopK(MBjxI; xp)If(xI; xp)2PAQ/VQA
+Ø If (xI; xp)2LAION/CC
+where Mpis the retrieved augmentation: if the
+input query is from PAQ/VQA, we use the retrieved
+memory entries, otherwise, we use null. The reason
+for setting it to null for LAION/CC is to avoid a
+trivial solution when the generation target (caption)
+also exactly appears in the memory.
+The contrastive loss Lconis minimized to dis-
+criminate between the positive query-memory pairs
+Figure 4: Model Architecture: the model accesses an external memory to obtain multimodal knowledge contained
+in images or text snippets, which is used to augment the generation. The upper part deﬁnes the pre-training
+implementation, while the lower part deﬁnes ﬁne-tuning implementation.
+and all other query-memory pairs from the mem-
+ory. The pairwise matching score is computed as
+the dot product between query f(xI;xp)[CLS] and
+candidates f(mT)[CLS]. This objective enables
+the model to retrieve the most relevant knowledge
+from the memory. The generative loss Lgenis min-
+imized to generate target tokens yconditioned on
+the retrieval-augmented representation. This ob-
+jective enables the model to combine information
+across different modalities for text generation.
+3.4 Fine-tuning
+We ﬁnetune MuRAG to align with the expected
+inputs of the downstream datasets which require an-
+swering text questions by retrieving image-caption
+pairs or text snippets from the external knowledge
+datastore. As depicted in the lower part of Figure 4,
+the input query for the downstream task is a text
+question xq, and the memory Mcontaining (im-
+age, text) pairs (mI; mT).1The Top-K retrievals
+f(mI
+1; mT
+1);;(mI
+k; mT
+k)gare leveraged to gen-
+erate the answer a. To minimize the computation
+cost, we develop a two-stage pipeline to optimize
+with an in-batch memory and then resume with
+ﬁxed retrieval from global memory.
+In-Batch Training In this stage, we aim to mini-
+mize the joint loss function L=Lcon+Lgenbased
+1We set the image to a zero array if the memory entry is a
+text snippet.on the in-batch memory MBas follows:
+Lcon= logexp(f(xq)f(mI;mT))P
+m2MBexp(f(xq)f(mI;mT))
+Lgen= logg(yjf(TopK(MBjxq);xq))
+The in-batch memory MBis constructed in the
+following way: the k-th example in the dataset is
+represented as (xq;k; yk;fmI
+i; mI
+igk;fmI
+j;mT
+jgk),
+where mrepresents the positive (image, text)
+source, and mrepresents the hard negative
+(image, text) source provided by the dataset2.
+For a batch with Bexamples, we assemble
+all the associated positive and negative knowl-
+edge source as our in-batch memory MB=
+ffmI
+i; mI
+ig1;fmI
+j;mT
+jg1;;fmI
+j;mT
+jgBg.
+Fixed-Retrieval Training After in-batch train-
+ing, we encode all available cross-modal pairs, and
+index these encodings for fast MIPS retrieval. We
+then apply the trained retriever to search over the
+full multimodal corpus Mto obtain the global top-
+K retrievals TopK(Mjxq)and continue to opti-
+mizeLgen. During this training phase, the stored
+encodings are not updated. During inference time,
+we use ﬁxed encodings to generate the answers.
+2These hard negatives are mined through Bing Search API
+and Wikipedia page, refer to (Chang et al., 2022) for details.
+4 Experiments
+4.1 Implementation Details
+The backbone model uses T5-base (Raffel et al.,
+2020) and a ViT-large model (Dosovitskiy et al.,
+2020) as described in Table 2. We adopt the
+sentence-piece model from T5 with a vocabulary
+size of 32128. The ViT model was pre-trained
+on the JFT dataset. We resize every image into
+224x224 pixels and split them into a sequence of
+16x16 patches. The output of ViT is a sequence
+of 1024-dimension vectors, which are projected
+to 768-dimension for consistency with T5 model.
+MuRAG reuses the model as retriever and reader,
+thus the full model size is 527M parameters.
+Model #Enc #Dec Hidden Heads Params
+ViT-large 24 0 1024 16 307M
+T5-base 12 12 768 12 220M
+Table 2: The model size and conﬁgurations, with
+#Enc/#Dec denoting encoder/decoder layers.
+Our model is implemented in JAX (Bradbury
+et al., 2018), based on the T5X codebase (Roberts
+et al., 2022). During pre-training, we ﬁrst train the
+model on LAION for 1M steps, and then continue
+training on CC/PAQ/VQA with 1:1:1 sample ratio
+for another 200K steps. We optimize the model
+with Adafactor (Shazeer and Stern, 2018). For both
+stages, we adopt a constant learning rate of 5e-4
+and a batch size of 4096. The models are trained
+on 64 Cloud v4 TPUs (Jouppi et al., 2020).
+We then ﬁne-tune MuRAG on WebQA and Mul-
+timodalQA with a constant learning rate of 3e-4
+for 20K steps. The checkpoint with the highest
+validation score is run on the test set. We use a
+batch size of 64 and set TopK=4 for both in-batch
+training and ﬁxed-retrieval training. We noticed
+that increasing Top-K further does not yield further
+improvement. We use a beam size of 2 to search
+for the best hypothesis for both datasets (increasing
+it further doesn’t yield better performance).
+4.2 Datasets
+For evaluation, we choose two multimodal QA
+datasets: WebQA (Chang et al., 2022) and Mul-
+timodalQA (Talmor et al., 2021) and demonstrate
+their statistics in Table 3.
+WebQA This dataset contains multi-hop, multi-
+modal question-answer pairs where all questions
+are knowledge-seeking queries. The queries re-
+quire 1-2 images or 1-2 text snippets to answer.Dataset Train Dev Test
+Image/Text Image/Text Image/Text
+WebQA 18K/17K 2.5K/2.4K 3.4K/4K
+MultimodalQA 2.1K/7.4K 230/721 -
+Table 3: Overall Statistics of downstream dataset.
+Each query in WebQA is associated with a set of
+visual/text distractors (hard negatives). The an-
+swers in WebQA are normally complete sentences
+to better assess the model’s generation capabil-
+ity. Two evaluation setups are used, namely dis-
+tractor and full-wiki. Under the distractor setup,
+the model needs to retrieve from these hard neg-
+atives + positives to answer the question. Under
+the full-wiki setup, the model needs to search over
+1.1M text and visual sources from Wikipedia to an-
+swer the question. For evaluation, WebQA uses
+BARTScore (Yuan et al., 2021) to measure the
+ﬂuency between the generation and the reference,
+and keyword accuracy score to measure the cor-
+rectness/truthfulness of the generation. These two
+scores are multiplied to calculate the overall score.
+MultimodalQA-Subset This dataset contains
+human-annotated multimodal questions over differ-
+ent modalities including tables, text, and images.
+Wikipedia tables are used as anchors to connect dif-
+ferent modalities. The authors ﬁrst use the template
+to generate questions and then ask crowd-workers
+to ﬁlter and paraphrase the generated questions.
+Since tables are outside the scope of our paper, we
+focus on the subset of queries requiring only text
+and image information. Speciﬁcally, we choose the
+questions with types of ‘TextQ’ and ‘ImageQ’ to
+construct the subset. The query requires 1 image
+or 1 text snippet to answer. Each query in Multi-
+modalQA is also associated with visual and text dis-
+tractors (hard negatives). Similarly, two evaluation
+setups are used as before. Under a full-wiki setup,
+MultimodalQA uses a database containing 500K
+text and visual sources. The evaluation scores are
+based on Exact Match and F1.
+4.3 Baselines
+For WebQA and MultimodalQA, we mainly
+compare different variants of pre-trained vision-
+language models.
+VLP In WebQA, VLP-like models (Zhou et al.,
+2020) like Oscar (Li et al., 2020) and VinvL (Zhang
+et al., 2021) are used as the standard baselines.
+These models were pre-trained on Conceptual
+3M (Sharma et al., 2018) with a masked language
+objective. During ﬁne-tuning, the VLP model takes
+a set of token inputs <[CLS], si, [SEP], Q, [SEP]>
+ﬁrst to select the most plausible source si, and then
+feedsiin the form of <[CLS], S,Q,A, [SEP]>
+to autoregressively decode answer Awith masked
+language model prediction.
+AutoRouting In MultimodalQA, this method
+ﬁrst applies a question type classiﬁer to detect the
+modality of the question (either a passage or an
+image), and then routes the question to its sub-
+model. The method uses RoBERTa-large (Roberts
+et al., 2022) for text-questions and VilBERT (Lu
+et al., 2019) with features extracted from Faster-
+RCNN (Ren et al., 2015) for image questions.
+CLIP (K) CLIP (Radford et al., 2021) is used for
+full-wiki retrieval. Speciﬁcally, the baselines sys-
+tems adopt CLIP to encode queries and all the im-
+age/text candidates separately into vectors and then
+run approximated nearest neighbor searches to ﬁnd
+a set of K potential candidates. After the coarse-
+level retrieval without cross-attention, it adopts a
+reranker to further narrow down to the 1-2 candi-
+dates to feed as input Sto the QA model.
+4.4 Experimental Results
+We demonstrate WebQA’s results in Table 4. All
+results reported are the medium score from three
+runs with different random seeds, and the variance
+of the Overall score is within 0.2%. We can observe
+that MuRAG can signiﬁcantly outperform VLP
+with different backends including Oscar, ResNet,
+and VinVL. In retrieval performance, our model
+outperforms VLP by 15% in the full-wiki setting.
+For Fluency, our model outperforms VLP by 12%
+under the distractor setting and 14% under the full-
+wiki setting. For Accuracy, our model manages
+to achieve 16% under the distractor setting and
+even 20% the under the full-wiki setting. These
+improvements reﬂect the high ﬂuency and accuracy
+of MuRAG’s generation, and the improvement is
+more pronounced for full wiki.
+We show the MultimodalQA results in Table 5.
+We can see that MuRAG is also able to vastly
+outperform the routing-based multimodality QA
+model. For text questions, our model improves
+over AutoRouting by 10+% EM under both set-
+tings. For image questions, the gap becomes more
+signiﬁcant, with 20+% improvement under both
+settings. Similarly, we ﬁnd that our model is more
+capable of handling full-wiki corpus.Evaluation Distractor
+Metrics Retr FL Accuracy Overall
+Question-Only - 34.9 22.2 13.4
+VLP (Oscar) 68.9 42.6 36.7 22.6
+VLP + ResNeXt 69.0 43.0 37.0 23.0
+VLP + VinVL 70.9 44.2 38.9 24.1
+MuRAG 74.6 55.7 54.6 36.1
+Evaluation Full-Wiki
+CLIP (2) + VLP 11.9 34.2 24.1 14.6
+CLIP (20) + VLP 24.0 36.1 27.2 16.1
+MuRAG 39.7 50.7 47.8 31.5
+Table 4: WebQA ofﬁcial test-set results indicated
+on leaderboard3as of May 2022. Retr denotes
+the retrieval-F1 score. FL refers to ﬂuency metric
+BARTSCcore, and Accuracy refers to keyword match-
+ing F1 score, they are combined as Overall.
+Evaluation Distractor
+MetricsText Image All
+EM F1 EM F1 EM
+Question-Only 15.4 18.4 11.0 15.6 13.8
+AutoRouting 49.5 56.9 37.8 37.8 46.6
+MuRAG 60.8 67.5 58.2 58.2 60.2
+Evaluation Full-Wiki
+MetricsText Image All
+EM F1 EM F1 EM
+CLIP (10) +
+AutoRouting35.6 40.2 32.5 32.5 34.7
+MuRAG 49.7 56.1 56.5 56.5 51.4
+Table 5: Multimodal dev-set results on the subset.
+4.5 Ablation Study
+Here we ablate the properties of MuRAG to better
+understand our experimental results.
+Pre-training Corpus In order to study the contri-
+butions of different pre-training corpora, we investi-
+gated several pre-training corpus combinations. We
+report their ﬁne-tuned results on WebQA test set
+in Table 6. As can be seen, without any pre-training,
+our model only achieves an overall score of 23.5,
+which lags behind the baseline models. After pre-
+training on different singular datasets, MuRAG is
+able to achieve better performance than the base-
+lines. Among the individual datasets, LAION is
+shown to yield the highest score, and adding CC,
+PAQ, and VQA to the pre-training corpus set one
+by one produces steady improvements.
+Two-Stage Fine-tuning In order to study the ne-
+cessity of the two-stage ﬁne-tuning, we perform an
+ablation study to see the impact of the two stages.
+We display our results in Table 7. (Only In-Batch)
+Pre-train Dataset FL Accuracy Overall
+None 42.5 36.1 23.5
+CC 46.4 41.3 25.6
+LAION 47.8 44.8 28.3
+VQA 47.0 44.4 27.4
+PAQ 46.8 42.8 27.0
+LAION+CC 49.5 47.4 30.7
+LAION+CC+PAQ 53.7 51.8 34.4
+LAION+CC+PAQ+VQA 55.7 54.6 36.1
+Table 6: Ablation Study for different pre-training cor-
+pus, score under distractor setting.
+Model WebQA Multimodal
+MuRAG (Only In-Batch) 29.4 49.6
+MuRAG (Only Fixed-Retrieval) 25.8 40.7
+MuRAG (Two Stage) 31.5 51.4
+Table 7: Ablation Study for different ﬁne-tuning stages
+to see their contributions. WebQA uses the overall
+score, and MultimodalQA refers to EM-all score.
+Evaluation Model Correct Wrong
+DistractorMuRAG (Text) 80% 20%
+MuRAG (Image) 64% 36%
+Full-WikiMuRAG (Text) 72% 28%
+MuRAG (Image) 54% 46%
+Table 8: The human evaluation results on WebQA
+dataset separately for image/text queries.
+refers to the model trained only with in-batch mem-
+ory are directly used to generate outputs by access-
+ing the global memory. Without further tuning,
+the performance will drop by roughly 2% on both
+datasets. (Only Fixed-Retrieval) refers to using the
+pre-trained retriever directly to obtain Top-K and
+then optimize the generative loss. As can be seen,
+the performance drop is more severe in this case
+for both datasets. This is understandable due the
+misalignment between pre-training retrieval is (im-
+age + text->text) while the ﬁne-tuning retrieval is
+(text -> image+text). Thus, it is necessary to adapt
+the MuRAG’s pre-trained retriever to different use
+cases depending on the downstream datasets.
+4.6 Human Analysis
+In order to better understand the model’s perfor-
+mance, we manually study 200 model outputs and
+classify them into three categories and show our
+manual analysis results in Table 8. As can be seen,
+image queries are much harder than text queries.
+MuRAG only achieves 64% accuracy for the dis-
+tractor setting and 54% accuracy for the full-wiki
+setting, falling signiﬁcantly behind text accuracy.
+We further categorize the image-query errors
+Figure 5: Upper left: correct prediction, Upper Right:
+error due to miscounting, Lower: error due to misrecog-
+nition (multiple image reasoning). Q refers to the ques-
+tion, P refers to prediction and R refers to the reference.
+manually into the categories of Table 9. Counting
+is the most difﬁcult question type, and constitutes
+52% of the total errors, while object recognition
+errors rank second, constituting 29% of errors. In
+contrast, identifying color, shape, and gender is
+comparatively easier, with fairly low error rates.
+We demonstrate some correct and typical error
+cases in Figure 5 including miscounting and mis-
+recognizing objects. We observe that these errors
+are mostly due to several reasons: 1) the question
+is related to infrequent objects, thus making recog-
+nition errors, 2) the image scene is highly complex
+with a large number of objects, thus grounding to a
+speciﬁc region is difﬁcult, 3) the questions require
+optical character recognition ability from images.
+Hence, the bottleneck of MuRAG is still in the
+visual understanding module.
+Category Count Object Color Shape Gender
+Ratio 52% 29.4% 5.8% 5.8% 5.8%
+Table 9: Error categorization and their ratios on sam-
+pled WebQA-dev image queries.
+5 Examples
+We list more examples in Figure 6 and Figure 7.
+As can be seen, in the ﬁrst example, the model is
+grounded on the oracle image-text pair to make the
+correct prediction. However, in the second exam-
+ple, though the model retrieves the wrong image-
+text pair, it is able to make the correct prediction of
+‘the angel is holding a dead body’. We conjecture
+that the model utilizes textual clues to make the pre-
+diction rather than grounding on the image itself.
+Such shortcut learning is concerning and needs to
+be addressed through better learning algorithms.
+Figure 6: Examples: we demonstrate model retrieval
+vs. groundtruth and model answer vs. reference.
+6 Conclusion
+In this paper, we build the ﬁrst visually-grounded
+language generator capable of retrieving multi-
+modal knowledge from a large-scale corpus. Our
+experiments show the promise of this approach, as
+it outperforms existing baselines by a large margin.
+At the same time, the performance on knowledge-
+seeking queries that require reasoning over images
+is still signiﬁcantly lower than the performance on
+queries requiring only text. This indicates that there
+is still ample room for further improvements and
+we hope our study can motivate more research on
+better multimodal retrieval-augmented models.
+Limitations
+The current approach has several limitations: 1)
+since we do not mine hard negatives during pre-
+training, negatives come from other examples
+within the same batch. This requires that we set the
+batch size sufﬁciently large enough to collect hard-
+enough negatives. This results in the pre-training
+Figure 7: Examples: we demonstrate model retrieval
+vs. groundtruth, and model answer vs. reference.
+requiring a large number of computation resources
+to reach competitive retrieval abilities. 2) our pre-
+training corpus’s format (image -> text) is differ-
+ent from ﬁne-tuning (text -> image+text). This
+misalignment limits the model’s performance. Fu-
+ture work should consider how to design a better-
+aligned pre-training objective to achieve better per-
+formance. 3) Current visual representation in the
+reader stage is relatively expensive, i.e. 16x16=196
+tokens per image, which poses great challenges for
+the transformer encoder to scale up to large Top-K
+values due to the quadratic attention complexity.
+Ethical Statement
+Our work uses the LAION dataset, a widely-used
+and publicly available large-scale visual-language
+corpus crawled from the web. The authors have
+conducted automatic ﬁltering to greatly reduce
+harmful content. However, it is not possible to
+fully remove all of the potential risks from the data
+given its tremendous size. Being trained on this
+dataset, we anticipate our model to contain some
+biases (racial, gender, etc.). During our manual
+inspection, we saw some such biases, for example,
+5% of errors are caused by misrecognition of gen-
+der. However, there are other many other forms of
+biases that we cannot fully enumerate or observe
+explicitly.
+References
+Stanislaw Antol, Aishwarya Agrawal, Jiasen Lu, Mar-
+garet Mitchell, Dhruv Batra, C Lawrence Zitnick,
+and Devi Parikh. 2015. Vqa: Visual question an-
+swering. In Proceedings of the IEEE international
+conference on computer vision , pages 2425–2433.
+Sebastian Borgeaud, Arthur Mensch, Jordan Hoff-
+mann, Trevor Cai, Eliza Rutherford, Katie Millican,
+George van den Driessche, Jean-Baptiste Lespiau,
+Bogdan Damoc, Aidan Clark, et al. 2021. Improv-
+ing language models by retrieving from trillions of
+tokens. arXiv preprint arXiv:2112.04426 .
+James Bradbury, Roy Frostig, Peter Hawkins,
+Matthew James Johnson, Chris Leary, Dougal
+Maclaurin, George Necula, Adam Paszke, Jake
+VanderPlas, Skye Wanderman-Milne, and Qiao
+Zhang. 2018. JAX: composable transformations of
+Python+NumPy programs.
+Tom Brown, Benjamin Mann, Nick Ryder, Melanie
+Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind
+Neelakantan, Pranav Shyam, Girish Sastry, Amanda
+Askell, et al. 2020. Language models are few-shot
+learners. Advances in neural information processing
+systems , 33:1877–1901.
+Yingshan Chang, Mridu Narang, Hisami Suzuki, Gui-
+hong Cao, Jianfeng Gao, and Yonatan Bisk. 2022.
+Webqa: Multihop and multimodal qa. The Confer-
+ence on Computer Vision and Pattern Recognition .
+Soravit Changpinyo, Piyush Sharma, Nan Ding, and
+Radu Soricut. 2021. Conceptual 12m: Pushing web-
+scale image-text pre-training to recognize long-tail
+visual concepts. In Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recog-
+nition , pages 3558–3568.
+Wenhu Chen, Pat Verga, Michiel de Jong, John Wi-
+eting, and William Cohen. 2022. Augmenting
+pre-trained language models with qa-memory for
+open-domain question answering. arXiv preprint
+arXiv:2204.04581 .
+Xinlei Chen, Hao Fang, Tsung-Yi Lin, Ramakr-
+ishna Vedantam, Saurabh Gupta, Piotr Dollár, and
+C Lawrence Zitnick. 2015. Microsoft coco captions:
+Data collection and evaluation server. arXiv preprint
+arXiv:1504.00325 .
+Yen-Chun Chen, Linjie Li, Licheng Yu, Ahmed
+El Kholy, Faisal Ahmed, Zhe Gan, Yu Cheng, and
+Jingjing Liu. 2020. Uniter: Universal image-text
+representation learning. In European conference on
+computer vision , pages 104–120. Springer.
+Aakanksha Chowdhery, Sharan Narang, Jacob Devlin,
+Maarten Bosma, Gaurav Mishra, Adam Roberts,
+Paul Barham, Hyung Won Chung, Charles Sutton,Sebastian Gehrmann, et al. 2022. Palm: Scaling
+language modeling with pathways. arXiv preprint
+arXiv:2204.02311 .
+Michiel de Jong, Yury Zemlyanskiy, Nicholas FitzGer-
+ald, Fei Sha, and William Cohen. 2022. Mention
+memory: incorporating textual knowledge into trans-
+formers through entity mention attention. ICLR .
+Alexey Dosovitskiy, Lucas Beyer, Alexander
+Kolesnikov, Dirk Weissenborn, Xiaohua Zhai,
+Thomas Unterthiner, Mostafa Dehghani, Matthias
+Minderer, Georg Heigold, Sylvain Gelly, et al. 2020.
+An image is worth 16x16 words: Transformers
+for image recognition at scale. In International
+Conference on Learning Representations .
+Ruiqi Guo, Philip Sun, Erik Lindgren, Quan Geng,
+David Simcha, Felix Chern, and Sanjiv Kumar. 2020.
+Accelerating large-scale inference with anisotropic
+vector quantization. In International Conference on
+Machine Learning , pages 3887–3896. PMLR.
+Kelvin Guu, Kenton Lee, Zora Tung, Panupong Pa-
+supat, and Mingwei Chang. 2020. Retrieval aug-
+mented language model pre-training. In Proceed-
+ings of the 37th International Conference on Ma-
+chine Learning , volume 119 of Proceedings of Ma-
+chine Learning Research , pages 3929–3938. PMLR.
+Darryl Hannan, Akshay Jain, and Mohit Bansal. 2020.
+Manymodalqa: Modality disambiguation and qa
+over diverse inputs. In Proceedings of the AAAI Con-
+ference on Artiﬁcial Intelligence , volume 34, pages
+7879–7886.
+Gautier Izacard and Édouard Grave. 2021. Leveraging
+passage retrieval with generative models for open
+domain question answering. In Proceedings of the
+16th Conference of the European Chapter of the As-
+sociation for Computational Linguistics: Main Vol-
+ume, pages 874–880.
+Norman P Jouppi, Doe Hyun Yoon, George Kurian,
+Sheng Li, Nishant Patil, James Laudon, Cliff Young,
+and David Patterson. 2020. A domain-speciﬁc
+supercomputer for training deep neural networks.
+Communications of the ACM , 63(7):67–78.
+Andrej Karpathy and Li Fei-Fei. 2015. Deep visual-
+semantic alignments for generating image descrip-
+tions. In Proceedings of the IEEE conference
+on computer vision and pattern recognition , pages
+3128–3137.
+Urvashi Khandelwal, Omer Levy, Dan Jurafsky, Luke
+Zettlemoyer, and Mike Lewis. 2019. Generalization
+through memorization: Nearest neighbor language
+models. In International Conference on Learning
+Representations .
+Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio
+Petroni, Vladimir Karpukhin, Naman Goyal, Hein-
+rich Küttler, Mike Lewis, Wen-tau Yih, Tim Rock-
+täschel, et al. 2020. Retrieval-augmented generation
+for knowledge-intensive nlp tasks. Advances in Neu-
+ral Information Processing Systems , 33:9459–9474.
+Patrick Lewis, Yuxiang Wu, Linqing Liu, Pasquale
+Minervini, Heinrich Küttler, Aleksandra Piktus, Pon-
+tus Stenetorp, and Sebastian Riedel. 2021. Paq: 65
+million probably-asked questions and what you can
+do with them. Transactions of the Association for
+Computational Linguistics , 9:1098–1115.
+Xiujun Li, Xi Yin, Chunyuan Li, Pengchuan Zhang, Xi-
+aowei Hu, Lei Zhang, Lijuan Wang, Houdong Hu,
+Li Dong, Furu Wei, et al. 2020. Oscar: Object-
+semantics aligned pre-training for vision-language
+tasks. In European Conference on Computer Vision ,
+pages 121–137. Springer.
+Tsung-Yi Lin, Michael Maire, Serge Belongie, James
+Hays, Pietro Perona, Deva Ramanan, Piotr Dollár,
+and C Lawrence Zitnick. 2014. Microsoft coco:
+Common objects in context. In European confer-
+ence on computer vision , pages 740–755. Springer.
+Jiasen Lu, Dhruv Batra, Devi Parikh, and Stefan
+Lee. 2019. Vilbert: Pretraining task-agnostic visi-
+olinguistic representations for vision-and-language
+tasks. Advances in neural information processing
+systems , 32.
+Kenneth Marino, Mohammad Rastegari, Ali Farhadi,
+and Roozbeh Mottaghi. 2019. Ok-vqa: A visual
+question answering benchmark requiring external
+knowledge. In Proceedings of the IEEE/CVF Con-
+ference on Computer Vision and Pattern Recogni-
+tion, pages 3195–3204.
+Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya
+Ramesh, Gabriel Goh, Sandhini Agarwal, Girish
+Sastry, Amanda Askell, Pamela Mishkin, Jack Clark,
+et al. 2021. Learning transferable visual models
+from natural language supervision. In International
+Conference on Machine Learning , pages 8748–8763.
+PMLR.
+Colin Raffel, Noam Shazeer, Adam Roberts, Kather-
+ine Lee, Sharan Narang, Michael Matena, Yanqi
+Zhou, Wei Li, and Peter J. Liu. 2020. Exploring
+the limits of transfer learning with a uniﬁed text-to-
+text transformer. Journal of Machine Learning Re-
+search , 21(140):1–67.
+Revanth Gangi Reddy, Xilin Rui, Manling Li, Xudong
+Lin, Haoyang Wen, Jaemin Cho, Lifu Huang, Mo-
+hit Bansal, Avirup Sil, Shih-Fu Chang, et al. 2021.
+Mumuqa: Multimedia multi-hop news question an-
+swering via cross-media knowledge extraction and
+grounding. arXiv preprint arXiv:2112.10728 .
+Shaoqing Ren, Kaiming He, Ross Girshick, and Jian
+Sun. 2015. Faster r-cnn: Towards real-time object
+detection with region proposal networks. Advances
+in neural information processing systems , 28.
+Adam Roberts, Hyung Won Chung, Anselm Lev-
+skaya, Gaurav Mishra, James Bradbury, Daniel An-
+dor, Sharan Narang, Brian Lester, Colin Gaffney,
+Afroz Mohiuddin, et al. 2022. Scaling up mod-
+els and data with t5x and seqio. arXiv preprint
+arXiv:2203.17189 .Christoph Schuhmann, Richard Vencu, Romain Beau-
+mont, Robert Kaczmarczyk, Clayton Mullis, Aarush
+Katta, Theo Coombes, Jenia Jitsev, and Aran Komat-
+suzaki. 2021. Laion-400m: Open dataset of clip-
+ﬁltered 400 million image-text pairs. arXiv preprint
+arXiv:2111.02114 .
+Piyush Sharma, Nan Ding, Sebastian Goodman, and
+Radu Soricut. 2018. Conceptual captions: A
+cleaned, hypernymed, image alt-text dataset for au-
+tomatic image captioning. In Proceedings of the
+56th Annual Meeting of the Association for Compu-
+tational Linguistics (Volume 1: Long Papers) , pages
+2556–2565.
+Noam Shazeer and Mitchell Stern. 2018. Adafactor:
+Adaptive learning rates with sublinear memory cost.
+InInternational Conference on Machine Learning ,
+pages 4596–4604. PMLR.
+Hrituraj Singh, Anshul Nasery, Denil Mehta, Aish-
+warya Agarwal, Jatin Lamba, and Balaji Vasan Srini-
+vasan. 2021. Mimoqa: Multimodal input multi-
+modal output question answering. In Proceedings
+of the 2021 Conference of the North American Chap-
+ter of the Association for Computational Linguistics:
+Human Language Technologies , pages 5317–5332.
+Alon Talmor, Ori Yoran, Amnon Catav, Dan Lahav,
+Yizhong Wang, Akari Asai, Gabriel Ilharco, Han-
+naneh Hajishirzi, and Jonathan Berant. 2021. Multi-
+modalqa: complex question answering over text, ta-
+bles and images. In ICLR .
+Pat Verga, Haitian Sun, Livio Baldini Soares, and
+William Weston Cohen. 2021. Adaptable and inter-
+pretable neural memory over symbolic knowledge.
+InProceedings of NAACL-HLT , pages 3678–3691.
+Zirui Wang, Jiahui Yu, Adams Wei Yu, Zihang Dai, Yu-
+lia Tsvetkov, and Yuan Cao. 2022. Simvlm: Simple
+visual language model pretraining with weak super-
+vision. ICLR .
+Jiahui Yu, Zirui Wang, Vijay Vasudevan, Legg Ye-
+ung, Mojtaba Seyedhosseini, and Yonghui Wu. 2022.
+Coca: Contrastive captioners are image-text founda-
+tion models. arXiv preprint arXiv:2205.01917 .
+Weizhe Yuan, Graham Neubig, and Pengfei Liu. 2021.
+Bartscore: Evaluating generated text as text gener-
+ation. Advances in Neural Information Processing
+Systems , 34.
+Pengchuan Zhang, Xiujun Li, Xiaowei Hu, Jianwei
+Yang, Lei Zhang, Lijuan Wang, Yejin Choi, and Jian-
+feng Gao. 2021. Vinvl: Revisiting visual representa-
+tions in vision-language models. In Proceedings of
+the IEEE/CVF Conference on Computer Vision and
+Pattern Recognition , pages 5579–5588.
+Luowei Zhou, Hamid Palangi, Lei Zhang, Houdong
+Hu, Jason Corso, and Jianfeng Gao. 2020. Uni-
+ﬁed vision-language pre-training for image caption-
+ing and vqa. In Proceedings of the AAAI Conference
+on Artiﬁcial Intelligence , volume 34, pages 13041–
+13049.
+A Pre-training
+During Pre-trainnig, we found that directly train-
+ing with a mixture of all four datasets will lead to
+instability. We experimented with different vari-
+ants and found that a scheduled pre-training can
+lead to a stable solution. We propose to ﬁrst pre-
+train the model on the largest LAION dataset for
+1M steps, and then continue training on the other
+three datasets with a ﬁxed sample ratio. We plot
+the ﬁrst stage of LAION training in Figure 8. We
+monitor the generation quality (LAION image ->
+text captioning), and the retrieval quality (image ->
+4096 in-batch caption retrieval). As can be seen,
+the LAION pre-training converges after 1M steps,
+where we ﬁrst warm up and then decrease the learn-
+ing rate using a scheduler.
+Figure 8: LAION Pre-training, validation accuracy,
+generation Cider score and retrieval recall score from
+the in-batch memory.
+We further the pre-training on a mixture of the
+other three datasets. We plot their inference eval-
+uation scores in Figure 9. We can see that the
+model is able to achieve very strong performance
+on these datasets, i.e. higher than 1.2 CiDEron CC12M+3M validation set. The model also
+achieves strong performance on text-only reading
+comprehension on PAQ (similar to NQ), i.e. higher
+than 55% EM score. On the VQA dataset, the
+model is able to achieve higher than 72% VQA ac-
+curacy on the validation set. These results demon-
+strate the efﬁciency and multi-tasking capabilities
+of the pre-trained model. The overall retrieval
+accuracy from the multimodal memory consist-
+ing of captions, and passages are plotted in Fig-
+ure 10, where the model is able to achieve 85%
+RECALL@1 from a 4K memory.
+B Model Conﬁguration
+We demonstrate the ViT conﬁguration as follows:
+" v i t _ c o n f i g " : {
+" model " : " ViT " ,
+" p a t c h e s " : {
+" s i z e " : [ 1 6 , 16]
+} ,
+" h i d d e n _ s i z e " : 1024 ,
+" i m a g e _ s i z e " : [ 2 2 4 , 2 2 4 ] ,
+" num_heads " : 16 ,
+" num_layers " : 24 ,
+" mlp_dim " : 4096 ,
+" r e t u r n _ p o o l e d _ o u t p u t " : f a l s e ,
+" d r o p o u t _ r a t e " : 0 . 1
+} ,
+We demonstrate the T5-EncDec conﬁguration as
+follows:
+" m o d e l _ c o n f i g " : {
+" v o c a b _ s i z e " : 32128 ,
+" h i d d e n _ s i z e " : 768 ,
+" i n t e r m e d i a t e _ d i m " : 2048 ,
+" n u m _ a t t e n t i o n _ h e a d s " : 12 ,
+" memory_key_dim " : 768 ,
+" e n c o d e r _ l a y e r s " : 12 ,
+" d e c o d e r _ l a y e r s " : 12 ,
+" d r o p o u t _ r a t e " : 0 . 1 ,
+" m a x _ d i s t a n c e " : 128 ,
+" num_buckets " : 32 ,
+" s c a l e " : 1 . 0 ,
+" r e t r i e v a l _ w e i g h t " : 0 . 5 ,
+}
+Figure 9: Mixture Pre-training, CiDEr, EM, and VQA
+accuracy for CC, PAQ, and VQA datasets.
+Figure 10: Mixture Pre-training retrieval accuracy over
+CC, PAQ, and VQA datasets.

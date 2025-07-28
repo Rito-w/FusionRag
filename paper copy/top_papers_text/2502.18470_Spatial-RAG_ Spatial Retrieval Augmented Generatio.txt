@@ -1,0 +1,1276 @@
+arXiv:2502.18470v5  [cs.IR]  11 Jun 2025Spatial-RAG: Spatial Retrieval Augmented Generation
+for Real-World Geospatial Reasoning Questions
+Dazhou Yu∗
+Emory UniversityRiyang Bao∗
+Emory UniversityRuiyu Ning
+Emory UniversityJinghong Peng
+Gengchen Mai
+University of Texas at AustinLiang Zhao†
+Emory University
+Abstract
+Answering real-world geospatial questions—such as finding restaurants along a
+travel route or amenities near a landmark—requires reasoning over both geographic
+relationships and semantic user intent. However, Existing large language models
+(LLMs) lack spatial computing capabilities and access to up-to-date, ubiquitous
+real-world geospatial data, while traditional geospatial systems fall short in in-
+terpreting natural language. To bridge this gap, we introduce Spatial-RAG, a
+Retrieval-Augmented Generation (RAG) framework designed for geospatial ques-
+tion answering. Spatial-RAG integrates structured spatial databases with LLMs via
+a hybrid spatial retriever that combines sparse spatial filtering and dense semantic
+matching. It formulates the answering process as a multi-objective optimization
+over spatial and semantic relevance, identifying Pareto-optimal candidates and
+dynamically selecting the best response based on user intent. Experiments across
+multiple tourism and map-based QA datasets show that Spatial-RAG significantly
+improves accuracy, precision, and ranking performance over strong baselines.
+1 Introduction
+Figure 1: A real-world spatial reasoning question
+with nearby spatial objects. Areas that satisfy the
+spatial constraint are highlighted in purple.Spatial reasoning questions are those that re-
+quire spatial computing to resolve relationships
+between objects, positions, or movements in
+space. Extensive research has been conducted
+on abstract spatial reasoning tasks such as men-
+tal rotation, block manipulation, and robot nav-
+igation, which rely on simplified, small-scale,
+and often purely geometric representations, typ-
+ically addressed using techniques from com-
+puter vision and robotics. In contrast, geospa-
+tial reasoning involves interpreting large-scale,
+real-world geographic data where spatial infor-
+mation is deeply entangled with rich semantics
+[2,16,10]. For example, urban routing deci-
+sions depend not only on road geometries but
+also on attributes such as traffic regulations, land use, and temporal constraints. Travel plan recom-
+mendations should not only consider minimizing the travel distance, but also maximize the quality of
+the attractions according to their descriptions and reviews [22].
+∗Equal contribution.
+†Corresponding author.
+Preprint. Under review.
+Geospatial reasoning has a longstanding role in AI research, yet classical methods—such as spatial
+databases and GIS query systems—lack the ability to effectively interpret users’ natural language
+questions [ 16]. On the other hand, large language models (LLMs) exhibit strong linguistic competence
+but struggle with spatial computing and geospatial grounding [ 15]. Recent efforts to bridge this gap
+have focused on prompt engineering [ 18,7], but these approaches heavily rely on LLMs’ internal
+knowledge, which remains limited in generalization and spatial reasoning capabilities, significantly
+suffering from geographic bias [ 5,17,21], and being susceptible to obsolescence as knowledge
+evolves. Some work has explored fine-tuning LLMs on spatial tasks [ 9,18,24], but the resulting
+models are often tailored to narrow applications, constrained datasets, or specific geographic domains.
+Therefore, there remains a critical need for a general-purpose geospatial reasoning framework that
+synergizes semantic understanding and spatial computation while ensuring access to real-world,
+vast, fast-changing, and complex geospatial data .
+To fill this gap, this paper aims to augment LLMs with capabilities of spatial reasoning and accessi-
+bility to real-world geospatial data. For example, as illustrated in Figure 1, answering the question
+requires LLMs to elicit and formulate the user’s textual request into the problem of “finding points
+near the polyline" and solve it based on a geospatial map (database) with semantic information
+(e.g., customer reviews and location profiles). Then, it also requires inferring user intent to select
+the spatially and semantically preferred candidates. Thus, the system must seamlessly integrate
+structured spatial retrieval with unstructured text-based reasoning, ensuring both spatial accuracy
+and contextual understanding. Specifically, we extend Retrieval-Augmented Generation (RAG) into
+geospatial information retrieval and reasoning, bridging the gap between structured spatial databases
+and unstructured textual reasoning. RAG has demonstrated its effectiveness in knowledge-intensive
+tasks, such as question answering (QA) [ 20], by retrieving domain-specific documents to enhance
+LLM responses. However, existing RAG systems primarily focus on retrieving and generating textual
+content and lack the spatial intelligence required for spatial reasoning tasks, especially tasks that
+involve understanding and computing complex spatial relationships among geometries, including
+points, polylines, and polygons.
+In this paper, we introduce Spatial Retrieval-Augmented Generation (Spatial-RAG) , a new framework
+that unifies text-guided spatial retrieval with spatially aware text generation under multi-objective
+optimization scenario. Specifically, to identify spatially relevant candidate answers, we propose a
+novel spatial hybrid retrieval module synergizing spatial sparse and dense retrievers. To rank the
+candidates and generate the final answers, we propose to fuel the generator with retrieved results
+on the Pareto frontier based on a spatial and semantic joint ranking strategy. Our contributions are
+summarized as follows:
+•A generic spatial RAG framework : We introduce spatial-RAG, the first framework that extends
+RAG to geospatial question answering, to tackle a broad spectrum of spatial reasoning tasks, such
+as geographic recommendation, spatially constrained search, and contextual route planning. Our
+approach seamlessly integrates spatial databases, LLMs, and retrieval-based augmentation, enabling
+effective handling of complex spatial reasoning questions directly within the familiar operational
+paradigm of LLMs.
+•Sparse-dense spatial hybrid retriever : We propose a hybrid retrieval mechanism that combines
+spatial sparse retrieval (e.g., SQL-based structured queries) with spatial dense retrieval (e.g., LLM-
+powered semantic matching). This dual approach ensures that retrieved results align both spatially and
+semantically with the user’s query, synergizing spatial computing and geographical text understanding.
+•Multi-objective guided spatial and semantic text generator: To handle both spatial constraints
+and semantic intents in the spatial question-answering task, we introduce a multi-objective opti-
+mization framework that dynamically balances trade-offs between spatial and semantic relevancy
+to the user’s query. This ensures that the generated responses are both geospatially accurate and
+linguistically coherent.
+•Real-world evaluation: We evaluated our method on multiple real-world datasets consisting of
+user-generated QA pairs about various spatial entities. The experiments demonstrate the model’s
+ability to handle spatial reasoning questions grounded in real-world scenarios.
+Through these innovations, Spatial-RAG significantly enhances the spatial reasoning capabilities of
+LLMs, bridging the gap between structured spatial databases and natural language QA.
+2
+2 Related work
+2.1 Retrieval augmented generation
+Retrieval-Augmented Generation (RAG) is a hybrid approach that integrates retrieval systems and
+generative models to enhance factual accuracy and contextual relevance in natural language generation
+[6]. Unlike conventional language models that rely solely on parametric memory, RAG dynamically
+retrieves relevant external knowledge before generating a response. In RAG [ 11], a retrieval module
+fetches relevant passages from a large-scale knowledge corpus (e.g., Wikipedia), which are then
+fused with the question context to generate a more informed response. This technique has proven
+particularly effective in open-domain question answering (QA), fact verification, and context-aware
+text generation. RAG systems have expanded beyond text and document retrieval to incorporate a
+wide variety of data types [ 8] — tables, graphs, charts, and diagrams. While RAG has been widely
+explored, its application in spatial reasoning question answering remains an unexplored research area.
+Existing studies have primarily focused on knowledge-grounded dialogues [ 23] but often struggle
+with integrating spatial computation into the question-answering process effectively.
+2.2 Geospatial question and answering
+Spatial questions in domain-specific applications can generally be categorized into two distinct types:
+1) Textual knowledge-based spatial questions These are spatial questions that can be answered by
+traditional QA methods without the need for spatial computation and reasoning [ 14]. For example, the
+question "What is the population of Los Angeles city?" falls under this category. Despite their spatial
+context, these questions are essentially text-based and, hence, can be effectively addressed using
+traditional Retrieval-Augmented Generation (RAG) methods [ 3].2) Spatial reasoning questions
+This category encapsulates spatial questions that demand a model’s capability to comprehend and
+reason with spatial data and spatial relationships. A common example is a model being presented
+with textual information describing the spatial relationships among multiple objects [ 12]. An example
+question could be, "What is the position of object A relative to object B?" , where objects AandBare
+locations or entities specified on the map. Resolving such queries requires a profound understanding
+of spatial concepts and robust reasoning skills, which largely depend on the model’s training to
+handle spatial data. Several studies [ 15,19] have investigated the capacity of LLMs to understand
+spatial concepts, yet these models often struggle with accurate reasoning even after fine-tuning.
+Other research [ 13] has attempted to enhance this ability by converting geolocation coordinates into
+addresses to enrich the semantic context. However, these improvements tend to be marginal and are
+mostly limited to straightforward reasoning tasks like describing positions. Moreover, many existing
+methods rely on predefined sets of actions tailored to specific tasks.
+3 Problem formulation
+In this study, our primary focus is Geospatial Reasoning Questions . We formulate the problem
+as follows: Given a query q, the system aims to generate an answer y∗, which maximizes the joint
+spatial and semantic scores while satisfying the spatial constraints in the query q. For example,
+in Figure 1, the desired answer is a restaurant that satisfies a spatial constraint—it must be within
+walking distance of the route. Additionally, it should ideally be located along the street (spatial score)
+and preferably offer waffle fries (semantic score). This problem can be formulated as the following
+multi-objective optimization problem:
+y∗= arg max
+yλT
+sfs(q, y) +λT
+kfk(q, y)
+s.t.y∈Cs(q), y∈Ck(q), λs≥0, λk≥0,1Tλs+1Tλk= 1,(1)
+where fs∈Rdsis the spatial relevance score vector, fk∈Rdkis the semantic relevance score vector,
+Csis the spatial candidate set that satisfies the spatial constraints of the question, Ckis the semantic
+candidate set that satisfies the semantic constraints of the question, λs, λkare the spatial weights and
+semantic weights, respectively, y∗is the optimal answer, 1Tλs+1Tλk= 1ensures a normalized
+trade-off.
+Note that this problem can have multiple valid solutions depending on the trade-off parameters λs
+andλk, forming a Pareto frontier . Existing approaches are unable to solve this problem effectively,
+as it demands a synergistic capability in both geospatial and semantic reasoning. Specifically: 1) it
+requires accurately determining whether a candidate ysatisfies the spatial constraints expressed in
+the query q. 2) it involves ranking candidates based on both spatial and semantic relevance, which are
+3
+interrelated yet provide complementary signals; and 3) it must ensure that no high-quality answers
+are overlooked under different trade-offs between spatial and semantic aspects. Current methods,
+which typically excel in either geospatial reasoning (e.g., spatial databases) or semantic reasoning
+(e.g., large language models and their variants), cannot address all of these requirements without
+substantial effort to integrate both capabilities seamlessly.
+4 Spatial-RAG for geospatial reasoning questions
+Figure 2: Illustration of the proposed Spatial-RAG framework.
+4.1 Overview
+Our Spatial-RAG is illustrated in Figure 2, which consists of three key stages: First, to construct
+the spatial candidate set Cs, the system must precisely define spatial constraints and then retrieve
+spatial objects that satisfy them. As depicted in Figure 2 (a) Sparse spatial retrieval, we achieve this
+by parsing the input natural language questions into a spatial SQL query, which will be executed on
+the spatial database to efficiently retrieve relevant spatial objects from the database. This process is
+detailed in Section 4.2. Second, to effectively compute spatial relevance fs(q, y)while integrating
+textual information, we propose a hybrid spatial retrieval scheme. This method combines sparse
+spatial relevance scores from the database with dense semantic similarity scores from text embeddings.
+This enables the system to rank retrieved spatial objects based on their spatial relevance to the input
+question, as detailed in Section 4.3. Third, given both spatial and semantic scores, we formulate
+a multi-objective optimization problem to balance these factors. The system computes the Pareto
+frontier of candidate answers, and the LLM dynamically trades off among these solutions to generate
+an optimal response. This step is covered in Section 4.4.
+4.2 Sparse spatial retrieval
+The answer to a spatial reasoning question must meet specific spatial constraints. The spatial candidate
+setCs(q)consists of all possible answers ythat satisfy a set of spatial constraints Cs(q):
+Cs(q) ={y|cs(y, q)≤0,∀cs∈ Cs(q)}, (2)
+where cs(y, q)represents a constraint function that encodes a spatial condition (e.g., topological,
+directional, or distance-based constraints), Cs(q)is the set of all spatial constraints associated with the
+question q. For example, if the spatial constraint requires yto be within a distance ϵfrom a reference
+location lq, then a possible constraint function is:
+cs(y, q) =d(y, lq)−ϵ≤0. (3)
+This formulation ensures that only spatially valid answers are included in Cs(q).
+Addressing spatial constraints requires executing a well-defined spatial SQL query within a spatial
+database. This process involves identifying the appropriate query function, the reference spatial
+objects, the target spatial objects, and any necessary numerical parameters. Formally, a spatial SQL
+query can be expressed as:
+Qs=Fs(Gr, Gt, ϵ) (4)
+whereFsis the spatial query function that determines the relationship between objects. Grrepresents
+the set of reference objects extracted from the question. Gtrepresents the set of target objects that
+are potential answers. ϵis the set of numerical parameters and spatial relationships governing the
+spatial constraint (e.g., distance threshold, topological relations).
+4
+Given the diversity and complex nature of these constraints, LLMs often struggle to directly construct
+a complete and executable spatial query from user input. To bridge this gap, we parse the spatial query
+incrementally, allowing LLMs to systematically populate the required components. Our approach
+follows three key steps: 1) Geometry recognition: Identify and extract the reference spatial objects
+Grand candidate target spatial objects Gtfrom the user’s input and extract their spatial footprints –
+geometries. 2) Query function selection: Determine the appropriate spatial function Fsbased on
+the intended spatial relationship (e.g., containment, proximity). 3) Parameter estimation: Assign
+numerical constraints ϵto ensure precise spatial filtering (e.g., buffer radius).
+By formalizing this structured process, we enhance the LLM’s ability to generate accurate and
+executable spatial SQL queries. This, in turn, improves the system’s capability to handle complex
+spatial reasoning questions effectively.
+4.2.1 Geometry recognition
+In spatial reasoning tasks, accurately identifying spatial objects and extracting their spatial footprints
+(i.e., geometries) are essential for parsing questions to spatial queries. Spatial footprints of spatial
+objects, denoted as g∈ G, can generally be categorized into three fundamental types: points,
+polylines, and polygons. Formally, we define these categories as follows:
+•Point: Gpoint={g|g∈R2,dim(g) = 0}This category includes single points and multipoints,
+representing locations with negligible area. Examples include stop signs, points of interest, and a
+user’s current location. In spatial databases, these entities are typically represented as the ’Point’
+geometry type.
+•Polyline: Gline={g|g⊆R2,dim(g) = 1}Polylines, including multipolylines, represent linear
+one-dimensional objects with negligible width. Common examples include streets, streams, bus
+routes, and power lines. In spatial databases, these geometries are abstracted as the ’LineString’ type.
+•Polygon: Gpolygon ={g|g⊆R2,dim(g) = 2}Polygons, including multipolygons, represent
+two-dimensional objects that define enclosed areas. These geometries are essential for depicting
+regions such as census areas, parcels, counties, neighborhoods, and zoning areas.
+The complexity of a spatial query depends on the types of spatial footprints of objects involved. For
+simpler queries, such as "finding the nearest bus stop from a given location", only point geometries
+are required, and the spatial candidate set is
+Cs={g|g∈ G point, d(g, g point)< ϵ} (5)
+where gpoint⊆ G pointrepresents a point object (e.g., given location), ϵis the distance threshold. For
+more complex queries, such as "I will walk from home to the university campus along 7th Street and
+Jones Street; please recommend a café where I can buy breakfast on my walk.", multiple geometry
+types must be considered, and the spatial candidate set is
+Cs={g|g∈ G point, g∈B(gpolyline , ϵ)∪gpolygon} (6)
+where gpolyline⊆ G polygon represents a polyline object (e.g., a route), gpolygon⊆ G polygon represents a
+polygonal region (e.g., a university campus), Bis a buffer around the polyline, ϵis the buffer size.
+By structuring spatial queries in this way, we ensure precise geometric representation, facilitating
+robust spatial reasoning and query execution.
+4.2.2 Query function recognition and parameter estimation
+After recognizing the geometries involved in a spatial query, the subsequent step is to determine the
+appropriate spatial query functions Fsrequired to handle various geometrical interactions. Despite the
+differing interactions among geometries, these can be uniformly addressed using distance functions
+d(gr, gt), which calculate the shortest distance between two geometrical entities gr, gt∈ G.
+Formally, given sets of reference geometries Gr⊆ G and target geometries Gt⊆ G , the spatial
+candidate set Cscan be defined as:
+{gt∈Gt| ∃gr∈Gr,d(gr, gt)≤ϵ},if d(gr, gt)>0,
+{gt∈Gt| ∃gr∈Gr, gr∩gt̸=∅},if d(gr, gt) = 0 .(7)
+Parameters such as search radius or buffer distance ϵare autonomously determined by the LLM,
+typically grounded in contextual understanding (e.g., estimated walking distance or area of interest).
+The parameter ϵcan be represented as: ϵ=ϕ(q), where ϕis a function that maps the context of the
+query qto an appropriate numerical value.
+5
+Once the geometries Gr,Gt, functions Fs, and parameters ϵare delineated, the system constructs
+the precise spatial query Qs. This query can be formally expressed by Equation 4, which ensures
+exact retrievals from the spatial database, maintaining both accuracy and relevance in the results. By
+leveraging these mathematical formulations, the system effectively translates spatial reasoning tasks
+into executable queries, facilitating robust spatial intelligence within the LLM framework.
+4.3 Hybrid spatial relevance scoring
+The spatial relevance score fsconsists of two components: a score derived from sparse spatial
+retrieval from the spatial database and a score from dense spatial retrieval based on text similarity
+between the question and the spatial descriptions of candidate objects. Formally, we define:
+fs=λpfsparse
+s +λdfdense
+s, (8)
+where λpandλdare weighting coefficients controlling the contribution of each score.
+4.3.1 Sparse spatial relevance scoring
+Sparse spatial relevance is computed directly from the spatial database using explicit spatial rela-
+tionships. The score is determined by the spatial query function Fs, which computes the distance
+between reference and target objects. Formally, we define:
+fsparse
+s =
+
+1
+1 +d(gr, gt),ifgr∩gt=∅
+1, ifgr∩gt̸=∅(9)
+where grandgtare reference and target spatial objects, respectively. d(gr, gt)is a distance function
+measuring proximity in the spatial database. If gtoverlaps with gr, we assign a perfect relevance
+score of 1. This ensures that objects within a region are maximally relevant, while those outside the
+region receive scores that decay with increasing distance.
+4.3.2 Dense spatial relevance scoring
+Unlike sparse scoring, dense spatial relevance is inferred from textual descriptions associated with
+spatial objects. We leverage an LLM to extract key spatial attributes from user queries and compare
+them with the descriptions of candidate objects.
+Extracting spatial requirements and ranking via cosine similarity Given a user query qand a set
+of text descriptions dtfor spatial objects Gt, we extract the spatial requirements via an attention-based
+masking function:
+vq,s=E(Ms(q)), v t,s=E(Ms(dt)), (10)
+where vq,sandvt,sare dense vector representations of spatial features from query qand text descrip-
+tions dt.Msis a function mapping input text to a spatial related text. Eis the text encoder. The
+dense spatial relevance score fdense
+s is computed via cosine similarity between two vectors.
+4.3.3 Hybrid spatial scoring as a generalized model
+We can demonstrate that hybrid spatial scoring generalizes both sparse and dense approaches:
+•Sparse-only case: Ifλd= 0, then fs=λpfsparse
+s , reducing to a purely distance-based ranking.
+•Dense-only case: Ifλp= 0, then fs=λdfdense
+s, reducing to a purely semantic-based ranking.
+•Hybrid case (General): If both weights are nonzero, hybrid spatial scoring benefits from both
+explicit constraints and implicit relevance.
+This formulation ensures that hybrid spatial scoring outperforms any single-scoring approach.
+4.4 Multi-objective generation
+The semantic candidate set Ckand the semantic relevance score fkare also calculated based on vector
+similarity, we put the details in Appendix A. After all the scores and candidate sets are acquired,
+the problem becomes a multi-objective optimization problem since each perspective (spatial and
+semantic) contributes from different aspects.
+6
+4.4.1 Spatial-semantic Pareto frontier computation
+Given the spatial and semantic relevance scores, our goal is to identify the Pareto-optimal candidates
+that achieve the best trade-off between these objectives. A candidate yis spatial-semantic Pareto-
+optimal if no other candidate dominates it in both spatial and semantic relevance. Formally, the Pareto
+frontier P(q)is defined as:
+P(q) ={y∈Cs∩Ck|∄y′∈Cs∩Ck,
+fs(q, y′)≥fs(q, y)andfk(q, y′)≥fk(q, y),with at least one strict inequality }.(11)
+This ensures that each candidate in P(q)is non-dominated, meaning no other candidate is strictly
+better in both spatial and semantic relevance.
+4.4.2 LLM-based trade-Off decision
+Once the Pareto frontier P(q)is determined, we use an LLM to dynamically balance the trade-
+offs between spatial constraints and semantic preferences based on the context of the user query.
+Specifically, the LLM receives the user query q, sparse spatial relevance scores fsparse
+s , and spatial
+object descriptions dyas input:
+I={q,(fsparse
+s(q, y), dy),∀y∈P(q)}. (12)
+A dynamic weighting function λs, λk=h(I)based on contextual information is extracted from
+the input, adjusting the importance of spatial vs. semantic relevance, where his a learned function
+capturing query-specific trade-offs. The top-ranked candidate y∗is selected by LLM:
+y∗= arg max
+y∈P(q)λT
+sfs(q, y) +λT
+kfk(q, y), (13)
+and the LLM generates a natural language response. The system adapts to different query contexts
+instead of using a fixed weighting scheme. By structuring decision-making into discrete steps
+(candidate filtering →Pareto selection →trade-off balancing →response generation), the LLM
+avoids generating infeasible or illogical results.
+5 Experiment
+5.1 Experiment setting
+Table 1: Overview of Datasets
+Dataset #POIs #QA Pairs
+TourismQA-NYC 9,470 17,448
+TourismQA-Miami 2,640 133
+MapQA-ADJ 92,415 50
+MapQA-AME 92,415 231Datasets. We conduct our experiments on four
+datasets, including TourismQA-NYC Dataset
+andTourismQA-Miami Dataset datasets, which
+contains user questions about points of interest
+(POIs) in real-world cities. The questions are
+crawled from TripAdvisor posts, while the reviews
+of restaurants, attractions, and hotels are collected
+from travel forums and hotel booking websites.
+For both datasets, we apply similar preprocessing
+steps, including removing POIs with missing review information and eliminating duplicate QA pairs.
+MapQA-Adjacent Dataset (MapQA-ADJ) features questions such as “What [amenity] is adjacent to
+[location]?”, emphasizing topological relationships. MapQA-Amenities_Around_Specific Dataset
+(MapQA-AME) focuses on proximity-based queries like “What are the [amenity] within 50m of
+[location]?” The number of POIs and QA pairs for each dataset is summarized in Table 1.
+Evaluation metrics. To assess the recommendation performance of different methods, we evaluate
+each model using five widely adopted metrics: Precision@k (The proportion of the top -k returned
+items that are relevant to the query), Recall@k (The proportion of all relevant items for a query that
+appear within the top -k results), F1@k (The harmonic mean of Precision@k and Recall@k), and
+NDCG@k (Normalized Discounted Cumulative Gain up to rank k), where k∈ {1,3,5,10}.
+Models for comparison. We used GPT-3.5-Turbo and GPT-4-Turbo as the LLM in our framework
+and compared them against the following methods: GeoLLM [18]encodes the spatial objects to
+address and enrich their context by adding spatial information of nearby spatial objects. Naive RAG
+[11] saves all spatial objects’ descriptions in a vector database and retrieves the most relevant objects
+based on vector similarity. Text embedding (TE) [ 1] is a greedy method minimizing the distance
+7
+Table 2: Performance comparison of models in TourismQA-NYC and TourismQA-Miami.
+Dataset MethodPrecision Recall F1 NDCG
+@1 @3 @5 @10 @1 @3 @5 @10 @1 @3 @5 @10 @1 @3 @5 @10
+TourismQA-MiamiGeoLLM 0.3158 0.2719 0.2368 0.2053 0.0365 0.0945 0.1246 0.1824 0.0591 0.1094 0.1311 0.1623 0.3158 0.3200 0.3268 0.3600
+Naive RAG 0.2973 0.2252 0.2054 0.1973 0.0814 0.1124 0.1491 0.2301 0.1005 0.1099 0.1310 0.1642 0.2973 0.2753 0.2849 0.3403
+TE 0.3421 0.3070 0.2316 0.1842 0.0567 0.1544 0.1821 0.2231 0.0781 0.1558 0.1515 0.1543 0.3421 0.3766 0.3890 0.4748
+SD 0.1053 0.0351 0.0211 0.0105 0.0075 0.0075 0.0075 0.0075 0.0138 0.0119 0.0105 0.0082 0.1053 0.1053 0.1053 0.1053
+ST 0.3947 0.1316 0.0789 0.0395 0.0873 0.0873 0.0873 0.0873 0.1115 0.0730 0.0569 0.0386 0.3947 0.3947 0.3947 0.3947
+Spatial-RAG(GPT3.5-Turbo) 0.5455 0.4141 0.4000 0.3152 0.1081 0.2072 0.2972 0.3732 0.1540 0.2262 0.2765 0.2817 0.5455 0.492 0.5276 0.5440
+Spatial-RAG (GPT4-Turbo) 0.5152 0.4242 0.3758 0.2939 0.1026 0.2037 0.2841 0.3565 0.1454 0.2246 0.2619 0.2656 0.5152 0.4852 0.4983 0.5079
+TourismQA-NYCGeoLLM 0.3650 0.3292 0.3020 0.2725 0.0168 0.0433 0.0614 0.1033 0.0311 0.0688 0.0907 0.1328 0.3650 0.3626 0.3708 0.4248
+Naive RAG 0.4923 0.4447 0.4245 0.4181 0.0214 0.0556 0.0889 0.1678 0.0399 0.0932 0.1345 0.2167 0.4923 0.4551 0.4528 0.5058
+TE 0.2250 0.2433 0.2395 0.2325 0.0101 0.0330 0.0506 0.0934 0.0189 0.0541 0.0767 0.1199 0.2250 0.2873 0.3533 0.5142
+SD 0.2425 0.2492 0.2455 0.2402 0.0103 0.0314 0.0520 0.0945 0.0193 0.0520 0.0758 0.1194 0.2425 0.2694 0.2926 0.3624
+ST 0.4725 0.4608 0.4460 0.4323 0.0238 0.0644 0.1026 0.1846 0.0433 0.1026 0.1475 0.2281 0.4725 0.4686 0.4745 0.5296
+Spatial-RAG (GPT3.5-Turbo) 0.4611 0.4352 0.4144 0.4098 0.0188 0.0485 0.0751 0.1493 0.0350 0.0828 0.1188 0.2000 0.4611 0.4545 0.4534 0.5097
+Spatial-RAG (GPT4-Turbo) 0.5665 0.4875 0.4555 0.4251 0.0274 0.0611 0.0908 0.1691 0.0483 0.0996 0.1384 0.2153 0.5665 0.5174 0.5065 0.5574
+Table 3: Performance comparison of models on MapQA-ADJ and MapQA-AME.
+Dataset Metric Methods
+SD TE ST Naive RAG GeoLLM Spatial-RAG (GPT-3.5-Turbo) Spatial-RAG (GPT-4.0-Turbo)
+MapQA-ADJPrecision 0.4600 0.4200 0.5600 0.3455 0.4558 0.5467 0.5057
+Recall 0.4200 0.3750 0.5150 0.6170 0.6685 0.5350 0.7819
+F1 0.4333 0.3880 0.5280 0.4067 0.5073 0.5247 0.5625
+NDCG 0.4600 0.4200 0.5600 0.5866 0.6132 0.5800 0.7391
+MapQA-AMEPrecision 0.4323 0.2751 0.5714 0.2452 0.3729 0.5566 0.6645
+Recall 0.3923 0.2351 0.5173 0.6075 0.8333 0.7446 0.9072
+F1 0.4054 0.2482 0.5346 0.3263 0.4744 0.6100 0.7298
+NDCG 0.4323 0.2751 0.5714 0.6018 0.8199 0.7264 0.8719
+Table 4: Ablation results.
+Method Precision Recall F1 NDCG
+@1 @3 @5 @10 @1 @3 @5 @10 @1 @3 @5 @10 @1 @3 @5 @10
+Spatial-RAG(GPT4-Turbo) 0.5665 0.4875 0.4555 0.4251 0.0274 0.0611 0.0908 0.1691 0.0483 0.0996 0.1384 0.2153 0.5665 0.5174 0.5065 0.5574
+w/o sparse spatial 0.3807 0.3545 0.3503 0.3307 0.0147 0.0431 0.0701 0.1305 0.0276 0.0701 0.1058 0.1667 0.3807 0.3608 0.3570 0.3455
+w/o dense spatial 0.5569 0.4954 0.4628 0.4295 0.0263 0.0606 0.0919 0.1679 0.0466 0.0986 0.1392 0.2132 0.5569 0.5240 0.5132 0.5587
+w/o dense semantic 0.4986 0.4311 0.4165 0.3806 0.0240 0.0553 0.0844 0.1499 0.0421 0.0883 0.1262 0.1896 0.4986 0.4679 0.4739 0.5219
+Scratch 0.5392 0.4935 0.4706 0.4343 0.0236 0.0535 0.0829 0.1574 0.0435 0.0916 0.1323 0.2105 0.5392 0.5105 0.5042 0.5374
+w/o RAG 0.3584 0.3333 0.3028 0.2644 0.0121 0.0323 0.0484 0.0846 0.0231 0.0568 0.0796 0.1191 0.3584 0.3570 0.3653 0.4186
+between the vector embeddings of the text description of the reference object and the target object.
+Sort-by-distance (SD) [ 4] ranks the candidate spatial objects based on their distance to the reference
+objects in the spatial question. Spatial-text (ST) computes the embeddings of the user’s question
+and compares the similarity between the question embedding and the text description embedding of
+the target object. Additionally, the object’s location is encoded as a distance score. The answer is
+determined based on the average of these scores.
+5.2 Spatial-RAG vs. Baselines
+The comparative performance results across methods and datasets are summarized in Tables 2
+and 3. Our Spatial-RAG (GPT4-Turbo) consistently surpasses baselines, including Naive RAG,
+GeoLLM, and template-based methods (ST, TE, SD). Specifically, a 19.9% improvement in Preci-
+sion@1 was achieved by our Spatial-RAG (GPT-4-Turbo) compared to the best baseline model (ST)
+on TourismQA-NYC. It improved NDCG by 32.0% on MapQA-ADJ and by 52.6% on MapQA-
+AME compared to ST. On the MapQA-AME dataset, it notably increased Recall by 75.4% over
+ST. Compared to GeoLLM, Spatial-RAG (GPT-4-Turbo) achieved 95.4% higher Recall@10 on
+TourismQA-Miami. This advantage arises primarily from Spatial-RAG’s structured spatial retrieval
+pipeline, which leverages a spatial database to accurately retrieve relevant candidates that satisfy the
+spatial constraints, a capability lacking in embedding-based methods like Naive RAG and purely
+textual or parametric models (GeoLLM, SD, TE). Meanwhile, although ST occasionally leads in
+single-relationship precision (e.g., Precision@1 on MapQA-ADJ), Spatial-RAG’s GPT4-powered
+re-ranking provides superior overall performance through nuanced multi-constraint spatial reasoning.
+Among evaluation metrics, Spatial-RAG sees greater gains in Recall and NDCG than in Precision,
+highlighting that structured spatial queries significantly enhance completeness of retrieved results
+and the accuracy of ranking order. Finally, Spatial-RAG (GPT4-Turbo) consistently outperforms its
+8
+Figure 3: Three POI queries with different reference objects.
+GPT3.5 counterpart, underscoring GPT4’s advanced reasoning capabilities and improved candidate-
+ranking accuracy.
+Replacing GPT3.5-Turbo with GPT4-Turbo within the identical retrieval pipeline contributes a further
++2 pp on average, indicating that model capacity and spatially constrained retrieval are additive rather
+than redundant. This improvement is especially evident on structured spatial QA tasks such as those
+in MapQA, which feature well-defined relations like “adjacent” and “within 50m.” In contrast, the
+performance gap is narrower on noisier, open-domain datasets like TourismQA, suggesting that
+GPT4’s capacity brings greater benefit when precise spatial reasoning is required. The above results
+establish Spatial-RAG as the new state of the art, delivering statistically robust, across-the-board
+improvements relative to all prior baselines.
+5.3 Ablation study
+To validate our technical contributions, we conducted five ablation studies. First, we examined
+the impact of removing individual modules: the sparse spatial module (w/o sparse spatial), dense
+spatial module (w/o dense spatial), and dense semantic module (w/o dense semantic). Next, we
+evaluated two system-level variations: generating SQL from scratch (Scratch) and removing the RAG
+component (w/o RAG).
+Table 4 summarizes the ablation results. Removing any component leads to a performance decline,
+highlighting the importance of each module. Notably, excluding the sparse spatial component results
+in the most significant drop, underscoring the value of integrating the spatial database with the
+LLM. The Scratch setting shows only a slight decrease, suggesting that GPT4-Turbo can internally
+formulate SQL queries when given essential inputs, even without templates. The w/o RAG variant
+performs worst across all metrics, indicating that retrieval-augmented generation is fundamental to
+the system’s overall effectiveness.
+5.4 Case studies
+The visualizations of three POI queries with different reference objects are given in Figure 3. Spatial-
+RAG effectively identifies the user’s intent within noisy queries, detecting that the user needs to travel
+near a location, along a route, or within a region. Based on this, Spatial-RAG applies proper spatial
+constraints to filter spatial objects. In contrast, traditional methods, such as distance-based approaches,
+always generate a buffer zone around a single location, which may not necessarily include POIs along
+the user’s travel route. Our framework provides a more context-aware understanding of the user’s
+spatial intent, enabling more precise and relevant recommendations based on both location and user
+preferences.
+9
+6 Conclusion
+Spatial-RAG enhances LLMs’ spatial reasoning by integrating structured spatial retrieval with natural
+language understanding, bridging the gap between spatial databases and LLM-driven question
+answering. Extensive evaluations show that Spatial-RAG outperforms existing methods, highlighting
+its potential to advance spatial analysis, tourism recommendation, and geographic QA.
+Acknowledgments and Disclosure of Funding
+Use unnumbered first level headings for the acknowledgments. All acknowledgments go at the
+end of the paper before the list of references. Moreover, you are required to declare funding
+(financial activities supporting the submitted work) and competing interests (related financial activities
+outside the submitted work). More information about this disclosure can be found at: https:
+//neurips.cc/Conferences/2025/PaperInformation/FundingDisclosure .
+Donotinclude this section in the anonymized submission, only in the final paper. You can use
+theackenvironment provided in the style file to automatically hide this section in the anonymized
+submission.
+References
+[1]Tolgahan Cakaloglu, Christian Szegedy, and Xiaowei Xu. Text embeddings for retrieval from
+a large knowledge base. In International Conference on Research Challenges in Information
+Science , pages 338–351. Springer, 2020.
+[2]Wei Chen. Parameterized spatial sql translation for geographic question answering. In 2014
+IEEE international conference on semantic computing , pages 23–27. IEEE, 2014.
+[3]Philipp Christmann and Gerhard Weikum. Rag-based question answering over heterogeneous
+data and text. arXiv preprint arXiv:2412.07420 , 2024.
+[4]Danish Contractor, Shashank Goel, Mausam, and Parag Singla. Joint spatio-textual reasoning
+for answering tourism questions. In Proceedings of the Web Conference 2021 , pages 1978–1989,
+2021.
+[5]Fahim Faisal and Antonios Anastasopoulos. Geographic and geopolitical biases of language
+models. In Proceedings of the 3rd Workshop on Multi-lingual Representation Learning (MRL) ,
+pages 139–163, 2023.
+[6]Wenqi Fan, Yujuan Ding, Liangbo Ning, Shijie Wang, Hengyun Li, Dawei Yin, Tat-Seng Chua,
+and Qing Li. A survey on rag meeting llms: Towards retrieval-augmented large language
+models. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and
+Data Mining , pages 6491–6501, 2024.
+[7]Wes Gurnee and Max Tegmark. Language models represent space and time. In The Twelfth
+International Conference on Learning Representations , 2024.
+[8]Xiaoxin He, Yijun Tian, Yifei Sun, Nitesh V Chawla, Thomas Laurent, Yann LeCun, Xavier
+Bresson, and Bryan Hooi. G-retriever: Retrieval-augmented generation for textual graph
+understanding and question answering. arXiv preprint arXiv:2402.07630 , 2024.
+[9]Yuhan Ji and Song Gao. Evaluating the effectiveness of large language models in representing
+textual descriptions of geometry and spatial relations (short paper). In 12th International Con-
+ference on Geographic Information Science (GIScience 2023) , pages 43–1. Schloss Dagstuhl–
+Leibniz-Zentrum für Informatik, 2023.
+[10] Sergios-Anestis Kefalidis, Dharmen Punjani, Eleni Tsalapati, Konstantinos Plas, Maria-Aggeliki
+Pollali, Pierre Maret, and Manolis Koubarakis. The question answering system geoqa2 and
+a new benchmark for its evaluation. International Journal of Applied Earth Observation and
+Geoinformation , 134:104203, 2024.
+[11] Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir Karpukhin, Naman
+Goyal, Heinrich Küttler, Mike Lewis, Wen-tau Yih, Tim Rocktäschel, et al. Retrieval-augmented
+generation for knowledge-intensive nlp tasks. Advances in neural information processing
+systems , 33:9459–9474, 2020.
+10
+[12] Fangjun Li, David C Hogg, and Anthony G Cohn. Advancing spatial reasoning in large
+language models: An in-depth evaluation and enhancement using the stepgame benchmark. In
+Proceedings of the AAAI Conference on Artificial Intelligence , volume 38, pages 18500–18507,
+2024.
+[13] Zekun Li, Wenxuan Zhou, Yao-Yi Chiang, and Muhao Chen. Geolm: Empowering language
+models for geospatially grounded language understanding. arXiv preprint arXiv:2310.14478 ,
+2023.
+[14] Bastien Liétard, Mostafa Abdou, and Anders Søgaard. Do language models know the way to
+rome? arXiv preprint arXiv:2109.07971 , 2021.
+[15] Gengchen Mai, Weiming Huang, Jin Sun, Suhang Song, Deepak Mishra, Ninghao Liu, Song
+Gao, Tianming Liu, Gao Cong, Yingjie Hu, et al. On the opportunities and challenges of
+foundation models for geoai (vision paper). ACM Transactions on Spatial Algorithms and
+Systems , 2024.
+[16] Gengchen Mai, Krzysztof Janowicz, Rui Zhu, Ling Cai, and Ni Lao. Geographic question
+answering: challenges, uniqueness, classification, and future directions. AGILE: GIScience
+series , 2:8, 2021.
+[17] Rohin Manvi, Samar Khanna, Marshall Burke, David B Lobell, and Stefano Ermon. Large
+language models are geographically biased. In International Conference on Machine Learning ,
+pages 34654–34669. PMLR, 2024.
+[18] Rohin Manvi, Samar Khanna, Gengchen Mai, Marshall Burke, David B Lobell, and Stefano
+Ermon. Geollm: Extracting geospatial knowledge from large language models. In The Twelfth
+International Conference on Learning Representations , 2024.
+[19] Jonathan Roberts, Timo Lüddecke, Sowmen Das, Kai Han, and Samuel Albanie. Gpt4geo: How
+a language model sees the world’s geography. arXiv preprint arXiv:2306.00020 , 2023.
+[20] Shamane Siriwardhana, Rivindu Weerasekera, Elliott Wen, Tharindu Kaluarachchi, Rajib
+Rana, and Suranga Nanayakkara. Improving the domain adaptation of retrieval augmented
+generation (rag) models for open domain question answering. Transactions of the Association
+for Computational Linguistics , 11:1–17, 2023.
+[21] Nemin Wu, Qian Cao, Zhangyu Wang, Zeping Liu, Yanlin Qi, Jielu Zhang, Joshua Ni, Xiaobai
+Yao, Hongxu Ma, Lan Mu, et al. Torchspatial: A location encoding framework and benchmark
+for spatial representation learning. arXiv preprint arXiv:2406.15658 , 2024.
+[22] Jian Xie, Kai Zhang, Jiangjie Chen, Tinghui Zhu, Renze Lou, Yuandong Tian, Yanghua Xiao,
+and Yu Su. Travelplanner: A benchmark for real-world planning with language agents. In
+Forty-first International Conference on Machine Learning , 2024.
+[23] Jiong Yu, Sixing Wu, Jiahao Chen, and Wei Zhou. Llms as collaborator: Demands-guided
+collaborative retrieval-augmented generation for commonsense knowledge-grounded open-
+domain dialogue systems. In Findings of the Association for Computational Linguistics:
+EMNLP 2024 , pages 13586–13612, 2024.
+[24] Yifan Zhang, Zhiyun Wang, Zhengting He, Jingxuan Li, Gengchen Mai, Jianfeng Lin, Cheng
+Wei, and Wenhao Yu. Bb-geogpt: A framework for learning a large language model for
+geographic information science. Information Processing & Management , 61(5):103808, 2024.
+11
+NeurIPS Paper Checklist
+1.Claims
+Question: Do the main claims made in the abstract and introduction accurately reflect the
+paper’s contributions and scope?
+Answer: [Yes]
+Justification: the main claims made in the abstract and introduction accurately reflect the
+paper’s contributions and scope
+Guidelines:
+•The answer NA means that the abstract and introduction do not include the claims
+made in the paper.
+•The abstract and/or introduction should clearly state the claims made, including the
+contributions made in the paper and important assumptions and limitations. A No or
+NA answer to this question will not be perceived well by the reviewers.
+•The claims made should match theoretical and experimental results, and reflect how
+much the results can be expected to generalize to other settings.
+•It is fine to include aspirational goals as motivation as long as it is clear that these goals
+are not attained by the paper.
+2.Limitations
+Question: Does the paper discuss the limitations of the work performed by the authors?
+Answer: [Yes]
+Justification: We discuss the limitations of the work in appendix E
+Guidelines:
+•The answer NA means that the paper has no limitation while the answer No means that
+the paper has limitations, but those are not discussed in the paper.
+• The authors are encouraged to create a separate "Limitations" section in their paper.
+•The paper should point out any strong assumptions and how robust the results are to
+violations of these assumptions (e.g., independence assumptions, noiseless settings,
+model well-specification, asymptotic approximations only holding locally). The authors
+should reflect on how these assumptions might be violated in practice and what the
+implications would be.
+•The authors should reflect on the scope of the claims made, e.g., if the approach was
+only tested on a few datasets or with a few runs. In general, empirical results often
+depend on implicit assumptions, which should be articulated.
+•The authors should reflect on the factors that influence the performance of the approach.
+For example, a facial recognition algorithm may perform poorly when image resolution
+is low or images are taken in low lighting. Or a speech-to-text system might not be
+used reliably to provide closed captions for online lectures because it fails to handle
+technical jargon.
+•The authors should discuss the computational efficiency of the proposed algorithms
+and how they scale with dataset size.
+•If applicable, the authors should discuss possible limitations of their approach to
+address problems of privacy and fairness.
+•While the authors might fear that complete honesty about limitations might be used by
+reviewers as grounds for rejection, a worse outcome might be that reviewers discover
+limitations that aren’t acknowledged in the paper. The authors should use their best
+judgment and recognize that individual actions in favor of transparency play an impor-
+tant role in developing norms that preserve the integrity of the community. Reviewers
+will be specifically instructed to not penalize honesty concerning limitations.
+3.Theory assumptions and proofs
+Question: For each theoretical result, does the paper provide the full set of assumptions and
+a complete (and correct) proof?
+Answer: [NA]
+12
+Justification: This paper does not involves theoretical result.
+Guidelines:
+• The answer NA means that the paper does not include theoretical results.
+•All the theorems, formulas, and proofs in the paper should be numbered and cross-
+referenced.
+•All assumptions should be clearly stated or referenced in the statement of any theorems.
+•The proofs can either appear in the main paper or the supplemental material, but if
+they appear in the supplemental material, the authors are encouraged to provide a short
+proof sketch to provide intuition.
+•Inversely, any informal proof provided in the core of the paper should be complemented
+by formal proofs provided in appendix or supplemental material.
+• Theorems and Lemmas that the proof relies upon should be properly referenced.
+4.Experimental result reproducibility
+Question: Does the paper fully disclose all the information needed to reproduce the main ex-
+perimental results of the paper to the extent that it affects the main claims and/or conclusions
+of the paper (regardless of whether the code and data are provided or not)?
+Answer: [Yes]
+Justification: We propose a framework and describe the architecture clearly and fully.
+Guidelines:
+• The answer NA means that the paper does not include experiments.
+•If the paper includes experiments, a No answer to this question will not be perceived
+well by the reviewers: Making the paper reproducible is important, regardless of
+whether the code and data are provided or not.
+•If the contribution is a dataset and/or model, the authors should describe the steps taken
+to make their results reproducible or verifiable.
+•Depending on the contribution, reproducibility can be accomplished in various ways.
+For example, if the contribution is a novel architecture, describing the architecture fully
+might suffice, or if the contribution is a specific model and empirical evaluation, it may
+be necessary to either make it possible for others to replicate the model with the same
+dataset, or provide access to the model. In general. releasing code and data is often
+one good way to accomplish this, but reproducibility can also be provided via detailed
+instructions for how to replicate the results, access to a hosted model (e.g., in the case
+of a large language model), releasing of a model checkpoint, or other means that are
+appropriate to the research performed.
+•While NeurIPS does not require releasing code, the conference does require all submis-
+sions to provide some reasonable avenue for reproducibility, which may depend on the
+nature of the contribution. For example
+(a)If the contribution is primarily a new algorithm, the paper should make it clear how
+to reproduce that algorithm.
+(b)If the contribution is primarily a new model architecture, the paper should describe
+the architecture clearly and fully.
+(c)If the contribution is a new model (e.g., a large language model), then there should
+either be a way to access this model for reproducing the results or a way to reproduce
+the model (e.g., with an open-source dataset or instructions for how to construct
+the dataset).
+(d)We recognize that reproducibility may be tricky in some cases, in which case
+authors are welcome to describe the particular way they provide for reproducibility.
+In the case of closed-source models, it may be that access to the model is limited in
+some way (e.g., to registered users), but it should be possible for other researchers
+to have some path to reproducing or verifying the results.
+5.Open access to data and code
+Question: Does the paper provide open access to the data and code, with sufficient instruc-
+tions to faithfully reproduce the main experimental results, as described in supplemental
+material?
+13
+Answer: [Yes]
+Justification: We will release of code and data once get accepted.
+Guidelines:
+• The answer NA means that paper does not include experiments requiring code.
+•Please see the NeurIPS code and data submission guidelines ( https://nips.cc/
+public/guides/CodeSubmissionPolicy ) for more details.
+•While we encourage the release of code and data, we understand that this might not be
+possible, so “No” is an acceptable answer. Papers cannot be rejected simply for not
+including code, unless this is central to the contribution (e.g., for a new open-source
+benchmark).
+•The instructions should contain the exact command and environment needed to run to
+reproduce the results. See the NeurIPS code and data submission guidelines ( https:
+//nips.cc/public/guides/CodeSubmissionPolicy ) for more details.
+•The authors should provide instructions on data access and preparation, including how
+to access the raw data, preprocessed data, intermediate data, and generated data, etc.
+•The authors should provide scripts to reproduce all experimental results for the new
+proposed method and baselines. If only a subset of experiments are reproducible, they
+should state which ones are omitted from the script and why.
+•At submission time, to preserve anonymity, the authors should release anonymized
+versions (if applicable).
+•Providing as much information as possible in supplemental material (appended to the
+paper) is recommended, but including URLs to data and code is permitted.
+6.Experimental setting/details
+Question: Does the paper specify all the training and test details (e.g., data splits, hyper-
+parameters, how they were chosen, type of optimizer, etc.) necessary to understand the
+results?
+Answer: [Yes]
+Justification: We specify all the training and test details in the main text and appendix.
+Guidelines:
+• The answer NA means that the paper does not include experiments.
+•The experimental setting should be presented in the core of the paper to a level of detail
+that is necessary to appreciate the results and make sense of them.
+•The full details can be provided either with the code, in appendix, or as supplemental
+material.
+7.Experiment statistical significance
+Question: Does the paper report error bars suitably and correctly defined or other appropriate
+information about the statistical significance of the experiments?
+Answer: [No]
+Justification: We follow the convention in prior works.
+Guidelines:
+• The answer NA means that the paper does not include experiments.
+•The authors should answer "Yes" if the results are accompanied by error bars, confi-
+dence intervals, or statistical significance tests, at least for the experiments that support
+the main claims of the paper.
+•The factors of variability that the error bars are capturing should be clearly stated (for
+example, train/test split, initialization, random drawing of some parameter, or overall
+run with given experimental conditions).
+•The method for calculating the error bars should be explained (closed form formula,
+call to a library function, bootstrap, etc.)
+• The assumptions made should be given (e.g., Normally distributed errors).
+•It should be clear whether the error bar is the standard deviation or the standard error
+of the mean.
+14
+•It is OK to report 1-sigma error bars, but one should state it. The authors should
+preferably report a 2-sigma error bar than state that they have a 96% CI, if the hypothesis
+of Normality of errors is not verified.
+•For asymmetric distributions, the authors should be careful not to show in tables or
+figures symmetric error bars that would yield results that are out of range (e.g. negative
+error rates).
+•If error bars are reported in tables or plots, The authors should explain in the text how
+they were calculated and reference the corresponding figures or tables in the text.
+8.Experiments compute resources
+Question: For each experiment, does the paper provide sufficient information on the com-
+puter resources (type of compute workers, memory, time of execution) needed to reproduce
+the experiments?
+Answer: [Yes]
+Justification: We provided sufficient information on the computer resources in the main text
+and appendix.
+• The answer NA means that the paper does not include experiments.
+•The paper should indicate the type of compute workers CPU or GPU, internal cluster,
+or cloud provider, including relevant memory and storage.
+•The paper should provide the amount of compute required for each of the individual
+experimental runs as well as estimate the total compute.
+•The paper should disclose whether the full research project required more compute
+than the experiments reported in the paper (e.g., preliminary or failed experiments that
+didn’t make it into the paper).
+9.Code of ethics
+Question: Does the research conducted in the paper conform, in every respect, with the
+NeurIPS Code of Ethics https://neurips.cc/public/EthicsGuidelines ?
+Answer: [Yes]
+Justification: the research conducted in the paper conformed, in every respect, with the
+NeurIPS Code of Ethics.
+Guidelines:
+•The answer NA means that the authors have not reviewed the NeurIPS Code of Ethics.
+•If the authors answer No, they should explain the special circumstances that require a
+deviation from the Code of Ethics.
+•The authors should make sure to preserve anonymity (e.g., if there is a special consid-
+eration due to laws or regulations in their jurisdiction).
+10.Broader impacts
+Question: Does the paper discuss both potential positive societal impacts and negative
+societal impacts of the work performed?
+Answer: [NA]
+Justification: there is no societal impact of the work performed
+Guidelines:
+• The answer NA means that there is no societal impact of the work performed.
+•If the authors answer NA or No, they should explain why their work has no societal
+impact or why the paper does not address societal impact.
+•Examples of negative societal impacts include potential malicious or unintended uses
+(e.g., disinformation, generating fake profiles, surveillance), fairness considerations
+(e.g., deployment of technologies that could make decisions that unfairly impact specific
+groups), privacy considerations, and security considerations.
+•The conference expects that many papers will be foundational research and not tied
+to particular applications, let alone deployments. However, if there is a direct path to
+any negative applications, the authors should point it out. For example, it is legitimate
+15
+to point out that an improvement in the quality of generative models could be used to
+generate deepfakes for disinformation. On the other hand, it is not needed to point out
+that a generic algorithm for optimizing neural networks could enable people to train
+models that generate Deepfakes faster.
+•The authors should consider possible harms that could arise when the technology is
+being used as intended and functioning correctly, harms that could arise when the
+technology is being used as intended but gives incorrect results, and harms following
+from (intentional or unintentional) misuse of the technology.
+•If there are negative societal impacts, the authors could also discuss possible mitigation
+strategies (e.g., gated release of models, providing defenses in addition to attacks,
+mechanisms for monitoring misuse, mechanisms to monitor how a system learns from
+feedback over time, improving the efficiency and accessibility of ML).
+11.Safeguards
+Question: Does the paper describe safeguards that have been put in place for responsible
+release of data or models that have a high risk for misuse (e.g., pretrained language models,
+image generators, or scraped datasets)?
+Answer: [NA]
+Justification: the paper poses no such risks.
+Guidelines:
+• The answer NA means that the paper poses no such risks.
+•Released models that have a high risk for misuse or dual-use should be released with
+necessary safeguards to allow for controlled use of the model, for example by requiring
+that users adhere to usage guidelines or restrictions to access the model or implementing
+safety filters.
+•Datasets that have been scraped from the Internet could pose safety risks. The authors
+should describe how they avoided releasing unsafe images.
+•We recognize that providing effective safeguards is challenging, and many papers do
+not require this, but we encourage authors to take this into account and make a best
+faith effort.
+12.Licenses for existing assets
+Question: Are the creators or original owners of assets (e.g., code, data, models), used in
+the paper, properly credited and are the license and terms of use explicitly mentioned and
+properly respected?
+Answer: [Yes]
+Justification: We properly credited the creators or original owners of assets (e.g., code, data,
+models), used in the paper and conformed the license and terms.
+Guidelines:
+• The answer NA means that the paper does not use existing assets.
+• The authors should cite the original paper that produced the code package or dataset.
+•The authors should state which version of the asset is used and, if possible, include a
+URL.
+• The name of the license (e.g., CC-BY 4.0) should be included for each asset.
+•For scraped data from a particular source (e.g., website), the copyright and terms of
+service of that source should be provided.
+•If assets are released, the license, copyright information, and terms of use in the
+package should be provided. For popular datasets, paperswithcode.com/datasets
+has curated licenses for some datasets. Their licensing guide can help determine the
+license of a dataset.
+•For existing datasets that are re-packaged, both the original license and the license of
+the derived asset (if it has changed) should be provided.
+•If this information is not available online, the authors are encouraged to reach out to
+the asset’s creators.
+13.New assets
+16
+Question: Are new assets introduced in the paper well documented and is the documentation
+provided alongside the assets?
+Answer: [Yes]
+Justification: We communicated the details of the dataset/code/model as part of their
+submission.
+Guidelines:
+• The answer NA means that the paper does not release new assets.
+•Researchers should communicate the details of the dataset/code/model as part of their
+submissions via structured templates. This includes details about training, license,
+limitations, etc.
+•The paper should discuss whether and how consent was obtained from people whose
+asset is used.
+•At submission time, remember to anonymize your assets (if applicable). You can either
+create an anonymized URL or include an anonymized zip file.
+14.Crowdsourcing and research with human subjects
+Question: For crowdsourcing experiments and research with human subjects, does the paper
+include the full text of instructions given to participants and screenshots, if applicable, as
+well as details about compensation (if any)?
+Answer: [NA]
+Justification: does not involve crowdsourcing nor research with human subjects
+Guidelines:
+•The answer NA means that the paper does not involve crowdsourcing nor research with
+human subjects.
+•Including this information in the supplemental material is fine, but if the main contribu-
+tion of the paper involves human subjects, then as much detail as possible should be
+included in the main paper.
+•According to the NeurIPS Code of Ethics, workers involved in data collection, curation,
+or other labor should be paid at least the minimum wage in the country of the data
+collector.
+15.Institutional review board (IRB) approvals or equivalent for research with human
+subjects
+Question: Does the paper describe potential risks incurred by study participants, whether
+such risks were disclosed to the subjects, and whether Institutional Review Board (IRB)
+approvals (or an equivalent approval/review based on the requirements of your country or
+institution) were obtained?
+Answer: [NA]
+Justification: Our paper does not involve study participants.
+Guidelines:
+•The answer NA means that the paper does not involve crowdsourcing nor research with
+human subjects.
+•Depending on the country in which research is conducted, IRB approval (or equivalent)
+may be required for any human subjects research. If you obtained IRB approval, you
+should clearly state this in the paper.
+•We recognize that the procedures for this may vary significantly between institutions
+and locations, and we expect authors to adhere to the NeurIPS Code of Ethics and the
+guidelines for their institution.
+•For initial submissions, do not include any information that would break anonymity (if
+applicable), such as the institution conducting the review.
+16.Declaration of LLM usage
+Question: Does the paper describe the usage of LLMs if it is an important, original, or
+non-standard component of the core methods in this research? Note that if the LLM is used
+only for writing, editing, or formatting purposes and does not impact the core methodology,
+scientific rigorousness, or originality of the research, declaration is not required.
+17
+Answer: [No]
+Justification: core method development in this research does not involve LLMs as any
+important, original, or non-standard components.
+Guidelines:
+•The answer NA means that the core method development in this research does not
+involve LLMs as any important, original, or non-standard components.
+•Please refer to our LLM policy ( https://neurips.cc/Conferences/2025/LLM )
+for what should or should not be described.
+18
+A Dense Semantic Retrieval and Ranking
+In the previous section, we derived the spatial candidate set Csand the spatial relevance score fs.
+Now, we focus on obtaining the semantic candidate set Ckand the semantic relevance score fk.
+Given a query q, we define the semantic candidate set Ck(q)as:
+Ck(q) ={y|ck(y, q)≤0,∀ck∈ Ck(q)}, (14)
+where:
+•ck(y, q)is a constraint function that filters out spatial objects not satisfying the semantic intent of
+the query.
+•Ck(q)is the set of all semantic constraints (e.g., topic matching, category relevance).
+Each spatial object is associated with textual descriptions, including names, reviews, and additional
+metadata. However, these descriptions often contain irrelevant or verbose details that may obscure
+meaningful information. To address this, we use an LLM-based masking function Mkto remove
+spatially redundant information and retain only semantically relevant content. The resulting texts are
+then encoded into a dense embedding space by a text encoder E. Specifically, given a spatial object
+text description dt,user query q, the filtered text representation is:
+vt,k=E(Mk(dt))vq,k=E(Mk(q)). (15)
+The semantic relevance score is then computed using cosine similarity:
+fk=vq,k·vt,k
+∥vq,k∥∥vt,k∥. (16)
+This score quantifies how well the spatial object aligns with the query’s semantic intent, irrespective
+of spatial factors.
+B Implementation Details
+B.1 Semantic Parsing for Spatial Database Query
+For the geometry objects referenced in user queries, Spatial-RAG initially interacts with the spatial
+database to locate and match the described objects, such as specific points (e.g., a restaurant), roads,
+or defined areas and subsequently retrieves the pertinent geometrical data. In scenarios where the
+specified geometrical object does not exist pre-mapped in the database, Spatial-RAG is designed to
+construct a temporary geometric object. This temporary object serves as a stand-in to facilitate spatial
+queries based on the user’s descriptive input. This approach allows Spatial-RAG to handle dynamic
+spatial inquiries efficiently, even when direct matches are not immediately found within the existing
+database entries. By creating temporary geometrical representations, Spatial-RAG ensures that all
+spatial queries are processed accurately, maintaining the integrity and effectiveness of the system in
+delivering precise spatial information and responses.
+Functionally, the same outcome might be achieved through different means, for example, searching
+for a restaurant near a street could involve searching within a buffered polyline or creating a polygon
+enclosing the polyline and searching within it. Such flexibility in the system implies various methods
+to achieve the same goal. This flexibility, however, poses a challenge if the LLM is tasked with
+generating a complete query directly, as it might lead to the production of hallucinatory, incorrect,
+or inexecutable code due to confusion or excessive complexity in interpreting spatial data. By
+structuring the process such that the LLM first identifies the geometry, then determines the function
+in a step-by-step manner, we mitigate the risks associated with generating errant queries.
+B.2 Dense Retrieval
+While spatial databases address spatial constraints based on the query and spatial database, the actual
+scenario may be complex, for instance, a hotel may be far from the airport on the map but provide
+a shuttle, which makes it spatially more convenient than a hotel closer but do not provide a shuttle.
+Each spatial object is accompanied by textual descriptions, such as names and reviews. However, the
+text often contains verbose and irrelevant details that hinder effective decision-making. Moreover, for
+areas with a high density of POIs that meet spatial requirements, it becomes impractical to input all
+19
+the text information into an LLM (Large Language Model). To manage the data volume and improve
+relevance to specific queries, these descriptions are summarized across two perspectives: spatial
+requirements and semantic requirements. We utilize an LLM to preprocess and summarize spatial
+objects’ reviews offline, storing the results in the database for future comparison. Similarly, the user
+queries are dynamically extracted during the online processing stage.
+C Prompt list
+C.1 Prompt: Spatial Information Extraction
+Extract spatial information from user queries, including object geometry type (Point, Polyline (Route),
+or Polygon (Region)), region name, distance, and buffer distance.
+1Analyze the following user query and extract spatial information: "{user_query}"
+2
+3Current location context:
+4- Number of location points: {location_count}
+5- Multiple points detected: {is_multi_point}
+6
+7First, determine the spatial query type based on these rules:
+81. For single location point ({location_count == 1}):
+9 - Use Region-based if query explicitly mentions a region
+10 - Otherwise, use Point-based
+11
+122. For exactly two points ({location_count == 2}):
+13 - Use Route-based if query suggests path/route between points
+14 - Otherwise, fall back to Point/Region based rules
+15
+163. For multiple points ({location_count > 2}):
+17 - Only use Point-based or Region-based
+18
+19Query types:
+201. Point-based:
+21 - For "nearby" or "close": 1km in dense areas
+22 - For "walking distance": 2km
+23 - For "not too far": 3km
+24
+252. Route-based:
+26 - ONLY available with exactly 2 points
+27 - For walking routes: 1000m buffer
+28 - For general routes: 2000m buffer
+29 - For scenic/exploration: 3000m buffer
+30 - Consider terms: "route", "path", "between", "from...to", "along"
+31
+323. Region-based:
+33 - ONLY if query explicitly mentions these regions:
+34 Community/Sub-region names: {’, ’.join(region_names[’nta_names’])}
+35 Borough names: {’, ’.join(region_names[’boro_names’])}
+36 - Do NOT infer regions from landmarks
+37
+38Return in strict JSON format:
+39{
+40 "query_type": "point" | "route" | "region",
+41 "region": "matched region name or null",
+42 "distance_km": number or null,
+43 "buffer_distance": number or null,
+44}
+C.2 Prompt: Semantic Intent Extraction
+Extract semantic intent from user queries, including spatial and nonspatial preference.
+1Analyze the following user query and extract constraints: "{user_query}"
+2
+20
+3First, determine the main purpose of the query by identifying key terms and
+context:
+4
+5Restaurant (R) keywords and contexts:
+6- Direct terms: "restaurant", "food", "eat", "dining", "meal", "cuisine"
+7- Food types: "Chinese", "Thai", "Mexican", "Italian", "sushi", etc.
+8- Meal times: "breakfast", "lunch", "dinner", "brunch"
+9- Dining related: "menu", "dishes", "chef", "reservation"
+10- Even if staying at a hotel, if asking about food/dining, it’s Restaurant (R)
+11
+12Hotel (H) keywords and contexts:
+13- Must be explicitly looking for accommodation
+14- Direct terms: "hotel", "stay", "accommodation", "room", "book"
+15- Price per night (e.g., "$200/night")
+16- Hotel names (e.g., "Hyatt", "Marriott")
+17- Mentioning a hotel as location reference is NOT H type
+18
+19Attraction (A) keywords and contexts:
+20- Direct terms: "visit", "see", "tour", "explore"
+21- Places: "museum", "park", "gallery", "theater"
+22- Activities: "sightseeing", "show", "performance"
+23
+24Important rules:
+251. Focus on what the user is ASKING FOR, not what they mention
+262. If user mentions staying at a hotel but asks about restaurants, type is R
+273. If query is about food/dining/restaurants, type must be R
+284. Location references (e.g., "near Hotel X") don’t determine type
+29
+30For each constraint type, extract complete sentences that describe the
+requirements:
+31
+32
+331. Spatial constraints: Where they want to go
+34 Example: "near Times Square" or "in the Upper West Side area"
+35
+362. User constraints: What specific requirements or preferences they have
+37 Example: "family-friendly restaurant with reasonable prices around $30 per
+person"
+38
+39Please return strict JSON format without any comments:
+40{
+41 "type": "R/H/A",
+42 "spatial_constraints": "complete sentence describing location requirements
+or null",
+43 "user_constraints": "complete sentence describing user preferences and
+requirements or null"
+44}
+C.3 Prompt: Result Reranking
+Rerank retrieved location results based on user query constraints.
+1As a local recommendation expert, please rank the following places based on user
+query constraints.
+2
+3User Query Constraints:
+4- Spatial Constraints: {query_constraints[’spatial_constraints’]}
+5- User Preferences: {query_constraints[’user_constraints’]}
+6
+7Candidate Places:
+8{json.dumps(places, ensure_ascii=False, indent=2)}
+9
+10Please analyze how well each place matches the user constraints and return a
+sorted list of places.
+11Return format should be a JSON array containing sorted indices.
+21
+12Only return the index array, e.g., [2,0,1,3] means the 3rd place is the best
+match, followed by 1st, 2nd, and 4th places.
+13Note: Must return indices for all places, array length should equal input place
+count ({len(places)}).
+D Limitations
+We employ the ChatGPT API for direct LLM-based detection of target and reference objects. While
+this approach provides immediate functionality, future work will investigate fine-tuning a specialized
+language model to enhance performance for this specific task.
+E Additional case studies
+E.1 Case 1
+User Query:
+Going to be in Manhattan for a Broadway show this weekend and am looking for a recommendation
+for a good restaurant in the theatre district that is reasonably priced ($30 to $50 per person), good
+food and not a tourist trap, would love to avoid the hotel restaurants and experience a real NY
+experience. Does such a place exist? Someone suggested Carmine’s but they are totally booked. (like
+all kinds of food) Any suggestions would be greatly appreciated - picking one out of the 5000+ listed
+is a daunting task.
+Model Processing Summary:
+The system first determines that the reference object type ispolygon , and correctly identifies the
+region as Manhattan . It detects that the target object type is a restaurant point . Based on these
+constraints, a SQL query is constructed to retrieve 532 candidate locations from the database.
+Thespatial requirement is:
+"am looking for a recommendation for a good restaurant in the theatre district"
+Thesemantic requirements are:
+"reasonably priced ($30 to $50 per person), good food and not a tourist trap, avoid hotel restaurants,
+real NY experience"
+The system computes vector similarities between the query and the reviews of all 532 candidates,
+considering both spatial and semantic relevance. The top 20 results based on combined score are
+passed to an LLM reranker, and the final top-1 recommendation is:
+West Bank Cafe, 407 W 42nd St, New York City, NY 10036-6808
+Reasoning:
+•Spatial match: West Bank Cafe is located in the Theatre District of Manhattan, satisfying
+the user’s regional constraint. Its location aligns well with proximity to Broadway shows.
+•Semantic alignment: The restaurant is described as having reasonable pricing and good
+food, with a local, non-touristy atmosphere. These attributes align with the user’s preferences
+for affordability and an authentic New York experience.
+E.2 Case 2
+User Query:
+Going to NY in May, it is my gf’s birthday on our last night – and I would be looking for a nice
+restaurant to spoil her :)! We are staying in Times Square – so would like somewhere close by! I
+would like either an American or Italian cuisine! Any advice would be much appreciated.
+Model Processing Summary:
+The model identifies the query as a point spatial search with a radius of 1.0 km around Times Square .
+Thetarget object type is recognized as a restaurant point . Based on these criteria, a SQL query
+returns 119 candidate locations from the database.
+Thespatial requirement is:
+"We are staying in Times Square – so would like somewhere close by!"
+22
+Thesemantic requirements are:
+"it is my gf’s birthday on our last night" ,
+"I would like either an American or Italian cuisine!"
+The system computes vector similarities based on spatial and semantic constraints. The top 20
+candidates are re-ranked by an LLM reranker, and the final top-1 recommendation is:
+Pasta Lovers, 142 W 49th St, New York City, NY 10019-6802
+Reasoning:
+•Spatial match: Pasta Lovers is located within 1 km of Times Square, satisfying the
+proximity requirement effectively.
+•Semantic alignment: It offers Italian cuisine, aligning with the user’s preference for either
+American or Italian food. The atmosphere and reviews suggest a cozy dining experience
+appropriate for a date, though it is not explicitly described as suitable for a birthday celebra-
+tion.
+Figure 4: (a) Case 1; (b) Case 2
+E.3 Case 3
+User Query:
+Visiting NYC for the Marathon this weekend. Staying in apartment in Hell’s Kitchen area (around
+51st and 12th). Anyone have good recommendations for a great breakfast restaurant within an
+8–10 block radius? Not worried about eating healthy the day before—looking for filling, traditional
+American-style breakfast! Also looking for ideas for a good filling dinner for Sunday evening after
+the race. We’re not looking for fine dining, just something good in the area for myself, wife and 16 yo
+daughter. Thanks in advance for any good recommendations.
+Model Processing Summary:
+The model identifies the query as a point spatial query with a radius of 1.5 km , derived from the
+“8–10 block” constraint. The target object type is restaurant point , and the approximate location is
+Hell’s Kitchen near 51st St and 12th Ave. A SQL query retrieves 140 candidates from the database
+based on this spatial condition.
+23
+Thespatial requirement is:
+"Staying in apartment in Hell’s Kitchen area (around 51st and 12th), breakfast restaurant within an
+8–10 block radius"
+Thesemantic requirements include:
+"traditional American-style breakfast" ,"filling dinner after the race (Sunday evening), just something
+good in the area for myself, wife and 16 yo daughter."
+The system calculates vector similarity scores based on spatial and semantic requirements, and selects
+the top 20 results. These are re-ranked by an LLM reranker, and the final top-1 recommendation is:
+Galaxy Diner, 665 9th Ave, New York City, NY 10036-3623
+Reasoning:
+•Spatial match: Galaxy Diner is located within a reasonable walking distance of the user’s
+location, satisfying the “8–10 block radius” constraint in Hell’s Kitchen.
+•Semantic alignment: The diner offers traditional American breakfasts like pancakes, eggs,
+and bacon, aligning with the user’s request for filling, non-healthy food before the race. It
+also accommodates a casual family atmosphere.
+E.4 Case 4
+User Query:
+We are staying in Midtown, so figured it would be easier to go somewhere close by, but I’m not
+opposed to somewhere a little further away. Looking for a restaurant where we can go to dinner and
+dress up but not have it be a crazy price. I understand that a "dress up" place isn’t usually cheap, but
+something on the lower end of the "dressy" price scale would be great :) Thanks!
+Model Processing Summary:
+The model correctly identifies the reference object type aspolygon (Midtown ). A SQL query
+retrieves 97 candidates from the database based on this spatial condition.
+Thespatial requirement is:
+"Staying in Midtown, somewhere close by, but not opposed to somewhere a little further away."
+Thesemantic requirement is:
+"restaurant where we can go to dinner and dress up but not have it be a crazy price, lower end of the
+’dressy’ price scale."
+The model calculates spatial and user constraint similarities, ranks the top 20 results, and applies an
+LLM reranker. The final top-1 recommendation is:
+Nocello, 257 W 55th St, New York City, NY 10019-5232
+Reasoning:
+•Spatial match: Nocello is within a reasonable walking distance of Midtown, fulfilling the
+requirement of being nearby but not necessarily adjacent. It’s described as a short walk from
+Restaurant Row and near Broadway, aligning well with the user’s open spatial boundary.
+•Semantic alignment: The restaurant is described as offering excellent food at a reasonable
+price, making it suitable for a "dress-up" dinner without the high-end cost. This aligns with
+the user’s goal of finding something elegant but affordable.
+E.5 Case 5
+User Query:
+Where are some good places to eat breakfast? We are staying in the southern tip of Manhattan near
+Battery Park, but it doesn’t have to be contained to just that area. We are very open to ideas, but are
+going to be avoiding McDonalds, BK, etc. Could be larger restaurants but also would like to visit a
+few small places and would like to be able to sit and eat outside.
+Model Processing Summary:
+The model correctly identifies the reference object type aspolygon (battery park city-lower
+manhattan ). A SQL query retrieves 14 candidates from the database based on this spatial condition.
+24
+Figure 5: (a) Case 3; (b) Case 4
+Thespatial requirement is:
+"staying in the southern tip of Manhattan near Battery Park, but it doesn’t have to be contained to
+just that area."
+Thesemantic requirements are:
+"avoiding McDonalds, BK, etc. Could be larger restaurants but also would like to visit a few small
+places and would like to be able to sit and eat outside."
+The model ranks the top 10 by spatial and user relevance, and performs LLM reranking. The final
+top-1 recommendation is:
+Stone Street Tavern, 52 Stone St, New York City, NY 10004-2604
+Reasoning:
+•Spatial match: The restaurant is located a short walk from Battery Park in the financial
+district, consistent with the user’s desire to explore areas nearby but not strictly limited to
+Battery Park. The cobblestone street setting and access to outdoor space align well with the
+user’s spatial intent.
+•Semantic alignment: Stone Street Tavern offers outdoor seating and avoids fast-food chains.
+It provides a casual and local dining experience with bench-style outdoor tables, fitting the
+user’s interest in both large and small sit-down places for breakfast.
+E.6 Case 6
+User Query:
+We have tickets for the Saturday performance of War Horse at the Vivian Beaumont Theater at Lincoln
+Center. I would appreciate a recommendation for a reasonable pre-theater dinner.
+Model Processing Summary:
+The model correctly identifies the reference object type aspoint query, as the user provides a
+specific point of interest ( Vivian Beaumont Theater ) without mentioning a formal region. A
+walking distance of 2.0 km is assumed for pre-theater dining. A SQL query retrieves 255 candidates
+from the database based on this spatial condition.
+25
+Thespatial requirement is:
+"Vivian Beaumont Theater at Lincoln Center" – implying a location within walking distance
+Thesemantic requirements are:
+"reasonable pre-theater dinner" — suggesting affordability and suitable timing for a theater schedule.
+The model reranks the top 20 via LLM reranking. The final top-1 recommendation is:
+Bar Boulud, 1900 Broadway, New York City, NY 10023-7004
+Reasoning:
+•Spatial match: Bar Boulud is located directly across from Lincoln Center, fulfilling the
+proximity constraint perfectly for a pre-theater dinner.
+•Semantic alignment: The restaurant is known for accommodating theatergoers and offers
+timing suitable for pre-show dining. However, user reviews mention that while the food and
+service are excellent, prices may be higher than what the user considers “reasonable”.
+Figure 6: (a) Case 5; (b) Case 6
+E.7 Case 7
+User Query:
+I want to walk the Highline on my forthcoming trip to NY, and wanted some recommendations for
+a good spot for a sit down lunch somewhere close to one of the exits off the Highline. Will be
+starting north to south. Don’t mind what type of food, just nice atmosphere required. Have looked at
+MenuPages but so many restaurants not sure if anyone has any particular favourites?
+Model Processing Summary:
+The model correctly identifies the reference object type aspolyline . This is inferred from the user’s
+mention of walking from the north to south along the Highline, with interest in locations near the
+path (Highline exits). Two coordinates representing the start and end of the route are provided. The
+buffer distance is set to 500 meters.
+Thespatial requirement is:
+"somewhere close to one of the exits off the Highline."
+Thesemantic requirement is:
+"sit down lunch, nice atmosphere required."
+26
+The system extracts 52 candidate restaurants along the route, ranks them by spatial and user con-
+straints, and performs LLM reranking on the top 20. The final top-1 recommendation is:
+Barbuto, 775 Washington St, New York City, NY 10014-1748
+Reasoning:
+•Spatial match: Barbuto is located directly off the Highline and near one of its southern
+exits, which aligns precisely with the user’s request for proximity to the walking path.
+•Semantic alignment: The restaurant offers a sit-down experience with a "fancy but cozy"
+atmosphere, partially fulfilling the user’s request for a "nice atmosphere." However, some
+reviews describe the food as average, which may not fully satisfy quality expectations.
+E.8 Case 8
+User Query:
+We arrive Sat night at 10:30 (unfortunately AA changed our flight from an earlier one). We are
+spending 1 night at RCA at 142 W 49th between 6th and 7th. Sunday we move to Hilton New York at
+1335 Ave Of Americas between 53 and 54. We have tickets for a Yankee game at 1:05. (We will also
+be going to Dizzy’s Coca Cola at 9PM.) Could you guys give me some tips on the best way to handle
+the hectic morning? Leave our bags at RCA? Move them to Hilton for storage so we can get subway
+to Yankee Stadium? Can you give me some recommendations for dinner that evening - something
+simple. Thanks!
+Model Processing Summary:
+The model correctly identifies the reference object type aspolyline , given that the user describes
+movement between two locations: Hilton New York and Yankee Stadium. The user’s intention to find
+a dinner spot along that route aligns with this classification. The buffer distance is set to 500 meters .
+"The spatial requirement is:
+Implied need for proximity to Hilton New York or Yankee Stadium for convenience."
+Thesemantic requirements are:
+"We will also be going to Dizzy’s Coca Cola at 9PM." and "recommendations for dinner that evening
+- something simple."
+The system identifies 50 restaurant candidates within the route buffer, computes user and temporal
+similarity, and applies LLM reranking on the top 20. The final top-1 recommendation is:
+Good Enough to Eat, 520 Columbus Ave, Frnt A, New York City, NY 10024-3404
+Reasoning:
+•Spatial match: This place is within the buffer range, and the restaurant is reasonably
+accessible and could fit into the evening schedule before Dizzy’s Coca Cola.
+•Semantic alignment: The user requested a simple dinner. The reviews highlight casual
+meals like pancakes, BLT omelets, and quick service, matching the preference for something
+simple—though most mentions are for breakfast/brunch.
+27
+Figure 7: (a) Case 7; (b) Case 8
+28

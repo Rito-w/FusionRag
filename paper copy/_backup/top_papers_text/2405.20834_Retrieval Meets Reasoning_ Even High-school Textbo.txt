@@ -1,0 +1,779 @@
+Retrieval Meets Reasoning: Even High-school
+Textbook Knowledge Benefits Multimodal Reasoning
+Cheng Tan1∗Jingxuan Wei2∗Linzhuang Sun2Zhangyang Gao1Siyuan Li1
+Bihui Yu2Ruifeng Guo2Stan Z. Li1†
+1Westlake University2Shenyang Institute of Computing Technology, Chinese Academy of Sciences
+Abstract
+Large language models equipped with retrieval-augmented generation (RAG) repre-
+sent a burgeoning field aimed at enhancing answering capabilities by leveraging ex-
+ternal knowledge bases. Although the application of RAG with language-only mod-
+els has been extensively explored, its adaptation into multimodal vision-language
+models remains nascent. Going beyond mere answer generation, the primary goal
+of multimodal RAG is to cultivate the models’ ability to reason in response to rele-
+vant queries. To this end, we introduce a novel multimodal RAG framework named
+RMR ( Retrieval MeetsReasoning). The RMR framework employs a bi-modal re-
+trieval module to identify the most relevant question-answer pairs, which then serve
+as scaffolds for the multimodal reasoning process. This training-free approach not
+only encourages the model to engage deeply with the reasoning processes inherent
+in the retrieved content but also facilitates the generation of answers that are pre-
+cise and richly interpretable. Surprisingly, utilizing solely the ScienceQA dataset,
+collected from elementary and high school science curricula, RMR significantly
+boosts the performance of various vision-language models across a spectrum of
+benchmark datasets, including A-OKVQA, MMBench, and SEED. These out-
+comes highlight the substantial potential of our multimodal retrieval and reasoning
+mechanism to improve the reasoning capabilities of vision-language models.
+1 Introduction
+While deep learning and its applications have been widely explored in recent years [ 64,23,44,41,
+61,43,60,42,62], retrieval-augmented generation (RAG) has rapidly emerged as a cornerstone in
+the development of large language models (LLMs), enabling them to enhance their capabilities by
+leveraging external knowledge bases [ 77,30,11]. Integrating LLMs with RAG has found its most
+impactful application within language-centric models, where the dynamic interplay between retrieved
+content and answer generation significantly elevates the quality and relevance of responses [ 10,86,10].
+While early works have demonstrated that incorporating directly retrieved information into language
+models can improve the quality of the generated content [ 29], subsequent developments have involved
+refinement and mitigate the potential noise associated with the raw retrieval results [ 71,78,2], thus
+ensuring that the content generated is not only accurate but also contextually enriched.
+Although the integration of RAG with large language models has been extensively explored, its
+adaptation to multimodal scenarios that encompass both visual and textual inputs remains relatively
+nascent [ 12,76,74]. Notably, in the domain of visual question answering (VQA), where queries
+comprise concise textual prompts paired with complex visual data, the requirements for integration
+diverge significantly from traditional text-centric approaches [ 74,17]. Traditional RAG systems,
+∗Equal contribution.
+†Corresponding author.
+Preprint. Under review.arXiv:2405.20834v1  [cs.CV]  31 May 2024
+initially designed for text-heavy applications, encounter substantial challenges when applied directly
+to multimodal tasks. In these contexts, textual data often provides insufficient contextual cues, failing
+to bridge the interpretative demands of rich visual information. This fundamental limitation is critical:
+models trained predominantly on textual data struggle to effectively capture the nuanced complexity
+of visual information, leading to significant gaps in the model’s ability to accurately interpret and
+reason about visual content. For instance, as illustrated in Figure 1, even when the three most pertinent
+pieces of information are retrieved in response to a query, the model may still fail to engage with
+the underlying reasoning processes embedded within the retrieved content. Instead of synthesizing
+insights from these inputs, the model may default to merely replicating answers, which can result
+in inaccuracies. This highlights a critical shortfall in current multimodal RAG systems, i.e., their
+inability to fully leverage the cognitive reasoning demanded by complex multimodal data.
+Question 𝑋!"#$%Which iin column 3?(A) the school(B) the park(C) the pond(D) the gas stationRetrieved 𝑋!Which iin row A?(A) the pond(B) the school(C) the fire department(D) the gas stationRetrieval library
+The answer is (B).Retrieved 𝑋"Which iin row B?(A) the theater(B) the fire department(C) the grocery store(D) the fast-food restaurantThe answer is (B).
+Retrieved 𝑋#Which iin column 1?(A) the police department(B) the pond(C) the school(D) the fire departmentThe answer is (B).
+ResultThe answer is (B).
+Figure 1: limitations of multimodal retrieval enhancement with simple question-answer pairs.
+Building on the foundational understanding that RAG significantly enhances the capabilities of large
+language models, we hypothesize that the ultimate purpose of multimodal RAG extends beyond
+merely instructing models to generate direct answers. Instead, our goal is to equip models with the
+ability to engage in cognitive reasoning, akin to human thought processes when confronted with
+complex, context-rich questions. This perspective underscores the necessity for multimodal RAG to
+be inherently flexible and open-ended, facilitating deep contemplation and robust reasoning whether
+the tasks are unimodal or multimodal, and independent of the data modality being retrieved.
+To realize this vision, we develop a comprehensive multimodal RAG framework, named RMR
+(Retrieval Meets Reasoning), which seamlessly integrates multimodal retrieval capabilities with
+in-context learning (ICL). This framework begins by employing a bi-modality retrieval module
+to fetch the most pertinent question-answer pairs, which may be unimodal or multimodal. It then
+integrates these elements into the model’s reasoning process, guiding it through the provided rationales
+associated with each retrieved item. Following this retrieval phase, the model autonomously learns
+coherent rationales that reflect a deep and meaningful engagement with the given problem.
+Remarkably, even when retrieval is limited to the ScienceQA dataset [ 49], which covers only
+elementary and high school science curricula, our Retrieval Meets Reasoning (RMR) framework
+demonstrates substantial enhancements across a variety of open-source multimodal models. Notably,
+the LLaV A model registers a +7.66% improvement, Qwen-VL achieves a +9.93% increase, InternLM-
+XComposer2-VL records a +5.33% improvement, Gemini achieves a +33.67% increase. Furthermore,
+when evaluated against diverse datasets such as A-OKVQA [ 58], MMBench [ 47], and SEED-
+Bench [ 37], RMR consistently delivers significant performance gains by leveraging the specialized
+knowledge embedded in the high-school curriculum from the ScienceQA dataset.
+The main contributions of this work are as summarized as follows:
+•We introduce a comprehensive multimodal RAG framework, Retrieval Meets Reasoning (RMR),
+designed to enhance the reasoning capabilities of multimodal models, enabling them to generate
+answers through cognitive processes rather than merely replicating responses.
+•We develop a bi-modality retrieval module that effectively bridges the gap between unimodal and
+multimodal data, ensuring robust and accurate retrieval outcomes.
+•Despite its training-free manner, RMR demonstrates significant effectiveness across a variety of
+multimodal models and datasets, showcasing its capability to improve multimodal reasoning tasks.
+2
+2 Related Work
+RAG in LLMs Despite recent advancements in deep learning and large language or vision mod-
+els [70,63,9], retrieval-augmented generation (RAG) improves language model capabilities by
+integrating external knowledge into the generation process [ 38,22,8,14]. The development of RAG
+was initiated with the introduction of dense retrievers, which radically transformed how responses are
+generated by utilizing externally sourced information [ 36,77,87]. Initial efforts primarily focused on
+refining the interaction between the retriever and the generator [ 36,24], leading to the production of
+contextually enriched responses. As a reliable enhancement, RAG has been foundational in allowing
+Large Language Models (LLMs) to exploit the vast reservoir of knowledge they encompass for
+various applications, including question answering, dialogue systems, and summarization [ 25,71,5].
+Recent advancements in RAG have been directed at addressing specific challenges, such as reducing
+hallucination phenomena and integrating outdated and obscure long-tail knowledge. An active
+retrieval mechanism that adaptively selects the most relevant knowledge pieces is employed to
+provide up-to-date information for the generation process [ 30]. Building on this, ActiveRAG [ 73] is
+proposed to incorporate an active learning mechanism that not only retrieves pertinent information
+but also synthesizes it with existing knowledge, markedly enhancing the model’s ability to handle
+knowledge-intensive tasks by dynamically integrating information. Although the development in
+RAG has significantly enhanced the synergy between retrieval and generation, the focus has primarily
+been on text-based applications, with limited exploration into multimodal scenarios.
+RAG for ICL In-context learning (ICL) has revolutionized the functionality of LLMs, enabling
+them to adapt to new tasks by leveraging a few contextual examples provided directly within their
+input. This shift towards using retrieved demonstrations to facilitate ICL has increased the flexibility
+of LLMs across various applications [ 19,72,85]. The technique of demonstration retrieval, which in-
+volves selecting few-shot examples specifically tailored to the query, not only boosts task performance
+but also helps to mitigate biases that arise from manual or random selection of demonstrations. A key
+development has been the optimization of retrieval objectives, which ensures that the demonstrations
+are both pertinent to the query and diverse enough to offer a comprehensive context [72].
+Expanding ICL into multimodal tasks represents a significant advancement, tackling the complex
+challenge of integrating textual and visual data. The extension of ICL into multimodal tasks represents
+a significant leap forward, addressing the inherent complexity of integrating textual and non-textual
+data. MM-Retrieval [ 45] is a concurrent work that introduces a retrieval-augmented multi-modal CoT
+reasoning approach, which dynamically selects demonstration examples by leveraging cross-modal
+and intra-modal similarities. However, it operates by employing modality-specific retrievers to gather
+demonstrations, which are then directly structured into a chain-of-thought format.
+3 Retrieval Meets Reasoning
+3.1 Preliminaries
+In vision-language tasks, the objective is to develop a mapping FΘ:X → Y , where Xrepresents
+multimodal inputs that include both textual and visual elements, and Ydenotes the corresponding
+outputs. Formally, given a dataset D={X,Y}, each input X∈ X can be decomposed into
+X= (T, I), where Tdenotes the text component and Idenotes the image component. In certain
+cases, one of them may be absent, i.e., T=∅orI=∅, resulting in modality-incomplete inputs.
+The primary goal is to accurately predict the output Y∈ Y for a given input X. This task can be
+expressed as identifying the answer Ythat maximizes the conditional probability p(Y|T, I)given
+the text component Tand the image component I:
+FΘ(X) = arg max
+Y′p(Y′|T, I) (1)
+Here, p(Y′|T, I)denotes the probability of a candidate answer Y′given the inputs TandI. For
+the supervised learning setting, the model optimal parameters Θ∗are those that minimize the loss
+function L, which quantifies the discrepancy between the predicted answer FΘ(X)and the ground
+truth answer Y. This optimization is: Θ∗= arg min ΘL(FΘ(X), Y). However, in our approach, we
+employ an in-context learning strategy based on pre-trained large language models (LLMs). This
+3
+method uses the retrieved content as contextual information without re-training the model, enabling it
+to obtain strong reasoning ability effectively.
+3.2 Bi-modality Retrieval Module
+To unify the retrieval module in multimodal models for both text and visual modality, we propose
+a bi-modality retrieval module based on the Contrastive Language-Image Pre-training (CLIP) [ 54]
+framework, as shown in Figure 2. This module is designed to handle various cases where the input
+may consist of complete image-text pairs, image-only inputs, or text-only inputs. The core idea is to
+create a robust embedding representation that can effectively capture the relevant information across
+different modalities and retrieve the most pertinent examples to guide the reasoning process.
+Whichpropertydothesetwoobjectshaveincommon?Selectthebetteranswer.Whatisthesourceoftheallusioninthesentencebelow?MyrathinksMr.HarperisaLudditebecausehedoesn'townacellphone.
+image-text pairtextimageImage Encoder
+Text Encoder…
+ScienceQA-based Knowledge Libraryembedding library retrieve
+Question:Birdsarewarm-bloode d.Warm-blooded…Rationale:Birds,mammals,fish,reptiles,andamphibiansaregroupsofanimals...Answer: The answer is albatross.Question:Whichoc eanishighlighted?Rationale:Oceansarehugebodiesofsaltwater.Theworldhasfi veocea ns.Alloftheocea nsareconnected,makingoneworldocean.ThisistheAtlanticOcean…Answer: The answer is the Atlantic Ocean.
+…retrieve
+Figure 2: The overall architecture and the retrieval mechanism of the bi-modality retrieval module.
+Embedding Representation The retrieval module begins by computing embeddings for the inputs
+using the CLIP model, which is adept at handling both textual and visual data. The embedding
+strategy is adaptive, accommodating the varying availability of modalities within the input. For image-
+text pairs (T, I), we calculate the mean pooling of CLIP’s text embedding hT= CLIP T(T)∈Rd
+and image embedding hI= CLIP I(I)∈Rd, where ddenotes the embedding dimension. Here,
+CLIP T(·)andCLIP I(·)denote the text and image encoders of CLIP, respectively. The combined
+embedding hXis then computed as the average of these text and image embeddings. For image-
+only inputs, we use the CLIP image embedding hI, and for text-only inputs, we use the CLIP text
+embedding hT. Thus, the item embedding hX∈Rdfor any input Xis defined as:
+hX=
+
+hT+hI
+2,ifT̸=∅andI̸=∅
+hI, ifT=∅andI̸=∅
+hT, ifT̸=∅andI=∅(2)
+This approach ensures robust embeddings regardless of the presence or absence of textual and visual
+components, thereby providing a flexible and consistent representation of multimodal inputs.
+High-school Knowledge Library We construct a comprehensive knowledge embedding library
+H={hi
+X}N
+i=1using the ScienceQA dataset, which is derived from elementary and high school
+textbooks. This dataset is particularly valuable because it includes detailed rationales for each answer,
+forming question-rationale-answer triplets (Qi, Ri, Ai)for each sample. The structured nature of
+this dataset provides a rich source of contextual information that is essential for training models to
+understand and reason about both textual and visual data comprehensively.
+Retrieval Mechanism The retrieval mechanism employed for identifying relevant triplets operates
+based on the cosine similarity between the query embedding hquery
+X and each triplet embedding hi
+X
+4
+stored in the library. The cosine similarity is defined as:
+sim(hquery
+X,hi
+X) =hquery
+X·hi
+X
+|hquery
+X||hi
+X|, (3)
+For each query, the top- ktriplets with the highest similarity scores are retrieved. This process ensures
+that the most contextually relevant examples are selected. The retrieval process can be expressed as:
+R(Xquery) ={(Qi, Ri, Ai)|i∈Top-k 
+sim(hquery
+X,hi
+X),∀i∈ {1, ..., N}
+}, (4)
+where R(Xquery)denotes the set of retrieved triplets for the given query Xquery , and Top-k(·)
+represents the function that selects the top- kitems based on the cosine similarity scores.
+3.3 Learn to Reasoning from the Retrieved Content
+Given the retrieved question-rationale-answer (QRA) data, we organize them into a structured format
+to teach the model how to reason, as illustrated in Figure 3. This section details the process in
+leveraging the retrieved content to enhance the model’s reasoning capabilities.
+…Question 𝑿𝟐Question 𝑿𝟏Think about the magnetic force between the magnets in each pair. Which of the following statements is true?(A) The magnitude of the magnetic force is greater in Pair 2.(B) The magnitude of the magnetic force is the same in both pairs.(C) The magnitude of the magnetic force is greater in Pair 1.
+…
+Therationaleis:Magnetsizesaffectthemagnitudeofthemagneticforce…ButMagnetBissmallerinPair2thaninPair1.So the answer is (C) The magnitude of the magnetic force is smaller in Pair 2.Query 𝓧𝒒𝒖𝒆𝒓𝒚Thinkaboutthemagneticforcebetweenthemagnetsineachpair.Whichofthefollowingstatementsistrue?(A) The magnitude of the magnetic force is the same in both pairs.(B) The magnitude of the magnetic force is smaller in Pair 1.(C) The magnitude of the magnetic force is smaller in Pair 2.
+For the Current question: Think about ...Referencing picture 6.Imitate the process of generating rationales based on the previous question, providing a rationale and answer with the option's letter from the given choices.Question
+Retrieved 𝓡(𝓧𝒒𝒖𝒆𝒓𝒚)
+ScienceQA-based Knowledge LibraryContent 𝓒(𝓧𝒒𝒖𝒆𝒓𝒚)For the question: (𝑸𝟏) Think about the magnetic force between the magnets in each pair. Which of the following statements is true? Referencing picture (𝑰𝟏) 1.The rationale is: (𝑹𝟏)Magnet sizes affect the magnitude of the magnetic forceThe answer is: (𝑨𝟏)The magnitude of the magnetic force is greater in Pair 2.…Multimodal large language modelResult 𝓨𝒒𝒖𝒆𝒓𝒚
+Figure 3: The reasoning process from the retrieved content. The model uses the organized context
+from retrieved question-rationale-answer triplets to generate answers.
+For a given input Xquery = (Tquery, Iquery), suppose we retrieve the top- krelevant QRA triplets
+R(Xquery) ={(Qi, Ri, Ai)}k
+i=1. These retrieved triplets are used to form a context C(Xquery)
+which provides a structured set of examples to guide the model’s reasoning process. The context
+C(Xquery)is constructed as follows:
+C(Xquery) = [Example1,Example2, ...,Examplek], (5)
+where each example is a concatenation of the question, rationale, and answer:
+Examplei=Qi⊕Ri⊕Ai,∀(Qi, Ri, Ai)∈ R(Xquery). (6)
+where ⊕denotes the concatenation operation. The context C(Xquery)is then used to guide the
+model’s reasoning process, enabling it to learn from the retrieved content and generate accurate and
+contextually enriched answers. The model is prompted to reason based on the structured examples
+provided in the context, thereby predicting the answer Yquery given the input Xquery and the context
+C(Xquery). We define the conditional probability of generating the answer Yquery as:
+p(Yquery|Xquery,C(Xquery)) =FΘ(Yquery|Xquery,C(Xquery)), (7)
+where FΘrepresents the LLMs parameterized by Θ. The final answer Yquery is obtained by:
+Yquery = arg max
+Y′p(Y′|Xquery,C(Xquery)). (8)
+5
+4 Experiments
+Datasets We employed four multimodal reasoning benchmarks: (i) ScienceQA [49], a multimodal
+question dataset that includes over 21k multiple-choice questions, 3 subjects, 26 topics, 127 categories,
+and 379 distinct skills. (ii) A-OKVQA [59], a knowledge-based multimodal dataset that includes
+25k questions with extensive commonsense and world knowledge. (iii) MMBench [47], a dataset
+comprising 2,974 multiple-choice questions covering 20 ability dimensions. (iv) SEED-Bench [37],
+a large-scale dataset that includes 19k multiple-choice questions, and 12 evaluation dimensions,
+including both spatial and temporal understanding. We built the high-school knowledge library using
+the training data from ScienceQA, which employs over 12k question-rationale-answer triplets data.
+Baselines For ScienceQA, we compared our approach against strong baselines across four cate-
+gories, excluding vision LLMs that specifically fine-tune or train on ScienceQA for a fair comparison:
+(i) heuristic and expert-guided choices, such as random choice and human evaluation [ 49]; (ii) small
+multimodal visual question answering models, which include MCAN [ 80], Top-Down [ 1], BAN [ 34],
+DFAF [ 21], ViLT [ 35], Patch-TRM [ 51], and VisualBERT [ 40]; (iii) zero-shot instruction-tuned
+large language models like GPT-3.5 [ 6] and its CoT-enhanced variants [ 49], in addition to ChatGPT,
+GPT-4 [ 53], and Chameleon [ 50]; (iv) strong vision LLMs like LLaV A-1.5 [ 46], Qwen-VL [ 3],
+InternLM-XComposer2-VL [ 20], and Gemini [ 56]. Regarding the A-OKVQA dataset, the baselines
+include state-of-the-art approaches, such as Pythia [ 4], ViLBERT [ 48], LXMERT [ 65], KRISP [ 52],
+GPV-2 [ 31], BLIP-2 [ 39], PICa [ 75], IPVR [ 13], PromptCap [ 27], Prophet [ 79], PaLI-3-VPD [ 28],
+PaLI-X-VPD [ 28], and Gemini [ 56]. For the MMBench [ 47] and SEED-Bench [ 37] datasets, we
+mainly focus on augmenting Gemini with RMR for the convenient access of the Gemini API.
+4.1 Results on ScienceQA
+Table 1: The comparison on ScienceQA dataset. Question classes: NAT = natural science, SOC =
+social science, LAN = language science, TXT = text context, IMG = image context, NO = no context,
+G1-6 = grades 1-6, G7-12 = grades 7-12.
+Model Size NAT SOC LAN TXT IMG NO G1-6 G7-12 A VG
+Random Choice [49] - 40.28 46.13 29.25 47.75 40.08 33.66 39.35 40.67 39.83
+Human [49] - 90.23 84.97 87.48 89.60 87.50 88.10 91.59 82.42 88.40
+MCAN [80] 95M 56.08 46.23 58.09 59.43 51.17 55.40 51.65 59.72 54.54
+Top-Down [1] 70M 59.50 54.33 61.82 62.90 54.88 59.79 57.27 62.16 59.02
+BAN [34] 112M 60.88 46.57 66.64 62.61 52.60 65.51 56.83 63.94 59.37
+DFAF [21] 74M 64.03 48.82 63.55 65.88 54.49 64.11 57.12 67.17 60.72
+ViLT [35] 113M 60.48 63.89 60.27 63.20 61.38 57.00 60.72 61.90 61.14
+Patch-TRM [51] 90M 65.19 46.79 65.55 66.96 55.28 64.95 58.04 67.50 61.42
+VisualBERT [40] 111M 59.33 69.18 61.18 62.71 62.17 58.54 62.96 59.92 61.87
+UnifiedQA Base[33] 223M 68.16 69.18 74.91 63.78 61.38 77.84 72.98 65.00 70.12
+UnifiedQA Basew/ CoT [49] 223M 71.00 76.04 78.91 66.42 66.53 81.81 77.06 68.82 74.11
+GPT-3.5 [49] 173B 74.64 69.74 76.00 74.44 67.28 77.42 76.80 68.89 73.97
+GPT-3.5 w/ CoT [49] 173B 75.44 70.87 78.09 74.68 67.43 79.93 78.23 69.68 75.17
+ChatGPT w/ CoT [53] - 78.82 70.98 83.18 77.37 67.92 86.13 80.72 74.03 78.31
+GPT-4 w/ CoT [53] - 85.48 72.44 90.27 82.65 71.49 92.89 86.66 79.04 83.99
+Chameleon + ChatGPT [50] - 81.62 70.64 84.00 79.77 70.80 86.62 81.86 76.53 79.93
+Chameleon + GPT-4 [50] - 89.83 74.13 89.82 88.27 77.64 92.13 88.03 83.72 86.54
+LLaV A-1.5 [46] 13B 70.12 76.72 67.64 70.48 71.89 68.92 76.06 61.5 70.86
+LLaV A-1.5+RMR 13B 78.11 84.25 74.73 79.81 78.33 74.36 82.05 72.18 78.52
++Improvement -+7.99 +7.53 +7.09 +9.33 +6.44 +5.44 +5.99 +10.68 +7.66
+Qwen-VL [3] / 67.01 66.37 59.36 68.52 67.03 57.00 69.75 56.16 64.89
+Qwen-VL+RMR /70.07 86.16 75.36 70.77 76.50 72.68 78.67 67.90 74.82
++Improvement /+3.06 +19.79 +16.00 +2.25 +9.47 +15.68 +8.92 +11.74 +9.93
+InternLM-XComposer2-VL [20] / 88.19 93.48 78.64 88.47 89.14 80.77 88.66 83.52 86.82
+InternLM-XComposer2-VL+RMR /94.85 97.19 82.55 95.11 96.03 85.23 93.98 88.86 92.15
++Improvement /+6.66 +3.71 +3.91 +6.64 +6.89 +4.46 +5.32 +5.34 +5.33
+Gemini [56] / 59.68 74.24 41.73 57.72 64.01 47.46 65.20 45.29 58.08
+Gemini+RMR /91.79 94.26 89.64 91.40 89.69 91.01 92.84 89.78 91.75
++Improvement /+32.11 +20.02 +47.91 +33.68 +25.68 +43.55 +27.64 +44.49 +33.67
+6
+We set the number of retrieved examples kto 3 by default. Table 1 illustrates the performance of
+RMR compared to various strong baselines across the ScienceQA dataset. Notably, our approach
+demonstrates significant improvements in reasoning capabilities without the need for fine-tuning or
+re-training on the target dataset, adhering to a zero-shot training setting. Despite the relatively low
+baseline performance of the vanilla Gemini model, which achieved an average accuracy of 58.08%,
+the integration of RMR remarkably enhances its reasoning capabilities, achieving an impressive
+average accuracy of 91.75%. This represents a substantial improvement of +33.67% over the baseline.
+Similarly, for the robust InternLM-XComposer2-VL model, our RMR framework yields a notable
+improvement of +5.33%, showcasing its effectiveness in boosting the reasoning capabilities of strong
+multimodal models. These results underscore the effectiveness of our proposed RMR framework in
+enhancing the performance of vision-language models across various question classes and contexts,
+demonstrating its potential to significantly advance the field of multimodal reasoning.
+4.2 Results on A-OKVQA
+Table 2 presents the performance comparison for the direct-answer task on the A-OKVQA dataset.
+The table includes a variety of vision-language model combinations across different architectures.
+The models range from earlier architectures like Pythia and ViLBERT, to more recent and powerful
+systems such as BLIP-2, PaLM-CoT, and PaLI-X-VPD. Our RMR framework, when integrated with
+the Gemini model, demonstrates a substantial improvement in performance. The baseline Gemini
+model achieves a direct-answer accuracy of 44.2%, but with the incorporation of RMR, this accuracy
+increases significantly to 63.1%. This represents an impressive improvement of +18.9%.
+This improvement highlights the capability of the RMR framework to effectively augment the
+reasoning and answering performance of existing multimodal models, showcasing its potential to set
+new benchmarks in visual question answering. The results indicate that RMR not only competes with
+but also surpasses state-of-the-art methods across diverse model architectures and parameter sizes.
+Table 2: The comparison of the direct-answer task on the A-OKVQA dataset.
+Model Vision Model Text Model Parameters Direct-answer
+Pythia [4] ResNet [26] BERT [32] 70M 25.2
+ViLBERT [48] Faster R-CNN [57] BERT [32] 300M 30.6
+LXMERT [65] Transformer [67] Transformer [67] 220M 30.7
+KRISP [52] Faster R-CNN [57] BERT [32] 200M 33.7
+GPV-2 [31] VinVL [83] T5-Base [55] 300M 48.6
+BLIP-2 [39] CLIP-VIT-LARGE [54] FlanT5XXL [16] 11B 53.2
+PaLM-CoT [69] - PaLM [15] 540B 41.5
+PICa [75] VinVL [83] GPT-3 [7] 175B 42.4
+IPVR [13] Faster-RCNN [57] OPT [84] 66B 46.4
+PromptCap [27] Ofa [68] GPT-3 [7] 175B 56.3
+Prophet [79] MCAN [81] GPT-3 [7] 175B 58.2
+PaLI-3-VPD generalist [28] SigLIP [82] UL2 [66] 5B 56.5
+PaLI-X-VPD generalist [28] ViT [18] UL2 [66] 55B 62.7
+Gemini [56] - - - 44.2
+Gemini+RMR - - - 63.1
++Improvement - - - +18.9
+4.3 Results on MMBench and SEED-Bench
+Figure 4 illustrates the comparative performance of the Gemini model and its enhanced version,
+Gemini+RMR, on the MMBench-Dev and MMBench-Test datasets across various categories. The
+categories evaluated include overall performance, conceptual problems (CP), fine-grained perception
+of cross instances (FP-C), fine-grained perception of single instances, attribute reasoning (AR),
+logical reasoning (LR), and relation reasoning (RR). For the MMBench-Dev dataset, Gemini+RMR
+shows marked improvements in all categories compared to the baseline Gemini model. The overall
+performance of Gemini+RMR is 70.96%, compared to 57.9% for Gemini, representing a substantial
+improvement. Specifically, Gemini+RMR scores 76.01% in CP, 72.70% in FP-S, 65.03% in FP-C,
+75.38% in AR, 55.93% in LR, and 68.70% in RR. These results indicate that the RMR framework
+significantly enhances the model’s capability to handle a wide range of multimodal reasoning tasks.
+7
+Similarly, on the MMBench-Test dataset, Gemini+RMR outperforms the baseline Gemini model
+across all categories. The overall performance of Gemini+RMR is 67.26%, compared to 57.23%
+for Gemini. The specific category improvements are as follows: 69.16% in CP, 69.10% in FP-S,
+61.54% in FP-C, 77.43% in AR, 53.18% in LR, and 63.98% in RR. These improvements further
+demonstrate the effectiveness of the RMR framework in enhancing the model’s reasoning capabilities
+across diverse evaluation metrics. Overall, the integration of the RMR framework with the Gemini
+model leads to significant performance improvements in both the MMBench-Dev and MMBench-Test
+datasets, underscoring the efficacy of our approach in advancing multimodal reasoning performance.
+(a) Performance comparison on MMBench-Dev(b) Performance comparison on MMBench-Test
+Figure 4: Comparative performance of Gemini and Gemini+RMR on the MMBench-Dev and
+MMBench-Test datasets.
+Figure 5: Performance on SEED-Bench dataset.Figure 5 presents the comparative performance
+of the Gemini model and its enhanced version,
+Gemini+RMR, across various evaluation dimen-
+sions on the SEED-Bench dataset. The eval-
+uation categories include overall performance,
+scene understanding (SU), instance identity
+(IId), instance attributes (IA), instance location
+(IL), instance counting (IC), instance interac-
+tion (IIn), visual reasoning (VR), spatial rela-
+tion (SR), and text understanding (TU). The
+results show significant performance improve-
+ments across all categories when integrating
+the RMR framework with the Gemini model.
+The overall performance of Gemini+RMR is
+64.72%, compared to 56.53% for Gemini.
+4.4 Ablation Study
+Effect of Retrieval Size We investigate the impact of varying the retrieval size on the performance
+of the RMR framework. The retrieval size |R(Xquery)|is defined as the number of question-rationale-
+answer (QRA) triplets retrieved for each query Xquery . Table 3 presents the results of our ablation
+study on the ScienceQA dataset, showing the performance of Gemini with different retrieval sizes.
+Table 3: The impact of retrieval size on the performance of RMR on ScienceQA.
+Model NAT SOC LAN TXT IMG NO G1-6 G7-12 A VG
+Gemini w/o retrieval 59.68 74.24 41.73 57.72 64.01 47.46 65.20 45.29 58.08
+Gemini w/ |R(Xquery )|= 1 88.41 89.43 84.82 87.34 84.53 87.11 89.72 84.05 87.69
+Gemini w/ |R(Xquery )|= 2 87.79 91.00 84.55 86.75 84.93 86.90 88.88 85.37 87.62
+Gemini w/ |R(Xquery )|= 3 91.79 94.26 89.64 91.40 89.69 91.01 92.84 89.78 91.75
+Gemini w/ |R(Xquery )|= 4 88.54 92.80 84.27 88.03 86.37 86.41 89.76 85.76 88.33
+Gemini w/ |R(Xquery )|= 5 87.83 89.09 84.45 86.46 83.59 86.69 89.24 83.59 87.22
+8
+The results indicate that the optimal retrieval size is |R(Xquery)|= 3, which achieves the highest
+average accuracy of 91.75%. Increasing the retrieval size beyond this value leads to a slight decrease
+in performance, which may be attributed to (i) the inclusion of less relevant examples that could
+potentially introduce noise into the reasoning process and (ii) the longer context length that may
+hinder the model’s ability to effectively reason over the retrieved content.
+Data modality We compare the performance of the RMR framework using different data modalities:
+all available data (denoted as "-All"), only text-image pairs (denoted as "-T&I"), and only text data
+(denoted as "-T"). Table 4 presents the results of this ablation study on ScienceQA. RMR framework
+consistently enhances the performance of the models regardless of the data modality used, which can
+be attributed to the universality of its bi-modality retrieval module.
+Table 4: The impact of single vs. multi-modal retrieval on ScienceQA.
+Model NAT SOC LAN TXT IMG NO G1-6 G7-12 A VG
+LLaV A-All 70.12 76.72 67.64 70.48 71.89 68.92 76.06 61.5 70.86
+w/ RMR 78.11 84.25 74.73 79.81 78.33 74.36 82.05 72.18 78.52
+LLaV A-T&I 69.56 74.74 86.36 69.69 71.89 - 78.03 56.97 71.89
+w/ RMR 75.19 82.33 95.45 75.58 78.33 - 82.58 68.03 78.33
+LLaV A-T 70.76 88.80 66.86 71.74 - 68.92 73.90 64.37 69.92
+w/ RMR 81.50 96.00 73.86 86.57 - 74.36 81.47 74.81 78.69
+Qwen-VL-All 67.01 66.37 59.36 68.52 67.03 57.00 69.75 56.16 64.89
+w/ RMR 70.07 86.16 75.36 70.77 76.50 72.68 78.67 67.90 74.82
+Qwen-VL-T&I 67.25 66.10 77.27 65.23 67.03 - 73.06 52.38 67.03
+w/ RMR 70.31 85.47 90.91 68.50 76.50 - 82.44 62.07 76.50
+Qwen-VL-T 66.73 68.00 58.62 73.76 - 57.00 66.10 58.56 62.95
+w/ RMR 69.80 90.40 74.72 74.40 - 72.68 74.52 71.58 73.29
+InternLM-All 88.19 93.48 78.64 88.47 89.14 80.77 88.66 83.52 86.82
+w/ RMR 94.85 97.19 82.55 95.11 96.03 85.23 93.98 88.86 92.15
+InternLM-T&I 85.77 93.98 97.73 86.32 89.14 - 90.83 85.03 89.14
+w/ RMR 95.29 97.25 95.45 95.31 96.03 - 96.78 94.22 96.03
+InternLM-T 90.99 90.40 77.84 91.89 - 80.77 86.25 82.56 84.71
+w/ RMR 94.34 96.80 82.01 94.8 - 85.23 90.89 85.47 88.62
+Gemini-All 59.68 74.24 41.73 57.72 64.01 47.46 65.20 45.29 58.08
+w/ RMR 91.79 94.26 89.64 91.40 89.69 91.01 92.84 89.78 91.75
+Gemini-T&I 55.75 76.83 68.18 54.89 64.01 - 69.91 49.66 64.01
+w/ RMR 86.85 93.72 97.73 87.03 89.69 - 91.18 86.05 89.69
+Gemini-T 64.24 58.40 40.62 62.23 - 47.46 60.00 42.52 52.70
+w/ RMR 97.51 97.60 89.30 98.35 - 91.01 94.67 92.14 93.62
+5 Conclusion and Limitation
+In this work, we introduce RMR, a multimodal RAG framework designed to enhance the reasoning
+capabilities of vision LLMs. By leveraging a bi-modality retrieval module, RMR retrieves the most
+relevant question-rationale-answer triplets from a high-school knowledge library constructed using
+the ScienceQA dataset. The retrieved triplets are then utilized to form a structured context that guides
+the model’s reasoning process. Extensive experiments on multiple multimodal reasoning benchmarks
+demonstrate that RMR significantly improves the performance of various vision LLMs.
+Despite the promising results, our work has several limitations that warrant further investigation.
+First, while RMR operates in a training-free manner, which offers convenience and effectiveness,
+developing a trainable multimodal RAG model could potentially further enhance the reasoning
+capabilities of vision-language models by allowing the model to adapt more precisely to specific
+datasets and tasks. Additionally, the high-school knowledge library constructed by ScienceQA may
+not be comprehensive enough to cover all scenarios, especially for domain-specific questions.
+9
+References
+[1]Peter Anderson, Xiaodong He, Chris Buehler, Damien Teney, Mark Johnson, Stephen Gould,
+and Lei Zhang. Bottom-up and top-down attention for image captioning and visual question
+answering. In Proceedings of the IEEE conference on computer vision and pattern recognition ,
+pages 6077–6086, 2018.
+[2]Akari Asai, Zeqiu Wu, Yizhong Wang, Avirup Sil, and Hannaneh Hajishirzi. Self-rag: Learning
+to retrieve, generate, and critique through self-reflection. arXiv preprint arXiv:2310.11511 ,
+2023.
+[3]Jinze Bai, Shuai Bai, Shusheng Yang, Shijie Wang, Sinan Tan, Peng Wang, Junyang Lin, Chang
+Zhou, and Jingren Zhou. Qwen-vl: A versatile vision-language model for understanding,
+localization, text reading, and beyond. 2023.
+[4]Stella Biderman, Hailey Schoelkopf, Quentin Gregory Anthony, Herbie Bradley, Kyle O’Brien,
+Eric Hallahan, Mohammad Aflah Khan, Shivanshu Purohit, USVSN Sai Prashanth, Edward
+Raff, et al. Pythia: A suite for analyzing large language models across training and scaling. In
+International Conference on Machine Learning , pages 2397–2430. PMLR, 2023.
+[5]Sebastian Borgeaud, Arthur Mensch, Jordan Hoffmann, Trevor Cai, Eliza Rutherford, Katie
+Millican, George Bm Van Den Driessche, Jean-Baptiste Lespiau, Bogdan Damoc, Aidan Clark,
+et al. Improving language models by retrieving from trillions of tokens. In International
+conference on machine learning , pages 2206–2240. PMLR, 2022.
+[6]Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal,
+Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are
+few-shot learners. Advances in neural information processing systems , 33:1877–1901, 2020.
+[7]Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal,
+Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are
+few-shot learners. Advances in neural information processing systems , 33:1877–1901, 2020.
+[8]Deng Cai, Yan Wang, Lemao Liu, and Shuming Shi. Recent advances in retrieval-augmented
+text generation. In Proceedings of the 45th international ACM SIGIR conference on research
+and development in information retrieval , pages 3417–3419, 2022.
+[9]Hanqun Cao, Cheng Tan, Zhangyang Gao, Yilun Xu, Guangyong Chen, Pheng-Ann Heng, and
+Stan Z Li. A survey on generative diffusion models. IEEE Transactions on Knowledge and
+Data Engineering , 2024.
+[10] Yupeng Chang, Xu Wang, Jindong Wang, Yuan Wu, Linyi Yang, Kaijie Zhu, Hao Chen,
+Xiaoyuan Yi, Cunxiang Wang, Yidong Wang, et al. A survey on evaluation of large language
+models. ACM Transactions on Intelligent Systems and Technology , 15:1–45, 2024.
+[11] Jiawei Chen, Hongyu Lin, Xianpei Han, and Le Sun. Benchmarking large language models in
+retrieval-augmented generation. In Proceedings of the AAAI , volume 38, pages 17754–17762,
+2024.
+[12] Wenhu Chen, Hexiang Hu, Xi Chen, Pat Verga, and William Cohen. Murag: Multimodal
+retrieval-augmented generator for open question answering over images and text. In Proceedings
+of EMNLP , pages 5558–5570, 2022.
+[13] Zhenfang Chen, Qinhong Zhou, Yikang Shen, Yining Hong, Hao Zhang, and Chuang Gan. See,
+think, confirm: Interactive prompting between vision and language models for knowledge-based
+visual reasoning. arXiv preprint arXiv:2301.05226 , 2023.
+[14] Xin Cheng, Di Luo, Xiuying Chen, Lemao Liu, Dongyan Zhao, and Rui Yan. Lift yourself
+up: Retrieval-augmented text generation with self-memory. Advances in Neural Information
+Processing Systems , 36, 2024.
+[15] Aakanksha Chowdhery, Sharan Narang, Jacob Devlin, Maarten Bosma, Gaurav Mishra, Adam
+Roberts, Paul Barham, Hyung Won Chung, Charles Sutton, Sebastian Gehrmann, et al. Palm:
+Scaling language modeling with pathways. arXiv preprint arXiv:2204.02311 , 2022.
+[16] Hyung Won Chung, Le Hou, Shayne Longpre, Barret Zoph, Yi Tay, William Fedus, Yunxuan
+Li, Xuezhi Wang, Mostafa Dehghani, Siddhartha Brahma, et al. Scaling instruction-finetuned
+language models. arXiv preprint arXiv:2210.11416 , 2022.
+10
+[17] Wanqing Cui, Keping Bi, Jiafeng Guo, and Xueqi Cheng. More: Multi-modal retrieval
+augmented generative commonsense reasoning. arXiv preprint arXiv:2402.13625 , 2024.
+[18] Mostafa Dehghani, Josip Djolonga, Basil Mustafa, Piotr Padlewski, Jonathan Heek, Justin
+Gilmer, Andreas Peter Steiner, Mathilde Caron, Robert Geirhos, Ibrahim Alabdulmohsin, et al.
+Scaling vision transformers to 22 billion parameters. In International Conference on Machine
+Learning , pages 7480–7512. PMLR, 2023.
+[19] Qingxiu Dong, Lei Li, Damai Dai, Ce Zheng, Zhiyong Wu, Baobao Chang, Xu Sun, Jingjing
+Xu, and Zhifang Sui. A survey on in-context learning. arXiv preprint arXiv:2301.00234 , 2022.
+[20] Xiaoyi Dong, Pan Zhang, Yuhang Zang, Yuhang Cao, Bin Wang, Linke Ouyang, Xilin Wei,
+Songyang Zhang, Haodong Duan, Maosong Cao, et al. Internlm-xcomposer2: Mastering
+free-form text-image composition and comprehension in vision-language large model. arXiv
+preprint arXiv:2401.16420 , 2024.
+[21] Peng Gao, Zhengkai Jiang, Haoxuan You, Pan Lu, Steven CH Hoi, Xiaogang Wang, and
+Hongsheng Li. Dynamic fusion with intra-and inter-modality attention flow for visual question
+answering. In Proceedings of the IEEE/CVF conference on computer vision and pattern
+recognition , pages 6639–6648, 2019.
+[22] Yunfan Gao, Yun Xiong, Xinyu Gao, Kangxiang Jia, Jinliu Pan, Yuxi Bi, Yi Dai, Jiawei Sun,
+and Haofen Wang. Retrieval-augmented generation for large language models: A survey. arXiv
+preprint arXiv:2312.10997 , 2023.
+[23] Zhangyang Gao, Cheng Tan, Lirong Wu, and Stan Z Li. Simvp: Simpler yet better video
+prediction. In Proceedings of the IEEE/CVF conference on computer vision and pattern
+recognition , pages 3170–3180, 2022.
+[24] Kelvin Guu, Kenton Lee, Zora Tung, Panupong Pasupat, and Mingwei Chang. Retrieval
+augmented language model pre-training. In International conference on machine learning ,
+pages 3929–3938. PMLR, 2020.
+[25] Junxian He, Graham Neubig, and Taylor Berg-Kirkpatrick. Efficient nearest neighbor language
+models. arXiv preprint arXiv:2109.04212 , 2021.
+[26] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image
+recognition. In Proceedings of the IEEE conference on computer vision and pattern recognition ,
+pages 770–778, 2016.
+[27] Yushi Hu, Hang Hua, Zhengyuan Yang, Weijia Shi, Noah A Smith, and Jiebo Luo. Promptcap:
+Prompt-guided task-aware image captioning. arXiv preprint arXiv:2211.09699 , 2022.
+[28] Yushi Hu, Otilia Stretcu, Chun-Ta Lu, Krishnamurthy Viswanathan, Kenji Hata, Enming
+Luo, Ranjay Krishna, and Ariel Fuxman. Visual program distillation: Distilling tools and
+programmatic reasoning into vision-language models. arXiv preprint arXiv:2312.03052 , 2023.
+[29] Gautier Izacard, Patrick Lewis, Maria Lomeli, Lucas Hosseini, Fabio Petroni, Timo Schick, Jane
+Dwivedi-Yu, Armand Joulin, Sebastian Riedel, and Edouard Grave. Atlas: Few-shot learning
+with retrieval augmented language models. Journal of Machine Learning Research , 24:1–43,
+2023.
+[30] Zhengbao Jiang, Frank F Xu, Luyu Gao, Zhiqing Sun, Qian Liu, Jane Dwivedi-Yu, Yiming
+Yang, Jamie Callan, and Graham Neubig. Active retrieval augmented generation. arXiv preprint
+arXiv:2305.06983 , 2023.
+[31] Amita Kamath, Christopher Clark, Tanmay Gupta, Eric Kolve, Derek Hoiem, and Aniruddha
+Kembhavi. Webly supervised concept expansion for general purpose vision models. In European
+Conference on Computer Vision , pages 662–681. Springer, 2022.
+[32] Jacob Devlin Ming-Wei Chang Kenton and Lee Kristina Toutanova. Bert: Pre-training of deep
+bidirectional transformers for language understanding. In Proceedings of naacL-HLT , volume 1,
+page 2, 2019.
+[33] Daniel Khashabi, Sewon Min, Tushar Khot, Ashish Sabharwal, Oyvind Tafjord, Peter Clark,
+and Hannaneh Hajishirzi. UNIFIEDQA: Crossing format boundaries with a single QA system.
+In Trevor Cohn, Yulan He, and Yang Liu, editors, Findings of the Association for Computa-
+tional Linguistics: EMNLP 2020 , pages 1896–1907, Online, November 2020. Association for
+Computational Linguistics.
+11
+[34] Jin-Hwa Kim, Jaehyun Jun, and Byoung-Tak Zhang. Bilinear attention networks. Advances in
+neural information processing systems , 31, 2018.
+[35] Wonjae Kim, Bokyung Son, and Ildoo Kim. Vilt: Vision-and-language transformer without
+convolution or region supervision. In International Conference on Machine Learning , pages
+5583–5594. PMLR, 2021.
+[36] Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir Karpukhin, Naman
+Goyal, Heinrich Küttler, Mike Lewis, Wen-tau Yih, Tim Rocktäschel, et al. Retrieval-augmented
+generation for knowledge-intensive nlp tasks. Advances in Neural Information Processing
+Systems , 33:9459–9474, 2020.
+[37] Bohao Li, Rui Wang, Guangzhi Wang, Yuying Ge, Yixiao Ge, and Ying Shan. Seed-
+bench: Benchmarking multimodal llms with generative comprehension. arXiv preprint
+arXiv:2307.16125 , 2023.
+[38] Huayang Li, Yixuan Su, Deng Cai, Yan Wang, and Lemao Liu. A survey on retrieval-augmented
+text generation. arXiv preprint arXiv:2202.01110 , 2022.
+[39] Junnan Li, Dongxu Li, Silvio Savarese, and Steven Hoi. Blip-2: Bootstrapping language-
+image pre-training with frozen image encoders and large language models. arXiv preprint
+arXiv:2301.12597 , 2023.
+[40] Liunian Harold Li, Mark Yatskar, Da Yin, Cho-Jui Hsieh, and Kai-Wei Chang. What does
+bert with vision look at? In Proceedings of the 58th Annual Meeting of the Association for
+Computational Linguistics , pages 5265–5275, 2020.
+[41] Siyuan Li, Weiyang Jin, Zedong Wang, Fang Wu, Zicheng Liu, Cheng Tan, and Stan Z
+Li. Semireward: A general reward model for semi-supervised learning. arXiv preprint
+arXiv:2310.03013 , 2023.
+[42] Siyuan Li, Zicheng Liu, Juanxi Tian, Ge Wang, Zedong Wang, Weiyang Jin, Di Wu, Cheng
+Tan, Tao Lin, Yang Liu, et al. Switch ema: A free lunch for better flatness and sharpness. arXiv
+preprint arXiv:2402.09240 , 2024.
+[43] Siyuan Li, Zedong Wang, Zicheng Liu, Cheng Tan, Haitao Lin, Di Wu, Zhiyuan Chen, Jiangbin
+Zheng, and Stan Z Li. Moganet: Multi-order gated aggregation network. In The Twelfth
+International Conference on Learning Representations , 2023.
+[44] Siyuan Li, Luyuan Zhang, Zedong Wang, Di Wu, Lirong Wu, Zicheng Liu, Jun Xia, Cheng Tan,
+Yang Liu, Baigui Sun, et al. Masked modeling for self-supervised representation learning on
+vision and beyond. arXiv preprint arXiv:2401.00897 , 2023.
+[45] Bingshuai Liu, Chenyang Lyu, Zijun Min, Zhanyu Wang, Jinsong Su, and Longyue Wang.
+Retrieval-augmented multi-modal chain-of-thoughts reasoning for large language models. arXiv
+preprint arXiv:2312.01714 , 2023.
+[46] Haotian Liu, Chunyuan Li, Qingyang Wu, and Yong Jae Lee. Visual instruction tuning. arXiv
+preprint arXiv:2304.08485 , 2023.
+[47] Yuan Liu, Haodong Duan, Yuanhan Zhang, Bo Li, Songyang Zhang, Wangbo Zhao, Yike Yuan,
+Jiaqi Wang, Conghui He, Ziwei Liu, et al. Mmbench: Is your multi-modal model an all-around
+player? arXiv preprint arXiv:2307.06281 , 2023.
+[48] Jiasen Lu, Dhruv Batra, Devi Parikh, and Stefan Lee. Vilbert: Pretraining task-agnostic
+visiolinguistic representations for vision-and-language tasks. Advances in neural information
+processing systems , 32, 2019.
+[49] Pan Lu, Swaroop Mishra, Tanglin Xia, Liang Qiu, Kai-Wei Chang, Song-Chun Zhu, Oyvind
+Tafjord, Peter Clark, and Ashwin Kalyan. Learn to explain: Multimodal reasoning via thought
+chains for science question answering. Advances in Neural Information Processing Systems ,
+35:2507–2521, 2022.
+[50] Pan Lu, Baolin Peng, Hao Cheng, Michel Galley, Kai-Wei Chang, Ying Nian Wu, Song-Chun
+Zhu, and Jianfeng Gao. Chameleon: Plug-and-play compositional reasoning with large language
+models. arXiv preprint arXiv:2304.09842 , 2023.
+[51] Pan Lu, Liang Qiu, Jiaqi Chen, Tony Xia, Yizhou Zhao, Wei Zhang, Zhou Yu, Xiaodan Liang,
+and Song-Chun Zhu. Iconqa: A new benchmark for abstract diagram understanding and visual
+language reasoning. arXiv preprint arXiv:2110.13214 , 2021.
+12
+[52] Kenneth Marino, Xinlei Chen, Devi Parikh, Abhinav Gupta, and Marcus Rohrbach. Krisp:
+Integrating implicit and symbolic knowledge for open-domain knowledge-based vqa. In
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages
+14111–14121, 2021.
+[53] OpenAI. Gpt-4 technical report, 2023.
+[54] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal,
+Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning transferable visual
+models from natural language supervision. In International conference on machine learning ,
+pages 8748–8763. PMLR, 2021.
+[55] Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena,
+Yanqi Zhou, Wei Li, and Peter J Liu. Exploring the limits of transfer learning with a unified
+text-to-text transformer. The Journal of Machine Learning Research , 21(1):5485–5551, 2020.
+[56] Machel Reid, Nikolay Savinov, Denis Teplyashin, Dmitry Lepikhin, Timothy Lillicrap, Jean-
+baptiste Alayrac, Radu Soricut, Angeliki Lazaridou, Orhan Firat, Julian Schrittwieser, et al.
+Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context. arXiv
+preprint arXiv:2403.05530 , 2024.
+[57] Shaoqing Ren, Kaiming He, Ross Girshick, and Jian Sun. Faster r-cnn: Towards real-time
+object detection with region proposal networks. Advances in neural information processing
+systems , 28, 2015.
+[58] Dustin Schwenk, Apoorv Khandelwal, Christopher Clark, Kenneth Marino, and Roozbeh
+Mottaghi. A-okvqa: A benchmark for visual question answering using world knowledge. In
+ECCV , pages 146–162. Springer, 2022.
+[59] Dustin Schwenk, Apoorv Khandelwal, Christopher Clark, Kenneth Marino, and Roozbeh
+Mottaghi. A-okvqa: A benchmark for visual question answering using world knowledge. In
+European Conference on Computer Vision , pages 146–162. Springer, 2022.
+[60] Cheng Tan, Zhangyang Gao, Siyuan Li, and Stan Z Li. Simvp: Towards simple yet powerful
+spatiotemporal predictive learning. arXiv preprint arXiv:2211.12509 , 2022.
+[61] Cheng Tan, Zhangyang Gao, Lirong Wu, Yongjie Xu, Jun Xia, Siyuan Li, and Stan Z Li.
+Temporal attention unit: Towards efficient spatiotemporal predictive learning. In Proceedings of
+the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 18770–18782,
+2023.
+[62] Cheng Tan, Siyuan Li, Zhangyang Gao, Wenfei Guan, Zedong Wang, Zicheng Liu, Lirong Wu,
+and Stan Z Li. Openstl: A comprehensive benchmark of spatio-temporal predictive learning.
+Advances in Neural Information Processing Systems , 36:69819–69831, 2023.
+[63] Cheng Tan, Jingxuan Wei, Zhangyang Gao, Linzhuang Sun, Siyuan Li, Xihong Yang, and
+Stan Z Li. Boosting the power of small multimodal reasoning models to match larger models
+with self-consistency training. arXiv preprint arXiv:2311.14109 , 2023.
+[64] Cheng Tan, Jun Xia, Lirong Wu, and Stan Z Li. Co-learning: Learning from noisy labels with
+self-supervision. In Proceedings of the 29th ACM International Conference on Multimedia ,
+pages 1405–1413, 2021.
+[65] Hao Tan and Mohit Bansal. Lxmert: Learning cross-modality encoder representations from
+transformers. In Proceedings of the 2019 Conference on Empirical Methods in Natural Language
+Processing , 2019.
+[66] Yi Tay, Mostafa Dehghani, Vinh Q Tran, Xavier Garcia, Jason Wei, Xuezhi Wang, Hyung Won
+Chung, Siamak Shakeri, Dara Bahri, Tal Schuster, et al. Ul2: Unifying language learning
+paradigms. arXiv preprint arXiv:2205.05131 , 2022.
+[67] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez,
+Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in neural information
+processing systems , 30, 2017.
+[68] Peng Wang, An Yang, Rui Men, Junyang Lin, Shuai Bai, Zhikang Li, Jianxin Ma, Chang Zhou,
+Jingren Zhou, and Hongxia Yang. Ofa: Unifying architectures, tasks, and modalities through
+a simple sequence-to-sequence learning framework. In International Conference on Machine
+Learning , pages 23318–23340. PMLR, 2022.
+13
+[69] Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed Chi, Quoc V Le,
+Denny Zhou, et al. Chain-of-thought prompting elicits reasoning in large language models.
+Advances in Neural Information Processing Systems , 35:24824–24837, 2022.
+[70] Jingxuan Wei, Cheng Tan, Zhangyang Gao, Linzhuang Sun, Siyuan Li, Bihui Yu, Ruifeng Guo,
+and Stan Z Li. Enhancing human-like multi-modal reasoning: A new challenging dataset and
+comprehensive framework. arXiv preprint arXiv:2307.12626 , 2023.
+[71] Fangyuan Xu, Weijia Shi, and Eunsol Choi. Recomp: Improving retrieval-augmented lms with
+compression and selective augmentation. arXiv preprint arXiv:2310.04408 , 2023.
+[72] Xin Xu, Yue Liu, Panupong Pasupat, Mehran Kazemi, et al. In-context learning with retrieved
+demonstrations for language models: A survey. arXiv preprint arXiv:2401.11624 , 2024.
+[73] Zhipeng Xu, Zhenghao Liu, Yibin Liu, Chenyan Xiong, Yukun Yan, Shuo Wang, Shi Yu,
+Zhiyuan Liu, and Ge Yu. Activerag: Revealing the treasures of knowledge via active learning.
+arXiv preprint arXiv:2402.13547 , 2024.
+[74] Shi-Qi Yan, Jia-Chen Gu, Yun Zhu, and Zhen-Hua Ling. Corrective retrieval augmented
+generation. arXiv preprint arXiv:2401.15884 , 2024.
+[75] Zhengyuan Yang, Zhe Gan, Jianfeng Wang, Xiaowei Hu, Yumao Lu, Zicheng Liu, and Lijuan
+Wang. An empirical study of gpt-3 for few-shot knowledge-based vqa. In Proceedings of the
+AAAI Conference on Artificial Intelligence , volume 36, pages 3081–3089, 2022.
+[76] Michihiro Yasunaga, Armen Aghajanyan, Weijia Shi, Rich James, Jure Leskovec, Percy Liang,
+Mike Lewis, Luke Zettlemoyer, and Wen-tau Yih. Retrieval-augmented multimodal language
+modeling. In Proceedings of ICML , pages 39755–39769, 2023.
+[77] Wenhao Yu. Retrieval-augmented generation across heterogeneous knowledge. In Proceedings
+of the 2022 Conference of the North American Chapter of the Association for Computational
+Linguistics: Human Language Technologies: Student Research Workshop , pages 52–58, 2022.
+[78] Wenhao Yu, Hongming Zhang, Xiaoman Pan, Kaixin Ma, Hongwei Wang, and Dong Yu.
+Chain-of-note: Enhancing robustness in retrieval-augmented language models. arXiv preprint
+arXiv:2311.09210 , 2023.
+[79] Zhou Yu, Xuecheng Ouyang, Zhenwei Shao, Meng Wang, and Jun Yu. Prophet: Prompting large
+language models with complementary answer heuristics for knowledge-based visual question
+answering. arXiv preprint arXiv:2303.01903 , 2023.
+[80] Zhou Yu, Jun Yu, Yuhao Cui, Dacheng Tao, and Qi Tian. Deep modular co-attention networks
+for visual question answering. In Proceedings of the IEEE/CVF conference on computer vision
+and pattern recognition , pages 6281–6290, 2019.
+[81] Zhou Yu, Jun Yu, Yuhao Cui, Dacheng Tao, and Qi Tian. Deep modular co-attention networks
+for visual question answering. In Proceedings of the IEEE/CVF conference on computer vision
+and pattern recognition , pages 6281–6290, 2019.
+[82] Xiaohua Zhai, Basil Mustafa, Alexander Kolesnikov, and Lucas Beyer. Sigmoid loss for
+language image pre-training. In Proceedings of the IEEE/CVF International Conference on
+Computer Vision , pages 11975–11986, 2023.
+[83] Pengchuan Zhang, Xiujun Li, Xiaowei Hu, Jianwei Yang, Lei Zhang, Lijuan Wang, Yejin Choi,
+and Jianfeng Gao. Vinvl: Revisiting visual representations in vision-language models. In
+Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages
+5579–5588, 2021.
+[84] Susan Zhang, Stephen Roller, Naman Goyal, Mikel Artetxe, Moya Chen, Shuohui Chen,
+Christopher Dewan, Mona Diab, Xian Li, Xi Victoria Lin, et al. Opt: Open pre-trained
+transformer language models. arXiv preprint arXiv:2205.01068 , 2022.
+[85] Yuanhan Zhang, Kaiyang Zhou, and Ziwei Liu. What makes good examples for visual in-context
+learning? Advances in Neural Information Processing Systems , 36, 2024.
+[86] Haiyan Zhao, Hanjie Chen, Fan Yang, Ninghao Liu, Huiqi Deng, Hengyi Cai, Shuaiqiang
+Wang, Dawei Yin, and Mengnan Du. Explainability for large language models: A survey. ACM
+Transactions on Intelligent Systems and Technology , 15:1–38, 2024.
+[87] Penghao Zhao, Hailin Zhang, Qinhan Yu, Zhengren Wang, Yunteng Geng, Fangcheng Fu, Ling
+Yang, Wentao Zhang, and Bin Cui. Retrieval-augmented generation for ai-generated content: A
+survey. arXiv preprint arXiv:2402.19473 , 2024.
+14
+A Qualitative Analysis
+Query 𝓧𝒒𝒖𝒆𝒓𝒚Question:Whichpropertydothesethreeobjectshaveincommon?Options: (A)Blue.           (B) Hard.          (C) Sticky.𝑿𝟏
+Rationale:Anobjecthasdifferentproperties.Apropertyofanobjectcantellyouhowitlooks,feels,tastes,orsmells.Propertiescanalsotellyouhowanobjectwillbehavewhensomethinghappenstoit.Differentobjectscanhavepropertiesincommon.Lookateachobject.Foreachobject,decideifithasthatproperty.Astickyobjectcanattachorsticktootherthings.Thetoothpasteissticky,butthejeansandthetracksuitarenot.Blueisacolor.Thiscolorisblue.Allthreeobjectsareblue.Afragileobjectwillbreakintopiecesifyoudropit.Thejeansandthetracksuitarenotfragile.Thepropertythatallthreeobjectshaveincommonisblue.Answer:Theansweris(B)Blue.𝑿𝟐𝑿𝟑Question: Which property matches this object?Options:(A)Blue.(B)Hard.Rationale:Lookattheobject.Thinkabouteachproperty.Ahardobjectkeepsitsshapewhenyousqueezeit.Thejeansarenothard.Blueisacolor.Thiscolorisblue.Thejeansareblue.Answer:Theansweris(A)Blue.Question: Which property do these two objects have in common?Options:(A)Bouncy.(B)Soft.Rationale:Anobjecthasdifferentproperties.Apropertyofanobjectcantellyouhowitlooks,feels,tastes,orsmells.Differentobjectscanhavethesameproperties.Lookateachobject.Foreachobject,decideifithasthatproperty.Asoftobjectchangesshapewhenyousqueezeit.Bothobjectsaresoft.Abouncyobjectwillbouncebackfromthefloorifyoudropit.Neitheroftheobjectsarebouncy.Thepropertythatbothobjectshaveincommonissoft.Answer:Theansweris(B)Soft.Question: Which property do these three objects have in common?Options: (A)Fragile.(B)Blue.(C)StickyRationale:Anobjecthasdifferentproperties.Apropertyofanobjectcantellyouhowitlooks,feels,tastes,orsmells.Propertiescanalsotellyouhowanobjectwillbehavewhensomethinghappenstoit.Differentobjectscanhavepropertiesincommon.Lookateachobject.Foreachobject,decideifithasthatproperty.Astickyobjectcanattachorsticktootherthings.Thetoothpasteissticky,butthesoccershortsandthewaterslidearenot.Thiscolorisblue.Allthreeobjectsareblue.Ahardobjectdoesnotchangeshapewhenpressedorsqueezed.Thewaterslideishard,butthetoothpasteandthesoccershortsarenot.Thepropertythatallthreeobjectshaveincommonisblue.Answer:Theansweris(A)Blue.
+Multimodal large language model
+Figure 6: The retrieved data of an image-text pair example.
+Query 𝓧𝒒𝒖𝒆𝒓𝒚Question:Whichwordwouldyoufindonadictionarypagewiththefollowingguidewords?imitate-ironOptions: (A)Itch.(B)Inherit.𝑿𝟏
+Rationale:Guidewordsappearoneachpageofadictionary.Theytellyouthefirstwordandlastwordonthepage.Theotherwordsonthepagecomebetweentheguidewordsinalphabeticalorder.Toputwordsinalphabeticalorder,puttheminorderbytheirfirstletters.Ifthefirstlettersarethesame,lookatthesecondletters.Ifthesecondlettersarethesame,lookatthethirdletters,andsoon.Ifonewordisshorter,andtherearenomoreletterstocompare,thentheshorterwordcomesfirstinalphabeticalorder.Forexample,becomesbeforebed.Putthewordsinalphabeticalorder.Sinceimmenseisbetweentheguidewordsidea-inspire,itwouldbefoundonthatpage.Answer:Theansweris(B)immense.𝑿𝟐𝑿𝟑Question:Wouldyoufindthewordinstructonadictionarypagewiththefollowingguidewords?imp-itemOptions:(A)No.(B)Yes.Rationale:Guidewordsappearoneachpageofadictionary.Theytellyouthefirstwordandlastwordonthepage.Theotherwordsonthepagecomebetweentheguidewordsinalphabeticalorder.Toputwordsinalphabeticalorder,puttheminorderbytheirfirstletters.Ifthefirstlettersarethesame,lookatthesecondletters.Ifthesecondlettersarethesame,lookatthethirdletters,andsoon.Ifonewordisshorter,andtherearenomoreletterstocompare,thentheshorterwordcomesfirstinalphabeticalorder.Forexample,becomesbeforebed.Putthewordsinalphabeticalorder.Sinceinstructisbetweentheguidewordsimp-item,itwouldbefoundonthatpage.Answer:Theansweris(B)Yes.Question:Whichwordwouldyoufindonadictionarypagewiththefollowingguidewords?impose-issueOptions:(A)Ill.(B)Increase.Rationale:Guidewordsappearoneachpageofadictionary.Theytellyouthefirstwordandlastwordonthepage.Theotherwordsonthepagecomebetweentheguidewordsinalphabeticalorder.Toputwordsinalphabeticalorder,puttheminorderbytheirfirstletters.Ifthefirstlettersarethesame,lookatthesecondletters.Ifthesecondlettersarethesame,lookatthethirdletters,andsoon.Ifonewordisshorter,andtherearenomoreletterstocompare,thentheshorterwordcomesfirstinalphabeticalorder.Forexample,becomesbeforebed.Putthewordsinalphabeticalorder.Sinceincreaseisbetweentheguidewordsimpose-issue,itwouldbefoundonthatpage.Answer:Theansweris(B)Increase.Question:Whichwordwouldyoufindonadictionarypagewiththefollowingguidewords?idea-inspireOptions: (A)Issue.(B)Immense.Rationale:Guidewordsappearoneachpageofadictionary.Theytellyouthefirstwordandlastwordonthepage.Theotherwordsonthepagecomebetweentheguidewordsinalphabeticalorder.Toputwordsinalphabeticalorder,puttheminorderbytheirfirstletters.Ifthefirstlettersarethesame,lookatthesecondletters.Ifthesecondlettersarethesame,lookatthethirdletters,andsoon.Ifonewordisshorter,andtherearenomoreletterstocompare,thentheshorterwordcomesfirstinalphabeticalorder.Forexample,becomesbeforebed.Putthewordsinalphabeticalorder.Sinceinheritisbetweentheguidewordsimitate-iron,itwouldbefoundonthatpage.Answer:Theansweris(B)Inherit.
+Multimodal large language model
+Figure 7: The retrieved data of a text-only example.
+15
+Query 𝓧𝒒𝒖𝒆𝒓𝒚Question:Ismarbleamineralorarock?Options: (A)Rock.           (B) Mineral.          𝑿𝟏𝑿𝟐𝑿𝟑Question: What type of rock is marble?Options:(A)Sedimentary.(B)Metamorphic.(C)Igneous.Rationale:Mineralsarethebuildingblocksofrocks.Arockcanbemadeofoneormoreminerals.Mineralsandrockshavethefollowingproperties:Property|Mineral|Rock.Itisasolid.|Yes|Yes.Itisformedinnature.|Yes|Yes.Itisnotmadebyorganisms.|Yes|Yes.Itisapuresubstance.|Yes|NoIthasafixedcrystalstructure.|Yes|No.Youcanusethesepropertiestotellwhetherasubstanceisamineral,arock,orneither.Lookcloselyatthelastthreeproperties:Mineralsandrocksarenotmadebyorganisms.Organismsmaketheirownbodyparts.Forexample,snailsandclamsmaketheirshells.Becausetheyaremadebyorganisms,bodypartscannotbemineralsorrocks..Celestinehasallthepropertiesofamineral.So,celestineisamineral.Answer:Theansweris(A)Mineral.Question: Is soapstone a mineral or a rock?Options:(A)Rock.(B)Mineral.Rationale:Mineralsarethebuildingblocksofrocks.Arockcanbemadeofoneormoreminerals.Mineralsandrockshavethefollowingproperties:Property|Mineral|RockItisasolid.|Yes|YesItisformedinnature.|Yes|YesItisnotmadebyorganisms.|Yes|YesItisapuresubstance.|Yes|NoIthasafixedcrystalstructure.|Yes|No…So,thearrangementofatomsormoleculesindifferentpiecesofthesametypeofrockmaybedifferent!Thepropertiesofsoapstonematchthepropertiesofarock.So,soapstoneisarock.Answer:Theansweris(B)Soft.Question: Is celestine a mineral or a rock?Options: (A)Mineral.(B)Rock.Rationale:Mineralsarethebuildingblocksofrocks.Arockcanbemadeofoneormoreminerals.Mineralsandrockshavethefollowingproperties:Property|Mineral|RockItisasolid.|Yes|YesItisformedinnature.|Yes|YesItisnotmadebyorganisms.|Yes|YesItisapuresubstance.|Yes...Differenttypesofmineralshavedifferentcrystalstructures,butallmineralshaveafixedcrystalstructure.Thismeansthattheatomsandmoleculesindifferentpiecesofthesametypeofmineralarealwaysarrangedthesameway.\nHowever,rocksdonothaveafixedcrystalstructure.So,thearrangementofatomsormoleculesindifferentpiecesofthesametypeofrockmaybedifferent!Thepropertiesofmarblematchthepropertiesofarock.So,marbleisarock.Answer:Theansweris(A)Blue.
+Multimodal large language model
+Rationale:Igneousrockisformedwhenmeltedrockcoolsandhardensintosolidrock.ThistypeofchangecanoccuratEarth‘ssurfaceorbelowit.Sedimentaryrockisformedwhenlayersofsedimentarepressedtogether,orcompacted,tomakerock...Likeothermetamorphicrocks,itformswhenarockischangedbyhightemperatureandpressure.Heatandpressurecanchangethetypeandarrangementofmineralsinarock.Thischangeformsanewrockwithdifferentproperties.Marblecanformwhensedimentaryrockssuchaslimestonearechangedbyheatandpressure.Answer:Theansweris(A)Mineral.
+Figure 8: The retrieved data of an image-text pair example.
+Query 𝓧𝒒𝒖𝒆𝒓𝒚Question: Which is a compound sentence? Options: (A)Dillon liked the sea otters, but the jellyfish were his favorite.(B)The artist prepared a canvas for a new oil painting.𝑿𝟏
+Rationale:Asimplesentenceisasentencewithonlyonesubjectandpredicate.Thepitcherthrewtheballtofirstbase.Acompoundsentenceistwosimplesentencesjoinedbyacommaandaconjunctionsuchasand,but,or,orso.Thepitcherthrewtheball,andthebatterhitit.Somesimplesentenceshaveacompoundsubjectoracompoundpredicate,buttheyarenotcompoundsentences…Somesimplesentenceshaveintroductoryphrases,buttheyarenotcompoundsentences.Theintroductoryphraseispartofthepredicate.Inthewinter,FarmerBenwearshisheavycoat.Thisisasimplesentence.Thereisonesubject,FarmerBen,andonepredicate,wearshisheavycoatinthewinter.Thesecondsentenceisthecompoundsentence.Itismadeupoftwosimplesentencesjoinedbyacommaandtheconjunctionbut.Devonshotthearrow,butshemissedthetarget.Answer:Theansweris(B)Devonshotthearrow,butshemissedthetarget.Question: Which is a compound sentence?Options:(A)Theartistpreparedacanvasforanewoilpainting.(B)Devonshotthearrow,butshemissedthetarget.𝑿𝟐𝑿𝟑Question: Which is a compound sentence?Options:(A)Thecameraisn'tworking,sothebatterymustbedead.(B)Theartistpreparedacanvasforanewoilpainting.Rationale:Asimplesentenceisasentencewithonlyonesubjectandpredicate.Thepitcherthrewtheballtofirstbase.Acompoundsentenceistwosimplesentencesjoinedbyacommaandaconjunctionsuchasand,but,or,orso.Thepitcherthrewtheball,andthebatterhitit.Somesimplesentenceshaveacompoundsubjectoracompoundpredicate,buttheyarenotcompoundsentences…Somesimplesentenceshaveintroductoryphrases,buttheyarenotcompoundsentences.Theintroductoryphraseispartofthepredicate.Inthewinter,FarmerBenwearshisheavycoat.Thisisasimplesentence.Thereisonesubject,FarmerBen,andonepredicate,wearshisheavycoatinthewinter.Thefirstsentenceisthecompoundsentence.Itismadeupoftwosimplesentencesjoinedbyacommaandtheconjunctionso.Thecameraisn'tworking,sothebatterymustbedead.Answer:Theansweris(A)Thecameraisn'tworking,sothebatterymustbedead.Question: Which is a compound sentence?Options:(A)Thetailormeasuresthelengthofthepantleg.(B)Desmondlikedtheseaotters,butthejellyfishwerehisfavorite.Rationale:Asimplesentenceisasentencewithonlyonesubjectandpredicate.Thepitcherthrewtheballtofirstbase.Acompoundsentenceistwosimplesentencesjoinedbyacommaandaconjunctionsuchasand,but,or,orso.Thepitcherthrewtheball,andthebatterhitit.Somesimplesentenceshaveacompoundsubjectoracompoundpredicate,buttheyarenotcompoundsentences…Somesimplesentenceshaveintroductoryphrases,buttheyarenotcompoundsentences.Theintroductoryphraseispartofthepredicate.Inthewinter,FarmerBenwearshisheavycoat.Thisisasimplesentence.Thereisonesubject,FarmerBen,andonepredicate,wearshisheavycoatinthewinter.Thesecondsentenceisthecompoundsentence.Itismadeupoftwosimplesentencesjoinedbyacommaandtheconjunctionbut.Desmondlikedtheseaotters,butthejellyfishwerehisfavorite.Answer:Theansweris(B)Desmondlikedtheseaotters,butthejellyfishwerehisfavorite.Rationale:Asimplesentenceisasentencewithonlyonesubjectandpredicate.Thepitcherthrewtheballtofirstbase.Acompoundsentenceistwosimplesentencesjoinedbyacommaandaconjunctionsuchasand,but,or,orso.Thepitcherthrewtheball,andthebatterhitit.Somesimplesentenceshaveacompoundsubjectoracompoundpredicate,buttheyarenotcompoundsentences…Theintroductoryphraseispartofthepredicate.Inthewinter,FarmerBenwearshisheavycoat.Thisisasimplesentence.Thereisonesubject,FarmerBen,andonepredicate,wearshisheavycoatinthewinter.Thefirstsentenceisthecompoundsentence.Itismadeupoftwosimplesentencesjoinedbyacommaandtheconjunctionbut.Dillonlikedtheseaotters,butthejellyfishwerehisfavorite.Answer:Theansweris(A)Dillonlikedtheseaotters,butthejellyfishwerehisfavorite.
+Multimodal large language model
+Figure 9: The retrieved data of a text-only example.
+16
+We present qualitative examples to illustrate the effectiveness of the RMR framework. Figure 6
+showcases an example where the model is asked, "Which property do these three objects have in
+common?" The retrieved data plays a crucial role in guiding the model’s reasoning process. X1
+provides a similar question involving different objects. The similarity in the question structure
+helps the model understand the type of reasoning required, offering a blueprint for approaching the
+problem. By seeing how the retrieved example addresses the comparison of different objects, the
+model can apply a similar strategy to the current query. X2includes a related object, enhancing the
+model’s comprehension of various object properties. The additional context provided by X2helps the
+model draw connections between the current objects and previously encountered ones, broadening
+its understanding and improving its ability to identify common properties. Similar to X1,X3also
+presents a question about the common properties of different objects, albeit with a wider variety.
+The diversity in examples reinforces the model’s reasoning skills, helping it generalize its reasoning
+ability across different contexts and object sets.
+Figure 7 depicts a text-only example where the model is asked, "Which word would you find on a
+dictionary page with the following guide words?". Three similar questions are retrieved with different
+words, providing the model with a diverse set of examples to learn from. The retrieved examples
+help the model understand the structure of the question and the type of reasoning required to answer
+it. By observing the different words in the retrieved examples, the model can learn to identify the
+commonalities between the guide words and the target words, enhancing its reasoning capabilities.
+Figure 8 presents an image and text example where the model is asked, "Is marble a mineral or a
+rock?". The retrieved data provides relevant context that helps the model formulate a more accurate
+and informed response. The retrieved data X1contains the question, "Is celestine a mineral or a
+rock?" This question is analogous to the query about marble, offering the model a direct parallel that
+aids in understanding how to distinguish between minerals and rocks. The similar structure helps
+the model apply the reasoning used for celestine to marble, reinforcing the process of categorizing
+geological substances. X2poses the more specific question, "What type of rock is marble?" It
+provides the model with additional information about the classification of marble within the broader
+category of rocks. This specific context helps the model not only affirm that marble is a rock but
+also understand its specific type, thereby enriching the model’s geological knowledge base. X3
+includes the question, "Is soapstone a mineral or a rock?" Similar to X1, it presents another instance
+of the mineral vs. rock distinction. The inclusion of different substances like soapstone reinforces
+the model’s ability to generalize the reasoning process across various materials, ensuring a robust
+understanding of the mineral and rock classification.
+Figure 9 presents a text-only example where the model is asked, "Which is a compound sentence?"
+The retrieved examples all ask the same question but with different options, which provide the model
+with varied contexts and sentence structures to learn from. The consistent retrieval of questions on
+compound sentences helps the model understand the syntactic characteristics that define compound
+sentences. By comparing and analyzing the different options presented in the retrieved examples, the
+model can improve its ability to identify compound sentences accurately.
+B Broader Impact
+Here, we outline several broader impacts of our work:
+Hallucination Similar to other large language models, RMR-integrated models like LLaV A might
+generate outputs that are not grounded in factual information or the input data provided. This
+phenomenon, known as hallucination, may raise concerns. Ensuring the reliability and accuracy of
+outputs in such sensitive domains is crucial, and further research is needed to mitigate these risks.
+Biases The RMR framework inherits biases from its base models, including the vision encoder
+(CLIP) and the vision LLMs (LLaV A, Qwen-VL, InternLM, and Gemini). These biases may be
+reflected in the retrieved examples and the model’s reasoning process. It is essential to address these
+biases to ensure fair and unbiased reasoning capabilities.
+Energy Consumption Although our approach is training-free, running inference still incurs energy
+consumption. The computational resources required for processing large volumes of data. Efforts
+should be made to optimize inference efficiency and explore sustainable computing practices to
+minimize the energy footprint of using RMR-enhanced models.
+17

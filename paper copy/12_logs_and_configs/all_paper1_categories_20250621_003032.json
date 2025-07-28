@@ -1,0 +1,335 @@
+{
+  "hybrid_retrieval": [
+    {
+      "arxiv_id": "2404.07220",
+      "title": "Blended RAG: Improving RAG (Retriever-Augmented Generation) Accuracy with Semantic Search and Hybrid Query-Based Retrievers",
+      "score": 0.9943976402282715,
+      "filepath": "all_paper1_downloads/2404.07220_Blended RAG Improving RAG Retriever-Augmented Gene.pdf"
+    },
+    {
+      "arxiv_id": "2503.23013",
+      "title": "DAT: Dynamic Alpha Tuning for Hybrid Retrieval in Retrieval-Augmented Generation",
+      "score": 0.994045615196228,
+      "filepath": "all_paper1_downloads/2503.23013_DAT Dynamic Alpha Tuning for Hybrid Retrieval in R.pdf"
+    },
+    {
+      "arxiv_id": "2406.00638",
+      "title": "COS-Mix: Cosine Similarity and Distance Fusion for Improved Information Retrieval",
+      "score": 0.9908910393714905,
+      "filepath": "all_paper1_downloads/2406.00638_COS-Mix Cosine Similarity and Distance Fusion for .pdf"
+    },
+    {
+      "arxiv_id": "2005.11401",
+      "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      "score": 0.9900716543197632,
+      "filepath": "all_paper1_downloads/2005.11401_Retrieval-Augmented Generation for Knowledge-Inten.pdf"
+    },
+    {
+      "arxiv_id": "2504.05324",
+      "title": "Hybrid Retrieval for Hallucination Mitigation in Large Language Models: A Comparative Analysis",
+      "score": 0.9897018671035767,
+      "filepath": "all_paper1_downloads/2504.05324_Hybrid Retrieval for Hallucination Mitigation in L.pdf"
+    },
+    {
+      "arxiv_id": "2412.16311",
+      "title": "HybGRAG: Hybrid Retrieval-Augmented Generation on Textual and Relational Knowledge Bases",
+      "score": 0.9870686531066895,
+      "filepath": "all_paper1_downloads/2412.16311_HybGRAG Hybrid Retrieval-Augmented Generation on T.pdf"
+    },
+    {
+      "arxiv_id": "2308.04215",
+      "title": "Hybrid Retrieval-Augmented Generation for Real-time Composition Assistance",
+      "score": 0.9829109311103821,
+      "filepath": "all_paper1_downloads/2308.04215_Hybrid Retrieval-Augmented Generation for Real-tim.pdf"
+    },
+    {
+      "arxiv_id": "2409.09046",
+      "title": "HyPA-RAG: A Hybrid Parameter Adaptive Retrieval-Augmented Generation System for AI Legal and Policy Applications",
+      "score": 0.9804992079734802,
+      "filepath": "all_paper1_downloads/2409.09046_HyPA-RAG A Hybrid Parameter Adaptive Retrieval-Aug.pdf"
+    },
+    {
+      "arxiv_id": "2410.01782",
+      "title": "Open-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models",
+      "score": 0.9728719592094421,
+      "filepath": "all_paper1_downloads/2410.01782_Open-RAG Enhanced Retrieval-Augmented Reasoning wi.pdf"
+    },
+    {
+      "arxiv_id": "2403.04256",
+      "title": "Federated Recommendation via Hybrid Retrieval Augmented Generation",
+      "score": 0.9727187752723694,
+      "filepath": "all_paper1_downloads/2403.04256_Federated Recommendation via Hybrid Retrieval Augm.pdf"
+    },
+    {
+      "arxiv_id": "2504.09554",
+      "title": "HD-RAG: Retrieval-Augmented Generation for Hybrid Documents Containing Text and Hierarchical Tables",
+      "score": 0.9137980937957764,
+      "filepath": "all_paper1_downloads/2504.09554_HD-RAG Retrieval-Augmented Generation for Hybrid D.pdf"
+    },
+    {
+      "arxiv_id": "2207.06300",
+      "title": "Re2G: Retrieve, Rerank, Generate",
+      "score": 0.9134673476219177,
+      "filepath": "all_paper1_downloads/2207.06300_Re2G Retrieve Rerank Generate.pdf"
+    },
+    {
+      "arxiv_id": "2106.05346",
+      "title": "End-to-End Training of Multi-Document Reader and Retriever for Open-Domain Question Answering",
+      "score": 0.903671383857727,
+      "filepath": "all_paper1_downloads/2106.05346_End-to-End Training of Multi-Document Reader and R.pdf"
+    },
+    {
+      "arxiv_id": "2502.16767",
+      "title": "A Hybrid Approach to Information Retrieval and Answer Generation for Regulatory Texts",
+      "score": 0.9032446146011353,
+      "filepath": "all_paper1_downloads/2502.16767_A Hybrid Approach to Information Retrieval and Ans.pdf"
+    },
+    {
+      "arxiv_id": "2501.16276",
+      "title": "URAG: Implementing a Unified Hybrid RAG for Precise Answers in University Admission Chatbots -- A Case Study at HCMUT",
+      "score": 0.8921102285385132,
+      "filepath": "all_paper1_downloads/2501.16276_URAG Implementing a Unified Hybrid RAG for Precise.pdf"
+    },
+    {
+      "arxiv_id": "2406.06575",
+      "title": "Ask-EDA: A Design Assistant Empowered by LLM, Hybrid RAG and Abbreviation De-hallucination",
+      "score": 0.892109751701355,
+      "filepath": "all_paper1_downloads/2406.06575_Ask-EDA A Design Assistant Empowered by LLM Hybrid.pdf"
+    },
+    {
+      "arxiv_id": "2402.03367",
+      "title": "RAG-Fusion: a New Take on Retrieval-Augmented Generation",
+      "score": 0.8919371366500854,
+      "filepath": "all_paper1_downloads/2402.03367_RAG-Fusion a New Take on Retrieval-Augmented Gener.pdf"
+    },
+    {
+      "arxiv_id": "2502.18470",
+      "title": "Spatial-RAG: Spatial Retrieval Augmented Generation for Real-World Spatial Reasoning Questions",
+      "score": 0.8345637917518616,
+      "filepath": "all_paper1_downloads/2502.18470_Spatial-RAG Spatial Retrieval Augmented Generation.pdf"
+    },
+    {
+      "arxiv_id": "2407.16833",
+      "title": "Retrieval Augmented Generation or Long-Context LLMs? A Comprehensive Study and Hybrid Approach",
+      "score": 0.8164645433425903,
+      "filepath": "all_paper1_downloads/2407.16833_Retrieval Augmented Generation or Long-Context LLM.pdf"
+    },
+    {
+      "arxiv_id": "2212.14024",
+      "title": "Demonstrate-Search-Predict: Composing retrieval and language models for knowledge-intensive NLP",
+      "score": 0.7973059415817261,
+      "filepath": "all_paper1_downloads/2212.14024_Demonstrate-Search-Predict Composing retrieval and.pdf"
+    },
+    {
+      "arxiv_id": "2112.04426",
+      "title": "Improving language models by retrieving from trillions of tokens",
+      "score": 0.40703704953193665,
+      "filepath": "all_paper1_downloads/2112.04426_Improving language models by retrieving from trill.pdf"
+    }
+  ],
+  "adaptive_rag": [
+    {
+      "arxiv_id": "2401.15884",
+      "title": "Corrective Retrieval Augmented Generation",
+      "score": 0.8164593577384949,
+      "filepath": "all_paper1_downloads/2401.15884_Corrective Retrieval Augmented Generation.pdf"
+    },
+    {
+      "arxiv_id": "2310.11511",
+      "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+      "score": 0.754001259803772,
+      "filepath": "all_paper1_downloads/2310.11511_Self-RAG Learning to Retrieve Generate and Critiqu.pdf"
+    },
+    {
+      "arxiv_id": "2401.13256",
+      "title": "UniMS-RAG: A Unified Multi-source Retrieval-Augmented Generation for Personalized Dialogue Systems",
+      "score": 0.6505689024925232,
+      "filepath": "all_paper1_downloads/2401.13256_UniMS-RAG A Unified Multi-source Retrieval-Augment.pdf"
+    },
+    {
+      "arxiv_id": "2310.05002",
+      "title": "Self-Knowledge Guided Retrieval Augmentation for Large Language Models",
+      "score": 0.5617244243621826,
+      "filepath": "all_paper1_downloads/2310.05002_Self-Knowledge Guided Retrieval Augmentation for L.pdf"
+    },
+    {
+      "arxiv_id": "2310.01352",
+      "title": "RA-DIT: Retrieval-Augmented Dual Instruction Tuning",
+      "score": 0.5307533144950867,
+      "filepath": "all_paper1_downloads/2310.01352_RA-DIT Retrieval-Augmented Dual Instruction Tuning.pdf"
+    },
+    {
+      "arxiv_id": "2405.20680",
+      "title": "Unraveling and Mitigating Retriever Inconsistencies in Retrieval-Augmented Large Language Models",
+      "score": 0.43748193979263306,
+      "filepath": "all_paper1_downloads/2405.20680_Unraveling and Mitigating Retriever Inconsistencie.pdf"
+    },
+    {
+      "arxiv_id": "2002.08909",
+      "title": "REALM: Retrieval-Augmented Language Model Pre-Training",
+      "score": 0.4069587290287018,
+      "filepath": "all_paper1_downloads/2002.08909_REALM Retrieval-Augmented Language Model Pre-Train.pdf"
+    }
+  ],
+  "query_processing": [
+    {
+      "arxiv_id": "2502.18139",
+      "title": "LevelRAG: Enhancing Retrieval-Augmented Generation with Multi-hop Logic Planning over Rewriting Augmented Searchers",
+      "score": 0.994888961315155,
+      "filepath": "all_paper1_downloads/2502.18139_LevelRAG Enhancing Retrieval-Augmented Generation .pdf"
+    },
+    {
+      "arxiv_id": "2403.14403v2",
+      "title": "Adaptive-RAG: Learning to Adapt Retrieval-Augmented Large Language Models through Question Complexity",
+      "score": 0.903404176235199,
+      "filepath": "all_paper1_downloads/2403.14403v2_Adaptive-RAG Learning to Adapt Retrieval-Augmented.pdf"
+    },
+    {
+      "arxiv_id": "2404.04302",
+      "title": "CBR-RAG: Case-Based Reasoning for Retrieval Augmented Generation in LLMs for Legal Question Answering",
+      "score": 0.704712450504303,
+      "filepath": "all_paper1_downloads/2404.04302_CBR-RAG Case-Based Reasoning for Retrieval Augment.pdf"
+    },
+    {
+      "arxiv_id": "2401.18059",
+      "title": "RAPTOR: Recursive Abstractive Processing for Tree-Organized Retrieval",
+      "score": 0.591882050037384,
+      "filepath": "all_paper1_downloads/2401.18059_RAPTOR Recursive Abstractive Processing for Tree-O.pdf"
+    },
+    {
+      "arxiv_id": "2305.06983",
+      "title": "Active Retrieval Augmented Generation",
+      "score": 0.5615981817245483,
+      "filepath": "all_paper1_downloads/2305.06983_Active Retrieval Augmented Generation.pdf"
+    },
+    {
+      "arxiv_id": "2408.01107",
+      "title": "BioRAG: A RAG-LLM Framework for Biological Question Reasoning",
+      "score": 0.5307170748710632,
+      "filepath": "all_paper1_downloads/2408.01107_BioRAG A RAG-LLM Framework for Biological Question.pdf"
+    },
+    {
+      "arxiv_id": "2212.10509",
+      "title": "Interleaving Retrieval with Chain-of-Thought Reasoning for Knowledge-Intensive Multi-Step Questions",
+      "score": 0.5306951999664307,
+      "filepath": "all_paper1_downloads/2212.10509_Interleaving Retrieval with Chain-of-Thought Reaso.pdf"
+    },
+    {
+      "arxiv_id": "2305.14283",
+      "title": "Query Rewriting for Retrieval-Augmented Large Language Models",
+      "score": 0.5306754112243652,
+      "filepath": "all_paper1_downloads/2305.14283_Query Rewriting for Retrieval-Augmented Large Lang.pdf"
+    },
+    {
+      "arxiv_id": "2405.12363",
+      "title": "Question-Based Retrieval using Atomic Units for Enterprise RAG",
+      "score": 0.49952951073646545,
+      "filepath": "all_paper1_downloads/2405.12363_Question-Based Retrieval using Atomic Units for En.pdf"
+    },
+    {
+      "arxiv_id": "2007.01282",
+      "title": "Leveraging Passage Retrieval with Generative Models for Open Domain Question Answering",
+      "score": 0.49951815605163574,
+      "filepath": "all_paper1_downloads/2007.01282_Leveraging Passage Retrieval with Generative Model.pdf"
+    },
+    {
+      "arxiv_id": "2406.14891",
+      "title": "Generate-then-Ground in Retrieval-Augmented Generation for Multi-hop Question Answering",
+      "score": 0.4683164358139038,
+      "filepath": "all_paper1_downloads/2406.14891_Generate-then-Ground in Retrieval-Augmented Genera.pdf"
+    },
+    {
+      "arxiv_id": "2407.01219",
+      "title": "Searching for Best Practices in Retrieval-Augmented Generation",
+      "score": 0.43746259808540344,
+      "filepath": "all_paper1_downloads/2407.01219_Searching for Best Practices in Retrieval-Augmente.pdf"
+    },
+    {
+      "arxiv_id": "2404.00610",
+      "title": "RQ-RAG: Learning to Refine Queries for Retrieval Augmented Generation",
+      "score": 0.40697696805000305,
+      "filepath": "all_paper1_downloads/2404.00610_RQ-RAG Learning to Refine Queries for Retrieval Au.pdf"
+    },
+    {
+      "arxiv_id": "2210.02928",
+      "title": "MuRAG: Multimodal Retrieval-Augmented Generator for Open Question Answering over Images and Text",
+      "score": 0.40694475173950195,
+      "filepath": "all_paper1_downloads/2210.02928_MuRAG Multimodal Retrieval-Augmented Generator for.pdf"
+    }
+  ],
+  "knowledge_fusion": [
+    {
+      "arxiv_id": "2408.04948",
+      "title": "HybridRAG: Integrating Knowledge Graphs and Vector Retrieval Augmented Generation for Efficient Information Extraction",
+      "score": 0.986052393913269,
+      "filepath": "all_paper1_downloads/2408.04948_HybridRAG Integrating Knowledge Graphs and Vector .pdf"
+    },
+    {
+      "arxiv_id": "2408.05141",
+      "title": "A Hybrid RAG System with Comprehensive Enhancement on Complex Reasoning",
+      "score": 0.9138166308403015,
+      "filepath": "all_paper1_downloads/2408.05141_A Hybrid RAG System with Comprehensive Enhancement.pdf"
+    },
+    {
+      "arxiv_id": "2405.14831",
+      "title": "HippoRAG: Neurobiologically Inspired Long-Term Memory for Large Language Models",
+      "score": 0.8165819048881531,
+      "filepath": "all_paper1_downloads/2405.14831_HippoRAG Neurobiologically Inspired Long-Term Memo.pdf"
+    },
+    {
+      "arxiv_id": "2310.05149",
+      "title": "Retrieval-Generation Synergy Augmented Large Language Models",
+      "score": 0.7762343883514404,
+      "filepath": "all_paper1_downloads/2310.05149_Retrieval-Generation Synergy Augmented Large Langu.pdf"
+    },
+    {
+      "arxiv_id": "2402.07630",
+      "title": "G-Retriever: Retrieval-Augmented Generation for Textual Graph Understanding and Question Answering",
+      "score": 0.7537294030189514,
+      "filepath": "all_paper1_downloads/2402.07630_G-Retriever Retrieval-Augmented Generation for Tex.pdf"
+    },
+    {
+      "arxiv_id": "2412.07420v1",
+      "title": "RAG-based Question Answering over Heterogeneous Data and Text",
+      "score": 0.7049320936203003,
+      "filepath": "all_paper1_downloads/2412.07420v1_RAG-based Question Answering over Heterogeneous Da.pdf"
+    }
+  ],
+  "multimodal_rag": [
+    {
+      "arxiv_id": "2410.10594",
+      "title": "VisRAG: Vision-based Retrieval-augmented Generation on Multi-modality Documents",
+      "score": 0.7539428472518921,
+      "filepath": "all_paper1_downloads/2410.10594_VisRAG Vision-based Retrieval-augmented Generation.pdf"
+    },
+    {
+      "arxiv_id": "2405.20834",
+      "title": "Retrieval Meets Reasoning: Even High-school Textbook Knowledge Benefits Multimodal Reasoning",
+      "score": 0.6783895492553711,
+      "filepath": "all_paper1_downloads/2405.20834_Retrieval Meets Reasoning Even High-school Textboo.pdf"
+    }
+  ],
+  "domain_specific": [
+    {
+      "arxiv_id": "2504.16121",
+      "title": "LegalRAG: A Hybrid RAG System for Multilingual Legal Information Retrieval",
+      "score": 0.923014223575592,
+      "filepath": "all_paper1_downloads/2504.16121_LegalRAG A Hybrid RAG System for Multilingual Lega.pdf"
+    }
+  ],
+  "evaluation_methods": [
+    {
+      "arxiv_id": "2310.14393",
+      "title": "Merging Generated and Retrieved Knowledge for Open-Domain QA",
+      "score": 0.7762324810028076,
+      "filepath": "all_paper1_downloads/2310.14393_Merging Generated and Retrieved Knowledge for Open.pdf"
+    },
+    {
+      "arxiv_id": "2506.00054v1",
+      "title": "Retrieval-Augmented Generation: A Comprehensive Survey of Architectures, Enhancements, and Robustness Frontiers",
+      "score": 0.70500248670578,
+      "filepath": "all_paper1_downloads/2506.00054v1_Retrieval-Augmented Generation A Comprehensive Sur.pdf"
+    }
+  ],
+  "others": []
+}

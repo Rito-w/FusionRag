@@ -1,0 +1,882 @@
+{
+  "timestamp": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper",
+  "moved_files": 167,
+  "removed_duplicates": 32,
+  "file_movements": [
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/detailed_analysis_plan.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/detailed_analysis_plan.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper_analysis_results_20250620_210047.json",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/paper_analysis_results_20250620_210047.json",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/analyze_paper1_papers.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/analyze_paper1_papers.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.09114v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.09114v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2009.13628.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2009.13628.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10175v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.10175v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10030v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.10030v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10408v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.10408v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.09657v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.09657v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_categories.json",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/paper1_categories.json",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11183v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11183v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_analysis_summary_20250621_002013.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/paper1_analysis_summary_20250621_002013.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2406.12345v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2406.12345v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.08074v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.08074v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.08500v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.08500v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/extracted_papers_log.json",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/extracted_papers_log.json",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10559v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.10559v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11452v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11452v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/final_innovation_analysis.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/final_innovation_analysis.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2405.67890v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2405.67890v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10380v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.10380v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11591v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11591v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11600v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11600v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/all_paper1_download_log_20250621_003032.json",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/all_paper1_download_log_20250621_003032.json",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11474v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11474v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/sort_all_pdfs_by_field.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/sort_all_pdfs_by_field.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/arxiv_auto_search_and_download.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/arxiv_auto_search_and_download.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10462v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.10462v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.21384v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.21384v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2007.11151.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2007.11151.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/download_key_papers.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/download_key_papers.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/organization_report.json",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/organization_report.json",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/organize_paper_directory.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/organize_paper_directory.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10802v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.10802v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2102.13259.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2102.13259.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11499v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11499v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11415v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11415v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2412.15262v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2412.15262v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11421v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11421v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_comprehensive_analysis.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/paper1_comprehensive_analysis.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/independent_paper_analysis.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/independent_paper_analysis.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/batch_remaining_papers_analysis.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/batch_remaining_papers_analysis.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2405.12345v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2405.12345v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2310.65432v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2310.65432v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11363v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11363v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11502v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11502v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11555v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11555v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2112.02474.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2112.02474.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2011.01708.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2011.01708.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.09645v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.09645v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10960v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.10960v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.08938v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.08938v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2308.43210v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2308.43210v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/detailed_technical_plan.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/detailed_technical_plan.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.09542v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.09542v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/download_and_sort_arxiv_papers.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/download_and_sort_arxiv_papers.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1.json",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/paper1.json",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2402.45678v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2402.45678v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.08283v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.08283v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.08173v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.08173v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11591v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11591v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11555v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11555v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/comprehensive_53_papers_analysis_20250621_003159.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/comprehensive_53_papers_analysis_20250621_003159.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2403.89012v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2403.89012v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/download_paper1_papers.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/download_paper1_papers.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/download_all_paper1.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/download_all_paper1.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/final_research_directions_and_innovations.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/final_research_directions_and_innovations.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/analyze_all_53_papers.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/analyze_all_53_papers.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/final_research_summary.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/final_research_summary.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.09114v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.09114v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10844v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.10844v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2309.54321v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2309.54321v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11999v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11999v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2402.34567v3",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2402.34567v3",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2404.56789v2",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2404.56789v2",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.08479v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.08479v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/manual_analysis_summary.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/manual_analysis_summary.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.08173v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.08173v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/download_paper1_fixed.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/download_paper1_fixed.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2403.98765v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2403.98765v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/research_direction_report.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/research_direction_report.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.09114v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.09114v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/batch_analyze_remaining_papers.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/batch_analyze_remaining_papers.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/analyze_papers.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/analyze_papers.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.09669v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.09669v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/code_learning_plan.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/code_learning_plan.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_download_log.json",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/paper1_download_log.json",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.08074v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.08074v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10844v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.10844v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11763v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11763v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2407.05658v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2407.05658v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.08364v2.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.08364v2.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2004.03982.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2004.03982.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11538v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11538v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10960v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.10960v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/organize_papers.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/organize_papers.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.09200v2.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.09200v2.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/executive_summary.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/executive_summary.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2112.14047.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2112.14047.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/innovation_directions_and_experiments.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/innovation_directions_and_experiments.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2201.04832.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2201.04832.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11698v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11698v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10821v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.10821v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.09247v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.09247v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.09669v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.09669v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.08938v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.08938v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10175v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.10175v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/experiment_plan.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/experiment_plan.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10408v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.10408v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11350v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11350v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/all_paper1_categories_20250621_003032.json",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/all_paper1_categories_20250621_003032.json",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/download_latest_papers.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/download_latest_papers.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/implementation_timeline.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/implementation_timeline.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/simple_pdf_converter.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/simple_pdf_converter.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11499v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11499v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/final_53_papers_insights.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/final_53_papers_insights.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11499v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11499v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11421v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11421v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/manual_paper_analysis.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/manual_paper_analysis.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2401.23456v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2401.23456v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10030v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.10030v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11600v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11600v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11376v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11376v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11350v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11350v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2209.11064.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2209.11064.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/基于大语言模型的混合检索系统整体架构.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/基于大语言模型的混合检索系统整体架构.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11352v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11352v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11452v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11452v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11727v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11727v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.08364v2.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.08364v2.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2403.14171v3",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2403.14171v3",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/pure_text_innovation_analysis.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/pure_text_innovation_analysis.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/final_manual_analysis_summary.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/final_manual_analysis_summary.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11659v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11659v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.08479v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.08479v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.09657v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.09657v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.21384v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.21384v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/cross_modal_papers_summary.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/cross_modal_papers_summary.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2312.87654v2",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2312.87654v2",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.07400v2",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.07400v2",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2404.34567v2",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2404.34567v2",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11567v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11567v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_key_insights.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/paper1_key_insights.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11567v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11567v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.09409v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.09409v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/realistic_research_direction_report.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/realistic_research_direction_report.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11603v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11603v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11727v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11727v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/comprehensive_analysis_report.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/11_analysis_results/comprehensive_analysis_report.md",
+      "category": "11_analysis_results"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.10416v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.10416v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11183v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11183v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/1901.02004v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/1901.02004v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2105.00001.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2105.00001.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11502v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11502v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11603v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.11603v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/research_innovation_plan.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/research_innovation_plan.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2503.03215v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2503.03215v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11415v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11415v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2311.76543v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2311.76543v1",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/extract_top_papers_text.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/extract_top_papers_text.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/convert_top_papers.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/convert_top_papers.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.01256v1.pdf",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/09_applications/2506.01256v1.pdf",
+      "category": "09_applications"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11474v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11474v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11659v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11659v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.11376v1.md",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11376v1.md",
+      "category": "12_logs_and_configs"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/convert_remaining_papers.py",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/10_tools_and_scripts/convert_remaining_papers.py",
+      "category": "10_tools_and_scripts"
+    },
+    {
+      "source": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/2506.09247v1",
+      "target": "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.09247v1",
+      "category": "12_logs_and_configs"
+    }
+  ],
+  "removed_files": [
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/02_multimodal_retrieval/2506.15677v1_Embodied Web Agents Bridging Physical-Digital Realms for Int.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/06_recent_downloads/2506.15677v1_Embodied Web Agents Bridging Physical-Digital Realms for Int.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_downloads/2408.04948_HybridRAG Integrating Knowledge Graphs and Vector Retrieval .pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_downloads/2005.11401_Retrieval-Augmented Generation for Knowledge-Intensive NLP T.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_downloads/2404.07220_Blended RAG Improving RAG Retriever-Augmented Generation Acc.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_downloads/2409.09046_HyPA-RAG A Hybrid Parameter Adaptive Retrieval-Augmented Gen.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_downloads/2412.16311_HybGRAG Hybrid Retrieval-Augmented Generation on Textual and.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/01_hybrid_retrieval/HybGRAG_Hybrid_Retrieval-Augmented_Generation_on_Textual_and_Relational_Knowledge_Bases.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_downloads/2308.04215_Hybrid Retrieval-Augmented Generation for Real-time Composit.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_downloads/2502.18139_LevelRAG Enhancing Retrieval-Augmented Generation with Multi.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_downloads/2503.23013_DAT Dynamic Alpha Tuning for Hybrid Retrieval in Retrieval-A.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/01_hybrid_retrieval/DAT_Dynamic_Alpha_Tuning_for_Hybrid_Retrieval_in_Retrieval-Augmented_Generation.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_downloads/2406.00638_COS-Mix Cosine Similarity and Distance Fusion for Improved I.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/paper1_downloads/2504.05324_Hybrid Retrieval for Hallucination Mitigation in Large Langu.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/06_recent_downloads/2506.15655v1_cAST Enhancing Code Retrieval-Augmented Generation with Stru.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/06_recent_downloads/2506.15662v1_CC-LEARN Cohort-based Consistency Learning.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/01_hybrid_retrieval/Retrieval-Augmented_Generation_for_Large_Language_Models_A_Survey.pdf",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2406.12345v1",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.10559v1",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.08283v1",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2401.23456v1",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2412.15262v1",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2405.12345v1",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.09114v1",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.10821v1",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.11499v1",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2403.14171v3",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.07400v2",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.10416v1",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/1901.02004v1",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2503.03215v1",
+    "/Users/wrt/PycharmProjects/grid-retrieval-system/paper/12_logs_and_configs/2506.09247v1"
+  ],
+  "category_distribution": {
+    "11_analysis_results": 17,
+    "12_logs_and_configs": 89,
+    "10_tools_and_scripts": 18,
+    "09_applications": 43
+  }
+}

@@ -1,0 +1,11 @@
+# ????
+# ???
+# pyserini
+# faiss-cpu
+# hnswlib
+# onnxruntime
+# networkx
+# scikit-learn
+# numpy
+# pandas
+# tqdm

@@ -1,0 +1,154 @@
+[
+  {
+    "arxiv_id": "2502.18139",
+    "title": "LevelRAG: Enhancing Retrieval-Augmented Generation with Multi-hop Logic Planning over Rewriting Augmented Searchers",
+    "filepath": "paper1_downloads/2502.18139_LevelRAG Enhancing Retrieval-Augmented Generation with Multi.pdf",
+    "score": 0.994888961315155,
+    "abstract": "Retrieval-Augmented Generation (RAG) is a crucial method for mitigating hallucinations in Large Language Models (LLMs) and integrating external knowledge into their responses. Existing RAG methods typically employ query rewriting to clarify the user intent and manage multi-hop logic, while using hybrid retrieval to expand search scope. However, the tight coupling of query rewriting to the dense retriever limits its compatibility with hybrid retrieval, impeding further RAG performance improvements. To address this challenge, we introduce a high-level searcher that decomposes complex queries into atomic queries, independent of any retriever-specific optimizations. Additionally, to harness the strengths of sparse retrievers for precise keyword retrieval, we have developed a new sparse searcher that employs Lucene syntax to enhance retrieval accuracy.Alongside web and dense searchers, these components seamlessly collaborate within our proposed method, \\textbf{LevelRAG}. In LevelRAG, the high-level searcher orchestrates the retrieval logic, while the low-level searchers (sparse, web, and dense) refine the queries for optimal retrieval. This approach enhances both the completeness and accuracy of the retrieval process, overcoming challenges associated with current query rewriting techniques in hybrid retrieval scenarios. Empirical experiments conducted on five datasets, encompassing both single-hop and multi-hop question answering tasks, demonstrate the superior performance of LevelRAG compared to existing RAG methods. Notably, LevelRAG outperforms the state-of-the-art proprietary model, GPT4o, underscoring its effectiveness and potential impact on the RAG field.",
+    "authors": [
+      "Zhuocheng Zhang",
+      "Yang Feng",
+      "and Min Zhang"
+    ],
+    "publish_time": "20250225"
+  },
+  {
+    "arxiv_id": "2404.07220",
+    "title": "Blended RAG: Improving RAG (Retriever-Augmented Generation) Accuracy with Semantic Search and Hybrid Query-Based Retrievers",
+    "filepath": "paper1_downloads/2404.07220_Blended RAG Improving RAG Retriever-Augmented Generation Acc.pdf",
+    "score": 0.9943976402282715,
+    "abstract": "Retrieval-Augmented Generation (RAG) is a prevalent approach to infuse a private knowledge base of documents with Large Language Models (LLM) to build Generative Q\\&A (Question-Answering) systems. However, RAG accuracy becomes increasingly challenging as the corpus of documents scales up, with Retrievers playing an outsized role in the overall RAG accuracy by extracting the most relevant document from the corpus to provide context to the LLM. In this paper, we propose the 'Blended RAG' method of leveraging semantic search techniques, such as Dense Vector indexes and Sparse Encoder indexes, blended with hybrid query strategies. Our study achieves better retrieval results and sets new benchmarks for IR (Information Retrieval) datasets like NQ and TREC-COVID datasets. We further extend such a 'Blended Retriever' to the RAG system to demonstrate far superior results on Generative Q\\&A datasets like SQUAD, even surpassing fine-tuning performance.",
+    "authors": [
+      "Kunal Sawarkar",
+      "Abhilasha Mangal",
+      "Shivam Raj Solanki"
+    ],
+    "publish_time": "20240322"
+  },
+  {
+    "arxiv_id": "2503.23013",
+    "title": "DAT: Dynamic Alpha Tuning for Hybrid Retrieval in Retrieval-Augmented Generation",
+    "filepath": "paper1_downloads/2503.23013_DAT Dynamic Alpha Tuning for Hybrid Retrieval in Retrieval-A.pdf",
+    "score": 0.994045615196228,
+    "abstract": "Hybrid retrieval techniques in Retrieval-Augmented Generation (RAG) systems enhance information retrieval by combining dense and sparse (e.g., BM25-based) retrieval methods. However, existing approaches struggle with adaptability, as fixed weighting schemes fail to adjust to different queries. To address this, we propose DAT (Dynamic Alpha Tuning), a novel hybrid retrieval framework that dynamically balances dense retrieval and BM25 for each query. DAT leverages a large language model (LLM) to evaluate the effectiveness of the top-1 results from both retrieval methods, assigning an effectiveness score to each. It then calibrates the optimal weighting factor through effectiveness score normalization, ensuring a more adaptive and query-aware weighting between the two approaches. Empirical results show that DAT consistently significantly outperforms fixed-weighting hybrid retrieval methods across various evaluation metrics. Even on smaller models, DAT delivers strong performance, highlighting its efficiency and adaptability.",
+    "authors": [
+      "Hsin-Ling Hsu",
+      "Jengnan Tzeng"
+    ],
+    "publish_time": "20250329"
+  },
+  {
+    "arxiv_id": "2406.00638",
+    "title": "COS-Mix: Cosine Similarity and Distance Fusion for Improved Information Retrieval",
+    "filepath": "paper1_downloads/2406.00638_COS-Mix Cosine Similarity and Distance Fusion for Improved I.pdf",
+    "score": 0.9908910393714905,
+    "abstract": "This study proposes a novel hybrid retrieval strategy for Retrieval-Augmented Generation (RAG) that integrates cosine similarity and cosine distance measures to improve retrieval performance, particularly for sparse data. The traditional cosine similarity measure is widely used to capture the similarity between vectors in high-dimensional spaces. However, it has been shown that this measure can yield arbitrary results in certain scenarios. To address this limitation, we incorporate cosine distance measures to provide a complementary perspective by quantifying the dissimilarity between vectors. Our approach is experimented on proprietary data, unlike recent publications that have used open-source datasets. The proposed method demonstrates enhanced retrieval performance and provides a more comprehensive understanding of the semantic relationships between documents or items. This hybrid strategy offers a promising solution for efficiently and accurately retrieving relevant information in knowledge-intensive applications, leveraging techniques such as BM25 (sparse) retrieval , vector (Dense) retrieval, and cosine distance based retrieval to facilitate efficient information retrieval.",
+    "authors": [
+      "Kush Juvekar",
+      "Anupam Purwar"
+    ],
+    "publish_time": "20240602"
+  },
+  {
+    "arxiv_id": "2005.11401",
+    "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+    "filepath": "paper1_downloads/2005.11401_Retrieval-Augmented Generation for Knowledge-Intensive NLP T.pdf",
+    "score": 0.9900716543197632,
+    "abstract": "Large pre-trained language models have been shown to store factual knowledge in their parameters, and achieve state-of-the-art results when fine-tuned on downstream NLP tasks. However, their ability to access and precisely manipulate knowledge is still limited, and hence on knowledge-intensive tasks, their performance lags behind task-specific architectures. Additionally, providing provenance for their decisions and updating their world knowledge remain open research problems. Pre-trained models with a differentiable access mechanism to explicit non-parametric memory can overcome this issue, but have so far been only investigated for extractive downstream tasks. We explore a general-purpose fine-tuning recipe for retrieval-augmented generation (RAG) -- models which combine pre-trained parametric and non-parametric memory for language generation. We introduce RAG models where the parametric memory is a pre-trained seq2seq model and the non-parametric memory is a dense vector index of Wikipedia, accessed with a pre-trained neural retriever. We compare two RAG formulations, one which conditions on the same retrieved passages across the whole generated sequence, the other can use different passages per token. We fine-tune and evaluate our models on a wide range of knowledge-intensive NLP tasks and set the state-of-the-art on three open domain QA tasks, outperforming parametric seq2seq models and task-specific retrieve-and-extract architectures. For language generation tasks, we find that RAG models generate more specific, diverse and factual language than a state-of-the-art parametric-only seq2seq baseline.",
+    "authors": [
+      "Patrick Lewis",
+      "Ethan Perez",
+      "Aleksandra Piktus",
+      "Fabio Petroni",
+      "Vladimir Karpukhin",
+      "Naman Goyal",
+      "Heinrich K\\\"uttler",
+      "Mike Lewis",
+      "Wen-tau Yih",
+      "Tim Rockt\\\"aschel",
+      "Sebastian Riedel",
+      "Douwe Kiela"
+    ],
+    "publish_time": "20200522"
+  },
+  {
+    "arxiv_id": "2504.05324",
+    "title": "Hybrid Retrieval for Hallucination Mitigation in Large Language Models: A Comparative Analysis",
+    "filepath": "paper1_downloads/2504.05324_Hybrid Retrieval for Hallucination Mitigation in Large Langu.pdf",
+    "score": 0.9897018671035767,
+    "abstract": "Large Language Models (LLMs) excel in language comprehension and generation but are prone to hallucinations, producing factually incorrect or unsupported outputs. Retrieval Augmented Generation (RAG) systems address this issue by grounding LLM responses with external knowledge. This study evaluates the relationship between retriever effectiveness and hallucination reduction in LLMs using three retrieval approaches: sparse retrieval based on BM25 keyword search, dense retrieval using semantic search with Sentence Transformers, and a proposed hybrid retrieval module. The hybrid module incorporates query expansion and combines the results of sparse and dense retrievers through a dynamically weighted Reciprocal Rank Fusion score. Using the HaluBench dataset, a benchmark for hallucinations in question answering tasks, we assess retrieval performance with metrics such as mean average precision and normalised discounted cumulative gain, focusing on the relevance of the top three retrieved documents. Results show that the hybrid retriever achieves better relevance scores, outperforming both sparse and dense retrievers. Further evaluation of LLM-generated answers against ground truth using metrics such as accuracy, hallucination rate, and rejection rate reveals that the hybrid retriever achieves the highest accuracy on fails, the lowest hallucination rate, and the lowest rejection rate. These findings highlight the hybrid retriever's ability to enhance retrieval relevance, reduce hallucination rates, and improve LLM reliability, emphasising the importance of advanced retrieval techniques in mitigating hallucinations and improving response accuracy.",
+    "authors": [
+      "Chandana Sree Mala",
+      "Gizem Gezici",
+      "Fosca Giannotti"
+    ],
+    "publish_time": "20250228"
+  },
+  {
+    "arxiv_id": "2412.16311",
+    "title": "HybGRAG: Hybrid Retrieval-Augmented Generation on Textual and Relational Knowledge Bases",
+    "filepath": "paper1_downloads/2412.16311_HybGRAG Hybrid Retrieval-Augmented Generation on Textual and.pdf",
+    "score": 0.9870686531066895,
+    "abstract": "Given a semi-structured knowledge base (SKB), where text documents are interconnected by relations, how can we effectively retrieve relevant information to answer user questions? Retrieval-Augmented Generation (RAG) retrieves documents to assist large language models (LLMs) in question answering; while Graph RAG (GRAG) uses structured knowledge bases as its knowledge source. However, many questions require both textual and relational information from SKB - referred to as \"hybrid\" questions - which complicates the retrieval process and underscores the need for a hybrid retrieval method that leverages both information. In this paper, through our empirical analysis, we identify key insights that show why existing methods may struggle with hybrid question answering (HQA) over SKB. Based on these insights, we propose HybGRAG for HQA consisting of a retriever bank and a critic module, with the following advantages: (1) Agentic, it automatically refines the output by incorporating feedback from the critic module, (2) Adaptive, it solves hybrid questions requiring both textual and relational information with the retriever bank, (3) Interpretable, it justifies decision making with intuitive refinement path, and (4) Effective, it surpasses all baselines on HQA benchmarks. In experiments on the STaRK benchmark, HybGRAG achieves significant performance gains, with an average relative improvement in Hit@1 of 51%.",
+    "authors": [
+      "Meng-Chieh Lee",
+      "Qi Zhu",
+      "Costas Mavromatis",
+      "Zhen Han",
+      "Soji Adeshina",
+      "Vassilis N. Ioannidis",
+      "Huzefa Rangwala",
+      "Christos Faloutsos"
+    ],
+    "publish_time": "20241220"
+  },
+  {
+    "arxiv_id": "2408.04948",
+    "title": "HybridRAG: Integrating Knowledge Graphs and Vector Retrieval Augmented Generation for Efficient Information Extraction",
+    "filepath": "paper1_downloads/2408.04948_HybridRAG Integrating Knowledge Graphs and Vector Retrieval .pdf",
+    "score": 0.986052393913269,
+    "abstract": "Extraction and interpretation of intricate information from unstructured text data arising in financial applications, such as earnings call transcripts, present substantial challenges to large language models (LLMs) even using the current best practices to use Retrieval Augmented Generation (RAG) (referred to as VectorRAG techniques which utilize vector databases for information retrieval) due to challenges such as domain specific terminology and complex formats of the documents. We introduce a novel approach based on a combination, called HybridRAG, of the Knowledge Graphs (KGs) based RAG techniques (called GraphRAG) and VectorRAG techniques to enhance question-answer (Q&A) systems for information extraction from financial documents that is shown to be capable of generating accurate and contextually relevant answers. Using experiments on a set of financial earning call transcripts documents which come in the form of Q&A format, and hence provide a natural set of pairs of ground-truth Q&As, we show that HybridRAG which retrieves context from both vector database and KG outperforms both traditional VectorRAG and GraphRAG individually when evaluated at both the retrieval and generation stages in terms of retrieval accuracy and answer generation. The proposed technique has applications beyond the financial domain",
+    "authors": [
+      "Bhaskarjit Sarmah",
+      "Benika Hall",
+      "Rohan Rao",
+      "Sunil Patel",
+      "Stefano Pasquali",
+      "Dhagash Mehta"
+    ],
+    "publish_time": "20240809"
+  },
+  {
+    "arxiv_id": "2308.04215",
+    "title": "Hybrid Retrieval-Augmented Generation for Real-time Composition Assistance",
+    "filepath": "paper1_downloads/2308.04215_Hybrid Retrieval-Augmented Generation for Real-time Composit.pdf",
+    "score": 0.9829109311103821,
+    "abstract": "Retrieval augmentation enhances performance of traditional language models by incorporating additional context. However, the computational demands for retrieval augmented large language models (LLMs) pose a challenge when applying them to real-time tasks, such as composition assistance. To address this limitation, we propose the Hybrid Retrieval-Augmented Generation (HybridRAG) framework, a novel approach that efficiently combines a cloud-based LLM with a smaller, client-side, language model through retrieval augmented memory. This integration enables the client model to generate effective responses, benefiting from the LLM's capabilities and contextual information. Additionally, through an asynchronous memory update mechanism, the client model can deliver real-time completions swiftly to user inputs without the need to wait for responses from the cloud. Our experiments on five benchmark datasets demonstrate that HybridRAG significantly improves utility over client-only models while maintaining low latency.",
+    "authors": [
+      "Menglin Xia",
+      "Xuchao Zhang",
+      "Camille Couturier",
+      "Guoqing Zheng",
+      "Saravan Rajmohan",
+      "Victor Ruhle"
+    ],
+    "publish_time": "20230808"
+  },
+  {
+    "arxiv_id": "2409.09046",
+    "title": "HyPA-RAG: A Hybrid Parameter Adaptive Retrieval-Augmented Generation System for AI Legal and Policy Applications",
+    "filepath": "paper1_downloads/2409.09046_HyPA-RAG A Hybrid Parameter Adaptive Retrieval-Augmented Gen.pdf",
+    "score": 0.9804992079734802,
+    "abstract": "While Large Language Models (LLMs) excel in text generation and question-answering, their effectiveness in AI legal and policy is limited by outdated knowledge, hallucinations, and inadequate reasoning in complex contexts. Retrieval-Augmented Generation (RAG) systems improve response accuracy by integrating external knowledge but struggle with retrieval errors, poor context integration, and high costs, particularly in interpreting qualitative and quantitative AI legal texts. This paper introduces a Hybrid Parameter-Adaptive RAG (HyPA-RAG) system tailored for AI legal and policy, exemplified by NYC Local Law 144 (LL144). HyPA-RAG uses a query complexity classifier for adaptive parameter tuning, a hybrid retrieval strategy combining dense, sparse, and knowledge graph methods, and an evaluation framework with specific question types and metrics. By dynamically adjusting parameters, HyPA-RAG significantly improves retrieval accuracy and response fidelity. Testing on LL144 shows enhanced correctness, faithfulness, and contextual precision, addressing the need for adaptable NLP systems in complex, high-stakes AI legal and policy applications.",
+    "authors": [
+      "Rishi Kalra",
+      "Zekun Wu",
+      "Ayesha Gulley",
+      "Airlie Hilliard",
+      "Xin Guan",
+      "Adriano Koshiyama",
+      "Philip Treleaven"
+    ],
+    "publish_time": "20240829"
+  }
+]

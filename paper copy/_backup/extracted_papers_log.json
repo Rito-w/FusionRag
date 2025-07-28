@@ -1,0 +1,82 @@
+[
+  {
+    "arxiv_id": "2502.18139",
+    "title": "LevelRAG: Enhancing Retrieval-Augmented Generation with Multi-hop Logic Planning over Rewriting Augmented Searchers",
+    "score": 0.994888961315155,
+    "original_pdf": "all_paper1_downloads/2502.18139_LevelRAG Enhancing Retrieval-Augmented Generation .pdf",
+    "text_file": "top_papers_text/2502.18139_LevelRAG_ Enhancing Retrieval-.txt",
+    "total_pages": 11
+  },
+  {
+    "arxiv_id": "2404.07220",
+    "title": "Blended RAG: Improving RAG (Retriever-Augmented Generation) Accuracy with Semantic Search and Hybrid Query-Based Retrievers",
+    "score": 0.9943976402282715,
+    "original_pdf": "all_paper1_downloads/2404.07220_Blended RAG Improving RAG Retriever-Augmented Gene.pdf",
+    "text_file": "top_papers_text/2404.07220_Blended RAG_ Improving RAG (Re.txt",
+    "total_pages": 7
+  },
+  {
+    "arxiv_id": "2503.23013",
+    "title": "DAT: Dynamic Alpha Tuning for Hybrid Retrieval in Retrieval-Augmented Generation",
+    "score": 0.994045615196228,
+    "original_pdf": "all_paper1_downloads/2503.23013_DAT Dynamic Alpha Tuning for Hybrid Retrieval in R.pdf",
+    "text_file": "top_papers_text/2503.23013_DAT_ Dynamic Alpha Tuning for .txt",
+    "total_pages": 12
+  },
+  {
+    "arxiv_id": "2406.00638",
+    "title": "COS-Mix: Cosine Similarity and Distance Fusion for Improved Information Retrieval",
+    "score": 0.9908910393714905,
+    "original_pdf": "all_paper1_downloads/2406.00638_COS-Mix Cosine Similarity and Distance Fusion for .pdf",
+    "text_file": "top_papers_text/2406.00638_COS-Mix_ Cosine Similarity and.txt",
+    "total_pages": 10
+  },
+  {
+    "arxiv_id": "2005.11401",
+    "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+    "score": 0.9900716543197632,
+    "original_pdf": "all_paper1_downloads/2005.11401_Retrieval-Augmented Generation for Knowledge-Inten.pdf",
+    "text_file": "top_papers_text/2005.11401_Retrieval-Augmented Generation.txt",
+    "total_pages": 19
+  },
+  {
+    "arxiv_id": "2504.05324",
+    "title": "Hybrid Retrieval for Hallucination Mitigation in Large Language Models: A Comparative Analysis",
+    "score": 0.9897018671035767,
+    "original_pdf": "all_paper1_downloads/2504.05324_Hybrid Retrieval for Hallucination Mitigation in L.pdf",
+    "text_file": "top_papers_text/2504.05324_Hybrid Retrieval for Hallucina.txt",
+    "total_pages": 19
+  },
+  {
+    "arxiv_id": "2412.16311",
+    "title": "HybGRAG: Hybrid Retrieval-Augmented Generation on Textual and Relational Knowledge Bases",
+    "score": 0.9870686531066895,
+    "original_pdf": "all_paper1_downloads/2412.16311_HybGRAG Hybrid Retrieval-Augmented Generation on T.pdf",
+    "text_file": "top_papers_text/2412.16311_HybGRAG_ Hybrid Retrieval-Augm.txt",
+    "total_pages": 15
+  },
+  {
+    "arxiv_id": "2408.04948",
+    "title": "HybridRAG: Integrating Knowledge Graphs and Vector Retrieval Augmented Generation for Efficient Information Extraction",
+    "score": 0.986052393913269,
+    "original_pdf": "all_paper1_downloads/2408.04948_HybridRAG Integrating Knowledge Graphs and Vector .pdf",
+    "text_file": "top_papers_text/2408.04948_HybridRAG_ Integrating Knowled.txt",
+    "total_pages": 9
+  },
+  {
+    "arxiv_id": "2308.04215",
+    "title": "Hybrid Retrieval-Augmented Generation for Real-time Composition Assistance",
+    "score": 0.9829109311103821,
+    "original_pdf": "all_paper1_downloads/2308.04215_Hybrid Retrieval-Augmented Generation for Real-tim.pdf",
+    "text_file": "top_papers_text/2308.04215_Hybrid Retrieval-Augmented Gen.txt",
+    "total_pages": 12
+  },
+  {
+    "arxiv_id": "2409.09046",
+    "title": "HyPA-RAG: A Hybrid Parameter Adaptive Retrieval-Augmented Generation System for AI Legal and Policy Applications",
+    "score": 0.9804992079734802,
+    "original_pdf": "all_paper1_downloads/2409.09046_HyPA-RAG A Hybrid Parameter Adaptive Retrieval-Aug.pdf",
+    "text_file": "top_papers_text/2409.09046_HyPA-RAG_ A Hybrid Parameter A.txt",
+    "total_pages": 19
+  }
+]
