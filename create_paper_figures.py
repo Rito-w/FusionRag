@@ -40,7 +40,7 @@ def create_performance_comparison():
     improvements = [8.2, 7.2, 10.9, 2.2, 0, 0]
     
     # 方法类型
-    method_types = ['简单', '简单', '简单', '简单', '复杂', '并列']
+    method_types = ['Simple', 'Simple', 'Simple', 'Simple', 'Complex', 'Tie']
     
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
     
@@ -48,10 +48,10 @@ def create_performance_comparison():
     x = np.arange(len(datasets))
     width = 0.35
     
-    bars1 = ax1.bar(x - width/2, rrf_mrr, width, yerr=rrf_std, 
-                   label='RRF基线', color=colors['rrf'], alpha=0.8, capsize=5)
+    bars1 = ax1.bar(x - width/2, rrf_mrr, width, yerr=rrf_std,
+                   label='RRF Baseline', color=colors['rrf'], alpha=0.8, capsize=5)
     bars2 = ax1.bar(x + width/2, best_mrr, width, yerr=best_std,
-                   label='最佳方法', color=colors['simple'], alpha=0.8, capsize=5)
+                   label='Best Method', color=colors['simple'], alpha=0.8, capsize=5)
     
     ax1.set_xlabel('Dataset', fontsize=12)
     ax1.set_ylabel('MRR', fontsize=12)
@@ -71,13 +71,13 @@ def create_performance_comparison():
                 f'{height2:.3f}', ha='center', va='bottom', fontsize=9)
     
     # 子图2: 提升幅度
-    colors_by_type = [colors['simple'] if t == '简单' else colors['complex'] if t == '复杂' else colors['rrf'] 
+    colors_by_type = [colors['simple'] if t == 'Simple' else colors['complex'] if t == 'Complex' else colors['rrf']
                      for t in method_types]
-    
+
     bars3 = ax2.bar(datasets, improvements, color=colors_by_type, alpha=0.8)
-    ax2.set_xlabel('数据集', fontsize=12)
-    ax2.set_ylabel('提升幅度 (%)', fontsize=12)
-    ax2.set_title('简单方法相对于RRF的性能提升', fontsize=14, fontweight='bold')
+    ax2.set_xlabel('Dataset', fontsize=12)
+    ax2.set_ylabel('Improvement (%)', fontsize=12)
+    ax2.set_title('Performance Improvement of Simple Methods over RRF', fontsize=14, fontweight='bold')
     ax2.set_xticklabels(datasets, rotation=45)
     ax2.grid(True, alpha=0.3)
     
@@ -90,15 +90,15 @@ def create_performance_comparison():
     
     # 添加图例
     from matplotlib.patches import Patch
-    legend_elements = [Patch(facecolor=colors['simple'], label='简单方法最佳'),
-                      Patch(facecolor=colors['complex'], label='复杂方法最佳'),
-                      Patch(facecolor=colors['rrf'], label='并列/无提升')]
+    legend_elements = [Patch(facecolor=colors['simple'], label='Simple Method Best'),
+                      Patch(facecolor=colors['complex'], label='Complex Method Best'),
+                      Patch(facecolor=colors['rrf'], label='Tie/No Improvement')]
     ax2.legend(handles=legend_elements, loc='upper right')
     
     plt.tight_layout()
     plt.savefig('figures/performance_comparison.png', dpi=300, bbox_inches='tight')
     plt.savefig('figures/performance_comparison.pdf', bbox_inches='tight')
-    plt.show()
+    plt.close()
 
 def create_ablation_study():
     """创建消融实验图"""
@@ -145,7 +145,7 @@ def create_ablation_study():
     plt.tight_layout()
     plt.savefig('figures/ablation_study.png', dpi=300, bbox_inches='tight')
     plt.savefig('figures/ablation_study.pdf', bbox_inches='tight')
-    plt.show()
+    plt.close()
 
 def create_baseline_comparison():
     """创建基线对比图"""
@@ -185,7 +185,7 @@ def create_baseline_comparison():
     plt.tight_layout()
     plt.savefig('figures/baseline_comparison.png', dpi=300, bbox_inches='tight')
     plt.savefig('figures/baseline_comparison.pdf', bbox_inches='tight')
-    plt.show()
+    plt.close()
 
 def create_query_type_distribution():
     """创建查询类型分布图"""
@@ -254,7 +254,7 @@ def create_query_type_distribution():
     plt.tight_layout()
     plt.savefig('figures/query_type_distribution.png', dpi=300, bbox_inches='tight')
     plt.savefig('figures/query_type_distribution.pdf', bbox_inches='tight')
-    plt.show()
+    plt.close()
 
 def create_summary_figure():
     """创建论文核心发现总结图"""
@@ -321,12 +321,12 @@ def create_summary_figure():
     ax4.legend()
     ax4.grid(True, alpha=0.3)
     
-    plt.suptitle('Less is More: 简单线性融合优于复杂方法 - 核心发现', 
+    plt.suptitle('Less is More: Simple Linear Fusion Outperforms Complex Methods',
                 fontsize=16, fontweight='bold', y=0.98)
     plt.tight_layout()
     plt.savefig('figures/summary_figure.png', dpi=300, bbox_inches='tight')
     plt.savefig('figures/summary_figure.pdf', bbox_inches='tight')
-    plt.show()
+    plt.close()
 
 if __name__ == "__main__":
     # 创建输出目录
