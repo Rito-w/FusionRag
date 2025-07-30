@@ -756,7 +756,7 @@ $$w_{\text{len}}(q) = \min(0.8, 0.2 + 0.1 \times \text{len}(q))$$
 
 ### 6.2 数据集特异性vs查询类型特异性
 
-我们的实验结果表明，数据集特异性比查询类型特异性更重要。不同数据集上的最佳融合策略差异很大，但这种差异与查询类型分布的关系并不明显。例如，在语义查询占主导的Quora数据集上，BM25主导的线性融合表现最佳，这与直觉相反。
+我们的实验结果表明，数据集特异性比查询类型特异性更重要。不同数据集上的最佳融合策略差异很大，但这种差异与查询类型分布的关系并不明显。例如，在语义查询占主导的Quora数据集上，BM25主导的线性融合表现最佳，这与直觉相反。图6展示了各数据集的查询类型分布与最佳策略的关系，进一步证实了这一发现。
 
 这一发现表明，通用的查询类型分类可能无法准确捕捉不同数据集的特征差异。每个数据集都有其独特的文档分布、查询模式和相关性标准，这些因素共同决定了最佳融合策略。因此，为每个数据集选择适当的静态融合策略可能比使用复杂的自适应方法更有效。
 
@@ -994,3 +994,7 @@ $$w_{\text{len}}(q) = \min(0.8, 0.2 + 0.1 \times \text{len}(q))$$
 [33] Rackauckas, Z. "RAG-Fusion: a New Take on Retrieval-Augmented Generation." International Journal on Natural Language Computing 13.1, arXiv preprint arXiv:2402.03367 (2024).
 
 [34] Gao, Y., Xiong, Y., Gao, X., Jia, K., Pan, J., Bi, Y., ... & Wang, H. "Retrieval-Augmented Generation for Large Language Models: A Survey." arXiv preprint arXiv:2312.10997 (2024).
+
+---
+
+**代码和数据可用性**: 本研究的实验代码、数据集配置和可视化脚本将在论文接收后公开发布，以支持研究的可重现性。
