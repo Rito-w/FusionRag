@@ -83,9 +83,9 @@
 \begin{abstract}
 In information retrieval, multi-retriever fusion has become an important technique for improving retrieval performance. The conventional wisdom suggests that more complex fusion strategies yield better results, prompting researchers to develop increasingly sophisticated methods. However, our research challenges this assumption by proposing a "Less is More" perspective.
 
-Our experimental results reveal an interesting finding: \textbf{simple linear fusion methods can achieve or exceed the performance of complex methods on specific datasets}. Specifically, simple linear fusion outperforms the standard RRF method by 8.2\%, 7.2\%, and 10.9\% in MRR performance on FIQA, Quora, and SciDocs datasets respectively, with a 2.2\% improvement on SciFact dataset. Importantly, ablation experiments show that removing complex components (such as query analyzers) can improve performance in certain cases. Additionally, simple methods have significant advantages in computational efficiency, with inference speed significantly faster than complex methods.
+Our experimental results reveal an interesting finding: \textbf{under the specific datasets and experimental conditions of this study, simple linear fusion methods can in certain cases achieve or exceed the performance of complex methods}. Specifically, simple linear fusion outperforms the standard RRF method by 8.2\%, 7.2\%, and 10.9\% in MRR performance on FIQA, Quora, and SciDocs datasets respectively, with a 2.2\% improvement on SciFact dataset. Importantly, ablation experiments show that removing complex components (such as query analyzers) can improve performance in certain cases. Additionally, simple methods have significant advantages in computational efficiency, with inference speed significantly faster than complex methods.
 
-These findings provide empirical support for the hypothesis that "simple methods may be more effective in specific scenarios," challenging the prevalent assumption that "complexity equals better," and providing important guiding principles for practical system design.
+These findings provide empirical support in specific scenarios for the hypothesis that "simple methods may be more effective," questioning the prevalent assumption that "complexity equals better," and providing important reference principles for practical system design.
 \end{abstract}
 
 % Links section - only shown in camera-ready version
@@ -106,7 +106,7 @@ With the development of large language models and Retrieval-Augmented Generation
 
 \textbf{From Practical Needs to Theoretical Discovery}
 
-This research stems from our practical experience in building production-level multi-retriever fusion systems. Inspired by the numerous complex fusion strategies proposed by the academic community in recent years, we conducted a systematic analysis of 53 recent papers and identified several major innovation directions:
+This research stems from our practical experience in building production-level multi-retriever fusion systems. Inspired by the numerous complex fusion strategies proposed by the academic community in recent years, we conducted a systematic analysis of recent papers and identified several major innovation directions:
 
 \begin{enumerate}
 \item \textbf{Query Analysis and Classification}: Such as query decomposition proposed by LevelRAG \cite{jiang2023levelrag} and complexity classification by Adaptive-RAG \cite{jeong2024adaptive}
@@ -121,7 +121,7 @@ Based on these advanced concepts, we built a complete system architecture contai
 
 \textbf{Challenging Initial Assumptions with Experimental Findings}
 
-However, in systematic experimental evaluation on 6 BEIR datasets \cite{thakur2021beir}, we obtained an unexpected finding: \textbf{our carefully designed complex adaptive system did not bring the expected performance improvements, but rather simple linear fusion methods performed better on most datasets}.
+However, in systematic experimental evaluation on 6 BEIR datasets \cite{thakur2021beir}, we obtained an important finding: \textbf{under our experimental conditions, simple linear fusion methods performed better than our designed complex adaptive system on most datasets}.
 
 This finding completely overturned our initial assumptions. We originally expected the query analyzer to accurately identify query types, the adaptive router to intelligently select optimal strategies, and the dynamic fusion engine to adjust weights based on context. But experimental results showed that these complex components not only failed to improve performance, but in some cases even had negative effects.
 
@@ -133,7 +133,7 @@ This finding completely overturned our initial assumptions. We originally expect
 \item Computational efficiency analysis showed that simple methods have significant advantages in inference speed, while complex adaptive systems have significantly higher computational overhead
 \end{itemize}
 
-These findings not only challenge our initial design philosophy, but more importantly question the prevalent assumption of "complexity equals better" in the information retrieval field, providing strong empirical support for the "Less is More" design philosophy.
+These findings under specific experimental conditions challenge our initial design philosophy, and more importantly question the prevalent assumption of "complexity equals better" in the information retrieval field, providing empirical support for the "Less is More" design philosophy.
 
 \textbf{Main Contributions of This Paper}:
 
@@ -227,27 +227,11 @@ Although our system supports 6 different retrievers, to ensure consistency in ex
 
 \subsubsection{Sparse Retriever (BM25)}
 
-We use the BM25 algorithm as the sparse retriever, which is a probabilistic ranking function based on term frequency and inverse document frequency. BM25 has the following advantages:
-
-\begin{itemize}
-\item \textbf{Exact Match Capability}: Excellent performance on queries requiring precise keyword matching
-\item \textbf{Computational Efficiency}: Fast indexing and retrieval speed
-\item \textbf{Interpretability}: Clear scoring mechanism, easy to understand and debug
-\item \textbf{Robustness}: Stable performance across different domains and languages
-\end{itemize}
-
-We use the standard BM25 parameters: $k_1 = 1.2$, $b = 0.75$, which have been proven effective across multiple datasets.
+We use the BM25 algorithm as the sparse retriever with standard parameters ($k_1 = 1.2$, $b = 0.75$), which provides excellent exact keyword matching capabilities.
 
 \subsubsection{Dense Retriever (E5-large-v2)}
 
-For dense retrieval, we use the E5-large-v2 model \cite{wang2022text}, which is a state-of-the-art text embedding model with the following characteristics:
-
-\begin{itemize}
-\item \textbf{Semantic Understanding}: Excellent performance on queries requiring semantic matching
-\item \textbf{Cross-lingual Capability}: Support for multiple languages
-\item \textbf{Large-scale Training}: Trained on diverse text corpora
-\item \textbf{High-dimensional Representation}: 1024-dimensional embeddings providing rich semantic information
-\end{itemize}
+For dense retrieval, we use the E5-large-v2 model \cite{wang2022text}, which provides 1024-dimensional embeddings and excels at semantic matching tasks.
 
 \subsubsection{Retriever Complementarity Analysis}
 
@@ -377,14 +361,11 @@ We use Mean Reciprocal Rank (MRR) as the primary evaluation metric, which is wid
 
 All experiments are conducted using the same hardware configuration and software environment. We retrieve top-1000 documents from each retriever and re-rank using fusion strategies to top-100. Each experimental configuration is repeated 5 times with different random seeds (42, 123, 456, 789, 1024), and we report mean and standard deviation.
 
-\textbf{Detailed Experimental Protocol}:
+\textbf{Experimental Protocol}:
 \begin{itemize}
-\item Hardware: Intel Xeon CPU, 64GB RAM, consistent across all experiments
-\item Software: Python 3.8, PyTorch 1.12, Sentence-Transformers 2.2
-\item BM25: Implemented using Pyserini toolkit with standard preprocessing
-\item E5-large-v2: Embeddings computed using Sentence-Transformers library
-\item Parameter optimization: Grid search with 5-fold cross-validation
-\item Statistical testing: Paired t-tests with p < 0.05 significance threshold
+\item Consistent hardware and software environment across all experiments
+\item Parameter optimization using grid search with cross-validation
+\item Statistical significance testing with p < 0.05 threshold
 \end{itemize}
 
 \section{Experimental Results and Analysis}
@@ -417,7 +398,14 @@ ArguAna & 0.248±0.012 & 0.231±0.009 & 0.283±0.014 & 0.280±0.013 \\
 \end{tabular}
 \end{table}
 
-From the initial results in Table \ref{tab:baseline}, we can see that simple linear fusion methods not only show no obvious disadvantage compared to the RRF method we expected to perform better, but even perform better on some datasets. Particularly on the SciFact dataset, the simplest equal-weight linear fusion (0.596±0.022) actually outperformed RRF (0.583±0.016).
+From the initial results in Table \ref{tab:baseline}, we can see that simple linear fusion methods not only show no obvious disadvantage compared to the RRF method we expected to perform better, but even perform better on some datasets. Particularly on the SciFact dataset, the simplest equal-weight linear fusion (0.596±0.022) actually outperformed RRF (0.583±0.016). Figure \ref{fig:baseline} visually demonstrates these baseline method performance comparisons across datasets.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\columnwidth]{charts/baseline_comparison.png}
+\caption{Baseline Method Performance Comparison across Datasets}
+\label{fig:baseline}
+\end{figure}
 
 This initial finding made us begin to question our complex system design. If simple linear methods can achieve such performance, what is the value of the query analyzers, adaptive routers, and other complex components we carefully built?
 
@@ -449,7 +437,14 @@ ArguAna & Linear BM25-Dom & 0.285±0.013 & 0.283±0.014 & +0.7\% & Simple \\
 
 Table \ref{tab:best_strategies} results overturned our expectations. Among 6 datasets, simple linear fusion strategies outperformed RRF, a medium complexity method, on 4 datasets (FIQA improved 8.2\%, Quora improved 7.2\%, SciDocs improved 10.9\%, SciFact improved 2.2\%), and performed comparably with RRF on 2 datasets (NFCorpus and ArguAna).
 
-Notably, our carefully designed complex adaptive fusion system generally did not exceed simple linear methods on the tested datasets. This indicates that the query analyzers, adaptive routers, and dynamic fusion engines we invested significant effort in building not only failed to bring expected performance improvements, but may have become system burdens.
+Notably, our carefully designed complex adaptive fusion system generally did not exceed simple linear methods on the tested datasets. This indicates that the query analyzers, adaptive routers, and dynamic fusion engines we invested significant effort in building not only failed to bring expected performance improvements, but may have become system burdens. Figure \ref{fig:fusion_strategies} clearly shows the performance comparison of optimal fusion strategies across datasets, highlighting the advantages of simple methods.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\columnwidth]{charts/fusion_strategy_comparison.png}
+\caption{Performance Comparison of Best Fusion Strategies by Dataset}
+\label{fig:fusion_strategies}
+\end{figure}
 
 \subsection{Ablation Study}
 
@@ -486,7 +481,14 @@ The ablation study results further confirmed an unexpected fact: our complex com
 \item Use static weights: 0.290±0.010 (+4.3\%)
 \end{itemize}
 
-This result indicates that our query analyzer was the main cause of performance degradation, and removing it brought the largest performance improvement. The gradual system simplification process clearly demonstrated how complex components drag down overall performance.
+This result indicates that our query analyzer was the main cause of performance degradation, and removing it brought the largest performance improvement. The gradual system simplification process clearly demonstrated how complex components drag down overall performance. Figure \ref{fig:ablation} visualizes this ablation study results, showing the performance improvement trajectory as components are removed.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\columnwidth]{charts/ablation_study.png}
+\caption{Ablation Study Results: Performance Changes as Complex Components are Removed}
+\label{fig:ablation}
+\end{figure}
 
 \subsection{Computational Efficiency Analysis}
 
@@ -499,7 +501,14 @@ Multiple components in the complex system all increase computational overhead: t
 
 In contrast, simple linear fusion methods only require basic numerical operations, thus having obvious advantages in inference speed.
 
-In real-time retrieval systems, computational efficiency is an important consideration factor. Even if complex systems could bring certain performance improvements, excessive computational overhead might make them lose value in practical applications.
+In real-time retrieval systems, computational efficiency is an important consideration factor. Even if complex systems could bring certain performance improvements, excessive computational overhead might make them lose value in practical applications. Figure \ref{fig:efficiency} shows the computational efficiency comparison of different complexity methods, clearly demonstrating the significant advantages of simple methods in efficiency.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\columnwidth]{charts/computational_efficiency.png}
+\caption{Computational Efficiency Comparison: Simple vs Complex Methods}
+\label{fig:efficiency}
+\end{figure}
 
 \section{Discussion}
 
@@ -557,9 +566,25 @@ Complex methods have higher computational overhead than simple methods. For exam
 
 \subsection{Dataset Specificity vs Query Type Specificity}
 
-Our experimental results indicate that dataset specificity is more important than query type specificity. The best fusion strategies vary greatly across different datasets, but this variation is not obviously related to query type distribution. For example, on the Quora dataset dominated by semantic queries, BM25-dominant linear fusion performed best, which is counterintuitive. Figure 6 shows the query type distribution and optimal strategy relationships across datasets, further confirming this finding.
+Our experimental results indicate that dataset specificity is more important than query type specificity. The best fusion strategies vary greatly across different datasets, but this variation is not obviously related to query type distribution. For example, on the Quora dataset dominated by semantic queries, BM25-dominant linear fusion performed best, which is counterintuitive. Figure \ref{fig:dataset_analysis} shows the query type distribution and optimal strategy relationships across datasets, further confirming this finding.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\columnwidth]{charts/dataset_features_analysis.png}
+\caption{Dataset Features Analysis: Query Type Distribution vs Optimal Strategies}
+\label{fig:dataset_analysis}
+\end{figure}
 
 This finding suggests that general query type classification may not accurately capture characteristic differences of different datasets. Each dataset has its unique document distribution, query patterns, and relevance criteria, which together determine the optimal fusion strategy. Therefore, selecting appropriate static fusion strategies for each dataset may be more effective than using complex adaptive methods.
+
+Figure \ref{fig:summary} provides a comprehensive performance summary, comparing simple methods, medium complexity methods (RRF), and our complete complex system performance on four major datasets, further confirming the core findings of "Less is More."
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\columnwidth]{charts/simple_vs_complex_summary.png}
+\caption{Comprehensive Performance Summary: Simple vs Complex Methods}
+\label{fig:summary}
+\end{figure}
 
 \subsection{Practical Guidance Principles}
 
@@ -902,9 +927,9 @@ Based on our experience learned from failure, we provide clear guidance for prac
 
 \subsection{Implementation Details and Hyperparameter Analysis}
 
-\textbf{BM25 Configuration}: We use standard BM25 parameters: $k_1 = 1.2$ and $b = 0.75$. The preprocessing pipeline includes tokenization, lowercasing, stopword filtering, and Porter stemming.
+\textbf{BM25 Configuration}: We use standard BM25 parameters ($k_1 = 1.2$, $b = 0.75$) with standard text preprocessing.
 
-\textbf{E5-large-v2 Configuration}: 1024-dimensional embeddings with maximum sequence length of 512 tokens, based on RoBERTa-large architecture.
+\textbf{E5-large-v2 Configuration}: 1024-dimensional embeddings with 512-token maximum sequence length.
 
 \textbf{Hyperparameter Sensitivity}: Linear fusion methods showed stable performance with weights in the 0.3-0.7 range (standard deviation < 0.02), while complex methods were more sensitive to parameter changes.
 
@@ -985,6 +1010,7 @@ Based on our findings, we recommend the following implementation strategy:
 
 We thank the anonymous reviewers for their valuable feedback and suggestions. This work was supported by [funding information will be added in camera-ready version].
 
-\bibliography{references}
+\bibliography{aaai2026}
 
 \end{document}
+
