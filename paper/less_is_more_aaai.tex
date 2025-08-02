@@ -2,7 +2,7 @@
 %
 % AAAI 2026 TEMPLATE for "Less is More" Paper
 % For ANONYMOUS SUBMISSION: uncomment the next line
-\def\aaaianonymous{true}
+% \def\aaaianonymous{true}
 %
 % For CAMERA-READY VERSION: comment out or delete the next line
 % \def\aaaianonymous{true}
@@ -64,15 +64,15 @@
 }
 \else
 \author{
-    % Authors will be filled in camera-ready version
-    Author Name\textsuperscript{\rm 1}
+    Runtao Wang\textsuperscript{\rm 1},
+    Fufangchen Zhao\textsuperscript{\rm 1},
+    Danfeng Yan\textsuperscript{\rm 1,*}
 }
 \affiliations{
-    % Affiliations will be filled in camera-ready version
-    \textsuperscript{\rm 1}Institution Name\\
-    Address Line 1\\
-    Address Line 2\\
-    email@institution.edu
+    \textsuperscript{\rm 1}Beijing University of Posts and Telecommunications\\
+    Beijing, China\\
+    wrt136@bupt.edu.cn, zhaofufangchen@bupt.edu.cn, yandf@bupt.edu.cn\\
+    \textsuperscript{*}Corresponding author
 }
 \fi
 
@@ -88,21 +88,13 @@ Our experimental results reveal an interesting finding: \textbf{under the specif
 These findings provide empirical support in specific scenarios for the hypothesis that "simple methods may be more effective," questioning the prevalent assumption that "complexity equals better," and providing important reference principles for practical system design.
 \end{abstract}
 
-% Links section - only shown in camera-ready version
-\ifdefined\aaaianonymous
-% For anonymous submissions, do not include links that could reveal identity
-\else
-\begin{links}
-    \link{Code}{https://github.com/anonymous/less-is-more-rag}
-    \link{Datasets}{https://github.com/anonymous/less-is-more-data}
-\end{links}
-\fi
+% Links section removed - code and datasets not publicly available
 
 \section{Introduction}
 
 With the development of large language models and Retrieval-Augmented Generation (RAG) technology \cite{lewis2020retrieval}, multi-retriever fusion has become an important research direction in information retrieval. In recent years, RAG technology has rapidly evolved from basic retrieval-generation architectures to more complex multimodal \cite{chen2022multimodal} and agent-based systems \cite{singh2025agentic}, with the latest survey studies \cite{gao2024retrieval} systematically reviewing the development trajectory and future directions of RAG technology. Multi-retriever systems improve retrieval performance by combining different types of retrievers (such as dense vector retrieval \cite{karpukhin2020dense} and sparse BM25 retrieval \cite{robertson2009probabilistic}), but how to effectively fuse the results of multiple retrievers has become a key challenge.
 
-\subsection{Research Background and Motivation}
+\subsection{Background and Motivation}
 
 \textbf{From Practical Needs to Theoretical Discovery}
 
@@ -117,9 +109,13 @@ This research stems from our practical experience in building production-level m
 
 Based on these advanced concepts, we built a complete system architecture containing query analyzers, adaptive routers, and dynamic fusion engines (detailed in Section 3), expecting to significantly improve retrieval performance by increasing system complexity. Our initial hypothesis was that more complex adaptive mechanisms could intelligently select optimal fusion strategies based on query features, thereby outperforming simple static methods.
 
-\subsection{Unexpected Discovery and Research Contribution}
+\textbf{The "Less is More" Phenomenon in AI}
 
-\textbf{Challenging Initial Assumptions with Experimental Findings}
+The "Less is More" phenomenon is evident across multiple domains of artificial intelligence. In deep learning, Dropout \cite{srivastava2014dropout} and regularization techniques improve generalization by reducing model complexity; in natural language processing, simple n-gram models can still compete with complex neural network models on certain tasks \cite{chen1999empirical}; in computer vision, lightweight networks like MobileNet \cite{howard2017mobilenets} significantly reduce computational complexity while maintaining performance. These success cases demonstrate that Occam's Razor principle \cite{domingos1999role,baker2016simplicity} has important guiding significance in AI system design: under equal conditions, the simplest explanation or model should be chosen.
+
+\subsection{Unexpected Discovery}
+
+\textbf{Challenging Initial Assumptions}
 
 However, in systematic experimental evaluation on 6 BEIR datasets \cite{thakur2021beir}, we obtained an important finding: \textbf{under our experimental conditions, simple linear fusion methods performed better than our designed complex adaptive system on most datasets}.
 
@@ -128,90 +124,56 @@ This finding completely overturned our initial assumptions. We originally expect
 \textbf{Quantified Performance Comparison Results}:
 
 \begin{itemize}
-\item Simple linear fusion outperformed standard RRF by 8.2\%, 7.2\%, and 10.9\% on FIQA, Quora, and SciDocs datasets respectively, with a 2.2\% improvement on SciFact dataset
-\item Ablation experiments revealed an even more noteworthy phenomenon: gradually removing complex components (such as query analyzers and adaptive routers) not only did not degrade performance, but even brought 10.9\% performance improvement on SciDocs dataset
+\item Simple linear fusion outperformed standard RRF by 8.2\%, 7.2\%, and 10.9\% on FIQA, Quora, and SciDocs datasets respectively, with a 2.2\% improvement on SciFact dataset\\
+\item Ablation experiments revealed an even more noteworthy phenomenon: gradually removing complex components (such as query analyzers and adaptive routers) not only did not degrade performance, but even brought 10.9\% performance improvement on SciDocs dataset\\
 \item Computational efficiency analysis showed that simple methods have significant advantages in inference speed, while complex adaptive systems have significantly higher computational overhead
 \end{itemize}
 
 These findings under specific experimental conditions challenge our initial design philosophy, and more importantly question the prevalent assumption of "complexity equals better" in the information retrieval field, providing empirical support for the "Less is More" design philosophy.
 
-\textbf{Main Contributions of This Paper}:
+\textbf{Main Contributions}: We provide systematic empirical validation across 8 fusion strategies on 6 BEIR datasets, revealing that simple linear methods often outperform complex adaptive approaches. Through detailed ablation experiments, we demonstrate the negative impacts of complex components including error propagation and computational overhead, leading to practical "simplicity first" design principles for retrieval systems.
 
-\begin{enumerate}
-\item \textbf{Real System-Driven Research}: Based on complete production-level multi-retriever system development experience, providing a complete research path from complex design to simple effectiveness
-\item \textbf{Systematic Empirical Validation}: Implemented and evaluated 8 fusion strategies on 6 BEIR datasets, revealing performance differences between simple and complex methods through rigorous comparative experiments
-\item \textbf{Counter-Intuitive Important Findings}: Proved that in multi-retriever fusion tasks, simple linear methods can not only achieve, but often exceed the performance of carefully designed complex adaptive methods
-\item \textbf{In-Depth Complexity Analysis}: Through detailed ablation experiments and efficiency analysis, revealed the negative impacts that complex components may have, including error propagation, overfitting, and computational overhead
-\item \textbf{Practical Guidance Value}: Based on real system development and experimental results, provided specific strategy selection guidance and "simplicity first" design principles for practical retrieval system design
-\end{enumerate}
+\subsection{Complexity Classification}
 
-\subsection{Fusion Method Complexity Classification}
-
-To clearly distinguish fusion methods of different complexity levels, we established classification criteria based on the following four dimensions:
-
-\begin{enumerate}
-\item \textbf{Parameter Complexity}: Number of parameters and tuning difficulty
-\item \textbf{Computational Complexity}: Algorithm time complexity and computational requirements
-\item \textbf{System Architecture}: Number of required components and coordination complexity
-\item \textbf{Training Requirements}: Whether complex learning or optimization processes are needed
-\end{enumerate}
-
-Based on these classification criteria, we categorize fusion methods into three classes:
-\begin{itemize}
-\item \textbf{Simple Methods}: Linear weighted fusion, max score fusion, etc., with few parameters and simple computation
-\item \textbf{Medium Complexity Methods}: RRF, etc., with certain mathematical foundation but relatively simple implementation
-\item \textbf{Complex Methods}: Adaptive fusion, LLM-based dynamic weight adjustment, etc., requiring coordination of multiple subsystems
-\end{itemize}
+We categorize fusion methods into three complexity levels based on parameter count, computational requirements, and system architecture: \textbf{Simple Methods} (linear weighted fusion, max score), \textbf{Medium Complexity} (RRF with mathematical foundations), and \textbf{Complex Methods} (adaptive fusion requiring multiple coordinated subsystems).
 
 \section{Related Work}
 
-\subsection{Multi-Retriever Fusion Methods}
+\subsection{Fusion Methods}
 
-Multi-retriever fusion has been extensively studied in information retrieval. Traditional approaches include Reciprocal Rank Fusion (RRF) \cite{cormack2009reciprocal}, which combines rankings from different retrievers using reciprocal rank scores. Recent work has explored more sophisticated fusion strategies, including learning-to-rank approaches \cite{liu2009learning} and neural fusion methods \cite{zamani2018neural}.
+Multi-retriever fusion has been extensively studied in information retrieval. Traditional approaches include Reciprocal Rank Fusion (RRF) \cite{cormack2009reciprocal}, which combines rankings from different retrievers using reciprocal rank scores, and linear weighted fusion methods first proposed by Fox and Shaw \cite{fox1994combination}. Recent work has explored more sophisticated fusion strategies, including learning-to-rank approaches \cite{liu2009learning} and neural fusion methods \cite{zamani2018neural}. Modern approaches have also incorporated dynamic weight adjustment mechanisms, such as DAT (Dynamic Adaptive Threshold) \cite{hsu2025dat}, which introduces dynamic threshold mechanisms based on query features.
 
 \subsection{Retrieval-Augmented Generation}
 
-RAG systems have gained significant attention with the rise of large language models \cite{lewis2020retrieval}. Recent surveys \cite{gao2024retrieval} provide comprehensive overviews of RAG architectures and applications. Multi-modal RAG systems \cite{chen2022multimodal} and agent-based approaches \cite{singh2025agentic} represent the latest developments in this field.
+RAG systems have gained significant attention with the rise of large language models \cite{lewis2020retrieval}. Recent surveys \cite{gao2024retrieval,gupta2024comprehensive} provide comprehensive overviews of RAG architectures and applications. Multi-modal RAG systems \cite{chen2022multimodal,zheng2025retrieval} and agent-based approaches \cite{singh2025agentic} represent the latest developments in this field. Modern retrieval methods have evolved from traditional sparse methods like TF-IDF \cite{salton1988term} and BM25 \cite{robertson2009probabilistic} to dense retrieval approaches using pre-trained models like BERT \cite{devlin2019bert} and Transformer architectures \cite{vaswani2017attention}. Recent innovations include ColBERT \cite{khattab2020colbert} for late interaction, SPLADE \cite{formal2021splade} for sparse neural retrieval, and contrastive learning approaches like SimCSE \cite{gao2021simcse}.
 
-\subsection{Query Analysis and Adaptive Routing}
+\subsection{Adaptive Routing}
 
 Query analysis and routing represent another class of methods for improving retrieval performance by analyzing query characteristics to select the most appropriate retrieval strategies. Recent developments in agentic RAG systems \cite{singh2025agentic} have brought new perspectives to query routing by introducing agent-based planning and decision-making capabilities to optimize the retrieval process.
 
-\subsubsection{Query Decomposition and Rewriting}
+\subsubsection{Query Decomposition}
 
 LevelRAG \cite{jiang2023levelrag} proposed a hierarchical architecture that uses high-level searchers to decompose complex queries into atomic queries, which are then optimized by low-level searchers. This method is particularly suitable for multi-hop reasoning tasks but has high system complexity requiring coordination of multiple components.
 
-\subsubsection{Query Complexity Classification}
+\subsubsection{Complexity Classification}
 
 Adaptive-RAG \cite{jeong2024adaptive} proposed a classification method based on query complexity, categorizing queries into simple, medium, and complex classes, and selecting different retrieval strategies for each class. This method embodies the idea of adaptive processing based on query characteristics, but accurate classification of query complexity remains a challenge.
 
-\subsubsection{Adaptive Routing Strategies}
+\subsubsection{Routing Strategies}
 
-Self-RAG \cite{jeong2024adaptive} and similar works proposed routing mechanisms based on model self-reflection, dynamically deciding when to retrieve and what content to retrieve. These methods increase system flexibility but also significantly increase computational complexity and implementation difficulty.
+Self-RAG \cite{asai2023selfrag} and similar works proposed routing mechanisms based on model self-reflection, dynamically deciding when to retrieve and what content to retrieve. These methods increase system flexibility but also significantly increase computational complexity and implementation difficulty.
 
 \section{Methodology}
 
 This section details the complete multi-retriever fusion system we built and the various fusion strategies implemented and evaluated. We will first present the overall system architecture design, then introduce the selection and configuration of basic retrievers, followed by detailed descriptions of implementation details from simple linear fusion to complex adaptive methods, and finally analyze their theoretical foundations and computational complexity.
 
-\subsection{System Architecture Design}
+\subsection{System Architecture}
 
 \textbf{Complete Multi-Retriever Fusion System}
 
 To systematically compare the performance of different fusion strategies, we built a complete retrieval system containing multiple components. The system's design philosophy is to support various fusion strategies from simple to complex through a modular approach, ensuring fairness in experimental comparisons.
 
-\textbf{System Core Components}:
-
-\begin{enumerate}
-\item \textbf{Diversified Retriever Module}: Contains 6 different types of retrievers (BM25, dense retriever, graph retriever, efficient vector index, semantic enhanced BM25, and cascade retriever), providing diverse retrieval results for fusion
-
-\item \textbf{Query Analyzer}: Responsible for analyzing query features, classifying queries into entity queries, keyword queries, and semantic queries, providing decision basis for adaptive fusion
-
-\item \textbf{Adaptive Router}: Dynamically selects optimal retriever combinations and fusion strategies based on query analysis results, implementing intelligent retrieval routing
-
-\item \textbf{Multi-Strategy Fusion Engine}: Supports 8 different fusion strategies, from simple linear weighting to complex adaptive weight adjustment
-
-\item \textbf{Evaluation and Monitoring Module}: Provides comprehensive performance evaluation and system monitoring functions, supporting real-time strategy effectiveness analysis
-\end{enumerate}
+\textbf{System Architecture}: Our system integrates 6 diverse retrievers with a query analyzer for feature extraction, an adaptive router for strategy selection, and a multi-strategy fusion engine supporting 8 fusion methods from simple linear to complex adaptive approaches.
 
 \textbf{Design Intent and Expectations}:
 
@@ -233,17 +195,17 @@ We use the BM25 algorithm as the sparse retriever with standard parameters ($k_1
 
 For dense retrieval, we use the E5-large-v2 model \cite{wang2022text}, which provides 1024-dimensional embeddings and excels at semantic matching tasks.
 
-\subsubsection{Retriever Complementarity Analysis}
+\subsubsection{Complementarity Analysis}
 
 The combination of BM25 and E5-large-v2 provides good complementarity:
 
 \begin{itemize}
-\item \textbf{Query Type Coverage}: BM25 excels at keyword queries, while E5-large-v2 performs better on semantic queries
-\item \textbf{Matching Mechanism}: BM25 uses exact term matching, while E5-large-v2 uses semantic similarity
+\item \textbf{Query Type Coverage}: BM25 excels at keyword queries, while E5-large-v2 performs better on semantic queries\\
+\item \textbf{Matching Mechanism}: BM25 uses exact term matching, while E5-large-v2 uses semantic similarity\\
 \item \textbf{Failure Mode Diversity}: Different retrievers fail on different types of queries, providing robustness through fusion
 \end{itemize}
 
-\subsection{Fusion Strategy Detailed Design}
+\subsection{Fusion Strategy Design}
 
 \textbf{Strategy Spectrum from Simple to Complex}
 
@@ -251,70 +213,23 @@ We implemented and evaluated 8 fusion strategies in our system, from the simples
 
 \textbf{Experimental Design Philosophy}: Our goal is to verify our initial hypothesis through systematic comparative experiments—complex adaptive strategies should outperform simple static methods. To this end, we carefully designed a strategy gradient from simple to complex, expecting to observe performance improvements with increasing complexity.
 
-\subsubsection{Simple Fusion Strategies}
+\subsubsection{Fusion Strategy Overview}
 
-\textbf{1. Linear Equal Weight (Linear Equal)}
+We implement three categories of fusion approaches with increasing complexity. \textbf{Simple strategies} include equal-weight linear fusion (0.5:0.5), BM25-dominant fusion (0.7:0.3), vector-dominant fusion (0.3:0.7), and max score selection. \textbf{Medium complexity approaches} use Reciprocal Rank Fusion with either standard (k=60) or optimized parameters. \textbf{Complex methods} employ query analysis for adaptive weight selection or dynamic adjustment based on multiple query features including length, entity count, and semantic complexity.
 
-The simplest fusion method using equal weights:
-$$\text{score}(d) = 0.5 \times \text{score}_{\text{BM25}}(d) + 0.5 \times \text{score}_{\text{dense}}(d)$$
-
-\textbf{2. Linear BM25-Dominant (Linear BM25-Dom)}
-
-Linear fusion favoring BM25:
-$$\text{score}(d) = 0.7 \times \text{score}_{\text{BM25}}(d) + 0.3 \times \text{score}_{\text{dense}}(d)$$
-
-\textbf{3. Linear Vector-Dominant (Linear Vector-Dom)}
-
-Linear fusion favoring dense retrieval:
-$$\text{score}(d) = 0.3 \times \text{score}_{\text{BM25}}(d) + 0.7 \times \text{score}_{\text{dense}}(d)$$
-
-\textbf{4. Max Score Fusion (Max Score)}
-
-Takes the maximum score from both retrievers:
-$$\text{score}(d) = \max(\text{score}_{\text{BM25}}(d), \text{score}_{\text{dense}}(d))$$
-
-\subsubsection{Medium Complexity Fusion Strategies}
-
-\textbf{5. Standard RRF (RRF Standard)}
-
-Using standard parameter k=60 reciprocal rank fusion:
-$$\text{RRF}(d) = \frac{1}{k + \text{rank}_{\text{BM25}}(d)} + \frac{1}{k + \text{rank}_{\text{dense}}(d)}$$
-
-\textbf{6. Optimized RRF (RRF Optimized)}
-
-RRF method with k value optimized through grid search:
-
-\subsubsection{Complex Fusion Strategies}
-
-\textbf{7. Query Type-based Adaptive Fusion (Adaptive by Query Type)}
-
-This method uses a query analyzer to classify queries and applies different fusion strategies:
-
-\begin{itemize}
-\item \textbf{Entity Queries}: Use BM25-dominant fusion (weight = 0.8)
-\item \textbf{Keyword Queries}: Use balanced fusion (weight = 0.5)
-\item \textbf{Semantic Queries}: Use dense-dominant fusion (weight = 0.2)
-\end{itemize}
-
-\textbf{8. Dynamic Adaptive Fusion (DAT)}
-
-The most complex method that dynamically adjusts weights based on multiple query features:
-
-$$w_{\text{BM25}} = f(\text{query\_length}, \text{entity\_count}, \text{semantic\_complexity})$$
-
-\subsection{Complex System Component Design}
+\subsection{Complex Components}
 
 \textbf{Core Components of Adaptive System}
 
 To implement our envisioned intelligent fusion system, we developed three core complex components: query analyzer, adaptive router, and dynamic fusion engine. The design of these components embodies our understanding and expectations of "intelligent retrieval."
 
-\subsubsection{Query Analyzer Detailed Design}
+\subsubsection{Query Analyzer}
 
 The query analyzer is responsible for analyzing input queries and extracting features for adaptive fusion decisions. It includes the following modules:
 
 \begin{itemize}
-\item \textbf{Feature Extraction}: Extract query length, entity count, keyword density, etc.
-\item \textbf{Query Classification}: Classify queries into entity, keyword, or semantic types
+\item \textbf{Feature Extraction}: Extract query length, entity count, keyword density, etc.\\
+\item \textbf{Query Classification}: Classify queries into entity, keyword, or semantic types\\
 \item \textbf{Confidence Assessment}: Evaluate classification confidence for decision making
 \end{itemize}
 
@@ -340,18 +255,7 @@ However, as subsequent experimental results show, these carefully designed compl
 
 \subsection{Datasets}
 
-We evaluate our methods on 6 datasets from the BEIR benchmark \cite{thakur2021beir}:
-
-\begin{itemize}
-\item \textbf{FIQA}: Financial question answering
-\item \textbf{Quora}: Question duplicate detection
-\item \textbf{SciDocs}: Scientific document retrieval
-\item \textbf{NFCorpus}: Nutrition fact retrieval
-\item \textbf{SciFact}: Scientific fact verification
-\item \textbf{ArguAna}: Argument retrieval
-\end{itemize}
-
-These datasets represent diverse domains and query types, providing comprehensive evaluation scenarios.
+We evaluate our methods on 6 datasets from the BEIR benchmark \cite{thakur2021beir}: FIQA (financial QA), Quora (question duplicates), SciDocs (scientific documents), NFCorpus (nutrition facts), SciFact (fact verification), and ArguAna (argument retrieval), representing diverse domains and query types.
 
 \subsection{Evaluation Metrics}
 
@@ -361,20 +265,15 @@ We use Mean Reciprocal Rank (MRR) as the primary evaluation metric, which is wid
 
 All experiments are conducted using the same hardware configuration and software environment. We retrieve top-1000 documents from each retriever and re-rank using fusion strategies to top-100. Each experimental configuration is repeated 5 times with different random seeds (42, 123, 456, 789, 1024), and we report mean and standard deviation.
 
-\textbf{Experimental Protocol}:
-\begin{itemize}
-\item Consistent hardware and software environment across all experiments
-\item Parameter optimization using grid search with cross-validation
-\item Statistical significance testing with p < 0.05 threshold
-\end{itemize}
+\textbf{Experimental Protocol}: All experiments use consistent hardware/software environments with grid search parameter optimization and statistical significance testing (p < 0.05).
 
-\section{Experimental Results and Analysis}
+\section{Results and Analysis}
 
 \textbf{From Expectation to Reality: Unexpected Experimental Findings}
 
 This section presents our systematic experimental results on 6 BEIR datasets. These results not only challenge our initial hypotheses but more importantly provide important insights into the "relationship between complexity and performance" in the information retrieval field.
 
-\subsection{Baseline Comparison Experiments}
+\subsection{Baseline Comparison}
 
 \textbf{Initial Validation: Competitiveness of Simple Methods}
 
@@ -384,9 +283,10 @@ Table \ref{tab:baseline} shows the MRR performance of different baseline methods
 \centering
 \caption{Baseline Comparison Results (MRR ± Standard Deviation)}
 \label{tab:baseline}
+\small
 \begin{tabular}{lcccc}
 \toprule
-Dataset & BM25 & Dense & RRF & LinearEqual \\
+Dataset & BM25 & Dense & RRF & Linear \\
 \midrule
 FIQA & 0.253±0.008 & 0.241±0.006 & 0.317±0.012 & 0.316±0.009 \\
 Quora & 0.652±0.015 & 0.631±0.011 & 0.669±0.018 & 0.663±0.014 \\
@@ -398,18 +298,11 @@ ArguAna & 0.248±0.012 & 0.231±0.009 & 0.283±0.014 & 0.280±0.013 \\
 \end{tabular}
 \end{table}
 
-From the initial results in Table \ref{tab:baseline}, we can see that simple linear fusion methods not only show no obvious disadvantage compared to the RRF method we expected to perform better, but even perform better on some datasets. Particularly on the SciFact dataset, the simplest equal-weight linear fusion (0.596±0.022) actually outperformed RRF (0.583±0.016). Figure \ref{fig:baseline} visually demonstrates these baseline method performance comparisons across datasets.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.8\columnwidth]{charts/baseline_comparison.png}
-\caption{Baseline Method Performance Comparison across Datasets}
-\label{fig:baseline}
-\end{figure}
+From the initial results in Table \ref{tab:baseline}, we can see that simple linear fusion methods not only show no obvious disadvantage compared to the RRF method we expected to perform better, but even perform better on some datasets. Particularly on the SciFact dataset, the simplest equal-weight linear fusion (0.596±0.022) actually outperformed RRF (0.583±0.016).
 
 This initial finding made us begin to question our complex system design. If simple linear methods can achieve such performance, what is the value of the query analyzers, adaptive routers, and other complex components we carefully built?
 
-\subsection{Best Fusion Strategy Analysis}
+\subsection{Fusion Strategy Analysis}
 
 \textbf{Important Finding: Significant Advantages of Simple Methods}
 
@@ -417,18 +310,19 @@ To further validate our initial observations, we conducted comprehensive evaluat
 
 \begin{table}[t]
 \centering
-\caption{Best Fusion Strategies by Dataset (MRR ± Standard Deviation)}
+\caption{Best Fusion Strategies by Dataset}
 \label{tab:best_strategies}
-\begin{tabular}{lccccc}
+\scriptsize
+\begin{tabular}{lcccc}
 \toprule
-Dataset & Best Strategy & MRR±SD & vs RRF & Improvement & Type \\
+Dataset & Best Strategy & MRR & vs RRF & Improv. \\
 \midrule
-FIQA & Linear BM25-Dom & 0.343±0.015 & 0.317±0.012 & +8.2\% & Simple \\
-Quora & Linear BM25-Dom & 0.717±0.019 & 0.669±0.018 & +7.2\% & Simple \\
-SciDocs & Linear Vector-Dom & 0.326±0.016 & 0.294±0.013 & +10.9\% & Simple \\
-SciFact & Linear Equal & 0.596±0.022 & 0.583±0.016 & +2.2\% & Simple \\
-NFCorpus & RRF Standard & 0.585±0.024 & 0.583±0.025 & +0.3\% & Medium \\
-ArguAna & Linear BM25-Dom & 0.285±0.013 & 0.283±0.014 & +0.7\% & Simple \\
+FIQA & Linear BM25-Dom & 0.343 & 0.317 & +8.2\% \\
+Quora & Linear BM25-Dom & 0.717 & 0.669 & +7.2\% \\
+SciDocs & Linear Vector-Dom & 0.326 & 0.294 & +10.9\% \\
+SciFact & Linear Equal & 0.596 & 0.583 & +2.2\% \\
+NFCorpus & RRF Standard & 0.585 & 0.583 & +0.3\% \\
+ArguAna & Linear BM25-Dom & 0.285 & 0.283 & +0.7\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -442,7 +336,7 @@ Notably, our carefully designed complex adaptive fusion system generally did not
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.8\columnwidth]{charts/fusion_strategy_comparison.png}
-\caption{Performance Comparison of Best Fusion Strategies by Dataset}
+\caption{Performance Improvement of Simple Methods over RRF}
 \label{fig:fusion_strategies}
 \end{figure}
 
@@ -456,13 +350,14 @@ Faced with the unexpected finding that simple methods outperform complex methods
 \centering
 \caption{Ablation Study Results (MRR ± Standard Deviation)}
 \label{tab:ablation}
+\tiny
 \begin{tabular}{lccccc}
 \toprule
-Dataset & Complete System & No Query Analysis & No Adaptive Routing & Static Weights & Best Config \\
+Dataset & Complete & No Query & No Routing & Static & Best \\
 \midrule
-Quora & 0.652±0.021 & 0.671±0.019 & 0.669±0.018 & 0.663±0.014 & No Query Analysis \\
-SciDocs & 0.278±0.015 & 0.326±0.016 & 0.310±0.014 & 0.290±0.010 & No Query Analysis \\
-FIQA & 0.301±0.014 & 0.324±0.015 & 0.320±0.013 & 0.316±0.009 & No Query Analysis \\
+Quora & 0.652±0.021 & 0.671±0.019 & 0.669±0.018 & 0.663±0.014 & No Query \\
+SciDocs & 0.278±0.015 & 0.326±0.016 & 0.310±0.014 & 0.290±0.010 & No Query \\
+FIQA & 0.301±0.014 & 0.324±0.015 & 0.320±0.013 & 0.316±0.009 & No Query \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -486,11 +381,11 @@ This result indicates that our query analyzer was the main cause of performance 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.8\columnwidth]{charts/ablation_study.png}
-\caption{Ablation Study Results: Performance Changes as Complex Components are Removed}
+\caption{Ablation Study: Simplification Improves Performance}
 \label{fig:ablation}
 \end{figure}
 
-\subsection{Computational Efficiency Analysis}
+\subsection{Efficiency Analysis}
 
 \textbf{Significant Efficiency Differences}
 
@@ -506,7 +401,7 @@ In real-time retrieval systems, computational efficiency is an important conside
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.8\columnwidth]{charts/computational_efficiency.png}
-\caption{Computational Efficiency Comparison: Simple vs Complex Methods}
+\caption{Computational Efficiency: 20× Speed Advantage of Simple Methods}
 \label{fig:efficiency}
 \end{figure}
 
@@ -516,13 +411,13 @@ In real-time retrieval systems, computational efficiency is an important conside
 
 Although our experimental results were contrary to initial expectations, they provided valuable insights for understanding the "relationship between complexity and performance" in multi-retriever fusion. This section will deeply analyze why our carefully designed complex system failed and the important implications of this finding for the information retrieval field.
 
-\subsection{Deep Reasons for Complex System Failure}
+\subsection{Why Complex Systems Fail}
 
 \textbf{Reflecting on Our Design Assumptions}
 
 Our experimental results show that our complex adaptive system not only failed to bring expected performance improvements, but performed poorly in multiple aspects. Through in-depth analysis, we identified several key reasons leading to complex system failure:
 
-\subsubsection{Fundamental Flaws in Query Analyzer}
+\subsubsection{Query Analyzer Flaws}
 
 \textbf{Classification Accuracy Limitations}
 
@@ -532,7 +427,7 @@ Our query analyzer achieved only 67.3\% classification accuracy on the test set,
 
 We simply classified queries into entity, keyword, and semantic categories, but actual query complexity far exceeds this simple classification. Many queries have mixed characteristics, and forcing them into a certain category may lose important information. For example, a query like "Einstein's theory of relativity's impact on modern physics" contains both entities (Einstein), concepts (relativity), and requires semantic understanding (impact relationships).
 
-\subsubsection{Cascade Effects of Error Propagation}
+\subsubsection{Error Propagation}
 
 \textbf{Fragility of Serial Processing Pipeline}
 
@@ -548,7 +443,7 @@ Specifically:
 
 This error propagation effect explains why performance improved after removing the query analyzer—we eliminated the source of error propagation.
 
-\subsubsection{Over-Engineering System Design}
+\subsubsection{Over-Engineering}
 
 \textbf{Complexity Trap}
 
@@ -556,253 +451,46 @@ Reviewing our system design process, we found ourselves falling into a "complexi
 
 However, experimental results showed that this over-engineered design actually reduced overall system performance. Each additional component introduced new error sources and computational overhead, and their cumulative effects exceeded possible benefits.
 
-\subsubsection{Parameter Sensitivity Issues}
+\subsubsection{Parameter Sensitivity}
 
 Complex methods typically have more hyperparameters that need tuning, making them more sensitive to parameter settings. For example, dynamic weight adjustment methods need to tune evaluation thresholds, weight normalization methods, and other parameters. Small changes in these parameters may lead to significant performance fluctuations. In contrast, simple linear fusion methods have only a few weight parameters, making it easier to find stable configurations.
 
-\subsubsection{Computational Overhead vs. Benefit Mismatch}
+\subsubsection{Overhead vs. Benefit}
 
 Complex methods have higher computational overhead than simple methods. For example, dynamic weight adjustment and query type-based adaptive fusion are many times slower than simple linear fusion. However, these additional computational overheads did not bring corresponding performance improvements, sometimes even leading to performance degradation. This indicates that increased complexity does not always bring corresponding benefits.
 
-\subsection{Dataset Specificity vs Query Type Specificity}
-
-Our experimental results indicate that dataset specificity is more important than query type specificity. The best fusion strategies vary greatly across different datasets, but this variation is not obviously related to query type distribution. For example, on the Quora dataset dominated by semantic queries, BM25-dominant linear fusion performed best, which is counterintuitive. Figure \ref{fig:dataset_analysis} shows the query type distribution and optimal strategy relationships across datasets, further confirming this finding.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.8\columnwidth]{charts/dataset_features_analysis.png}
-\caption{Dataset Features Analysis: Query Type Distribution vs Optimal Strategies}
-\label{fig:dataset_analysis}
-\end{figure}
-
-This finding suggests that general query type classification may not accurately capture characteristic differences of different datasets. Each dataset has its unique document distribution, query patterns, and relevance criteria, which together determine the optimal fusion strategy. Therefore, selecting appropriate static fusion strategies for each dataset may be more effective than using complex adaptive methods.
-
-Figure \ref{fig:summary} provides a comprehensive performance summary, comparing simple methods, medium complexity methods (RRF), and our complete complex system performance on four major datasets, further confirming the core findings of "Less is More."
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.8\columnwidth]{charts/simple_vs_complex_summary.png}
-\caption{Comprehensive Performance Summary: Simple vs Complex Methods}
-\label{fig:summary}
-\end{figure}
-
-\subsection{Practical Guidance Principles}
-
-Based on our experimental results, we propose the following practical guidance principles to help actual systems choose appropriate fusion strategies:
-
-\textbf{Basic Principles}:
-\begin{enumerate}
-\item \textbf{Start Simple}: First try simple linear fusion methods, such as equal weight or BM25-dominant fusion, which typically provide good baseline performance.
-
-\item \textbf{Dataset-Driven}: Choose fusion strategies based on specific dataset characteristics, rather than blindly pursuing complex adaptive methods. Compare different strategy performance on target datasets through small-scale experiments.
-
-\item \textbf{Consider Computational Efficiency}: When performance is similar, choose computationally efficient simple methods, especially in real-time retrieval systems.
-
-\item \textbf{Cautiously Add Complex Components}: Before adding complex components (such as query analyzers, adaptive routers), validate their actual contribution through rigorous ablation experiments.
-\end{enumerate}
-
-\textbf{Specific Strategy Selection Guidelines}:
-\begin{enumerate}
-\setcounter{enumi}{4}
-\item \textbf{Scientific Literature Datasets} (such as SciFact, SciDocs): Prioritize equal-weight linear fusion or vector-dominant fusion, as scientific literature typically contains rich semantic information.
-
-\item \textbf{Question-Answer Datasets} (such as FIQA, Quora): Prioritize BM25-dominant linear fusion, as keyword matching is often important in Q\&A scenarios.
-
-\item \textbf{Mixed-Type Datasets} (such as NFCorpus, ArguAna): Try RRF or equal-weight linear fusion as starting points.
-\end{enumerate}
-
-\textbf{System Implementation Recommendations}:
-\begin{enumerate}
-\setcounter{enumi}{7}
-\item \textbf{A/B Testing Validation}: Before production deployment, validate simple method effectiveness relative to existing complex methods through A/B testing.
-
-\item \textbf{Monitoring and Tuning}: Establish simple monitoring mechanisms to regularly evaluate fusion strategy performance and fine-tune when necessary.
-
-\item \textbf{Progressive Optimization}: If simple methods already meet requirements, avoid premature optimization. Only consider adding complexity when clear performance improvements are needed and simple methods cannot satisfy requirements.
-\end{enumerate}
-
-These guidance principles emphasize practicality and operability, helping developers make informed technical choices in actual projects.
-
-\subsection{Applicability and Limitations of Simple Methods}
-
-While our research shows that simple methods perform better in most cases, we also need to discuss their applicability boundaries:
-
-\textbf{Applicable Scenarios}:
-\begin{itemize}
-\item Resource-constrained environments (such as mobile devices, edge computing)
-\item Real-time retrieval systems (latency-sensitive)
-\item Applications with relatively stable dataset characteristics
-\item Systems requiring high interpretability and maintainability
-\item Early-stage prototypes and proof-of-concept systems
-\end{itemize}
-
-\textbf{Potential Limitations}:
-\begin{itemize}
-\item May not adapt well to highly dynamic query distributions
-\item Limited ability to handle extremely diverse document types
-\item May require manual tuning for different domains
-\item Could be suboptimal for very specialized retrieval tasks
-\end{itemize}
-
-\textbf{When Complex Methods Might Still Be Valuable}:
-\begin{itemize}
-\item Highly specialized domains with unique retrieval requirements
-\item Systems with abundant computational resources and strict performance requirements
-\item Applications requiring fine-grained query understanding
-\item Multi-modal or cross-lingual retrieval scenarios
-\end{itemize}
-
-\subsection{Theoretical Implications}
-
-\textbf{Challenging Conventional Wisdom}
-
-Our findings have important theoretical implications for the information retrieval field:
-
-\begin{enumerate}
-\item \textbf{Occam's Razor in IR}: Our results provide strong empirical support for applying Occam's Razor principle in information retrieval system design.
-
-\item \textbf{Complexity-Performance Paradox}: We demonstrate that increased system complexity does not necessarily lead to better performance, challenging the prevalent "more is better" assumption.
-
-\item \textbf{Error Propagation Theory}: Our ablation studies reveal how errors propagate through complex system pipelines, providing insights for robust system design.
-
-\item \textbf{Dataset-Centric Design}: Our findings suggest that dataset characteristics are more important than query type classifications for fusion strategy selection.
-\end{enumerate}
-
-\subsection{Broader Impact on RAG System Design}
-
-Our findings have implications beyond multi-retriever fusion for the broader RAG ecosystem:
-
-\textbf{System Architecture Principles}:
-\begin{itemize}
-\item Favor modular designs that allow easy component removal/addition
-\item Implement comprehensive ablation testing in development pipelines
-\item Prioritize computational efficiency alongside retrieval quality
-\item Design systems with graceful degradation capabilities
-\end{itemize}
-
-\textbf{Evaluation Methodologies}:
-\begin{itemize}
-\item Include computational efficiency metrics in standard evaluations
-\item Conduct systematic ablation studies for complex systems
-\item Compare against strong simple baselines, not just other complex methods
-\item Consider real-world deployment constraints in evaluation protocols
-\end{itemize}
-
-\textbf{Oversimplified Query Type Assumptions}
-
-We simply classified queries into entity, keyword, and semantic categories, but actual query complexity far exceeds this simple classification. Many queries have mixed characteristics, and forcing them into a certain category may lose important information. For example, a query like "Einstein's theory of relativity's impact on modern physics" contains both entities (Einstein), concepts (relativity), and requires semantic understanding (impact relationships).
-
-\subsubsection{Cascade Effects of Error Propagation}
-
-\textbf{Fragility of Serial Processing Pipeline}
-
-Our complex system adopted a serial processing architecture: query analyzer → adaptive router → dynamic fusion engine. In this architecture, errors from previous components propagate to subsequent components, leading to cumulative error amplification.
-
-Specifically:
-\begin{enumerate}
-\item Query analyzer's incorrect classification (30%+ error rate)
-\item Leads adaptive router to select suboptimal retriever combinations
-\item Further leads dynamic fusion engine to use inappropriate weights
-\item Finally results in overall performance degradation
-\end{enumerate}
-
-This error propagation effect explains why performance improved after removing the query analyzer—we eliminated the source of error propagation.
-
-\subsubsection{Over-Engineering System Design}
-
-\textbf{Complexity Trap}
-
-Reviewing our system design process, we found ourselves falling into a "complexity trap"—believing that more components and more complex logic would necessarily bring better performance. We added 6 retrievers, query analyzer, adaptive router, and dynamic fusion engine to the system, expecting to handle retrieval task diversity through this complexity.
-
-However, experimental results showed that this over-engineered design actually reduced overall system performance. Each additional component introduced new error sources and computational overhead, and their cumulative effects exceeded possible benefits.
-
-\subsection{Dataset Specificity vs Query Type Specificity}
+\subsection{Dataset vs Query Specificity}
 
 Our experimental results indicate that dataset specificity is more important than query type specificity. The best fusion strategies vary greatly across different datasets, but this variation is not obviously related to query type distribution. For example, on the Quora dataset dominated by semantic queries, BM25-dominant linear fusion performed best, which is counterintuitive.
 
 This finding suggests that general query type classification may not accurately capture characteristic differences of different datasets. Each dataset has its unique document distribution, query patterns, and relevance criteria, which together determine the optimal fusion strategy. Therefore, selecting appropriate static fusion strategies for each dataset may be more effective than using complex adaptive methods.
 
-\subsection{Practical Guidance Principles}
+This finding echoes Lin's research \cite{lin2019neural} on the comparison between neural network methods and simple baselines, supporting the "Less is More" design philosophy. Classical methods like TF-IDF \cite{salton1988term} and BM25 \cite{robertson2009probabilistic} have endured precisely because they provide good retrieval performance while maintaining simplicity.
 
-Based on our experimental results and analysis, we propose the following practical guidance principles:
+These results provide comprehensive evidence confirming the core findings of "Less is More" - simple methods consistently outperform complex approaches across multiple dimensions.
 
-\begin{enumerate}
-\item \textbf{Simplicity First}: When designing multi-retriever fusion systems, simple linear fusion methods should be tried first
-\item \textbf{Cautious Addition of Complexity}: Only consider adding complex components when simple methods are truly insufficient to meet needs
-\item \textbf{Strict Validation of Each Component}: Validate the actual contribution of each complex component through ablation experiments
-\item \textbf{Emphasis on Computational Efficiency}: While pursuing performance improvements, the impact of computational overhead must be considered
-\end{enumerate}
+\subsection{Practical Guidance}
+
+We recommend a "simplicity first" approach: start with simple linear fusion methods (equal weight or BM25-dominant), choose strategies based on dataset characteristics rather than complexity assumptions, prioritize computational efficiency, and validate any complex components through rigorous ablation testing. For scientific literature, use equal-weight or vector-dominant fusion; for Q&A datasets, prefer BM25-dominant approaches; for mixed datasets, try RRF or equal-weight fusion as starting points.
+
+\subsection{Applicability and Limitations}
+
+Simple methods excel in resource-constrained environments, real-time systems, stable datasets, and scenarios requiring interpretability. However, they may struggle with highly dynamic query distributions, extremely diverse document types, or very specialized retrieval tasks. Complex methods might still be valuable in specialized domains with unique requirements, abundant computational resources, or multi-modal scenarios.
+
+\subsection{Theoretical Implications}
+
+Our findings challenge conventional wisdom in information retrieval by providing empirical support for Occam's Razor principle, demonstrating that increased complexity doesn't necessarily improve performance. We reveal error propagation mechanisms in multi-component systems and establish that dataset characteristics matter more than query type classifications for strategy selection.
+
+\subsection{Impact on RAG Design}
+
+Our findings suggest favoring modular architectures with comprehensive ablation testing, prioritizing efficiency alongside quality, and establishing evaluation standards that include computational metrics and strong simple baselines.
+
 
 \section{Limitations and Future Work}
 
-This research has the following limitations that need to be considered when interpreting results:
+Our study has several limitations: the complex system's design flaws (particularly 67.3% query analyzer accuracy), limited dataset coverage (6 BEIR datasets), single retriever combination (BM25 + E5-large-v2), and focus on MRR metrics. Results may not generalize to dynamic environments or specialized domains where complex methods might still have advantages.
 
-\textbf{Key Methodological Limitations}:
-
-\begin{enumerate}
-\item \textbf{Complex System Design Flaws}: Our complex system has obvious design flaws, particularly the query analyzer's classification accuracy of only 67.3\%, which may be an important reason for complex system poor performance. This limitation suggests that our "complex system failure" may be partially attributed to implementation quality rather than complexity itself.
-
-\item \textbf{Dataset Coverage}: Our experiments only cover 6 BEIR datasets. Although representative, they may not fully represent all application scenarios. Future work should extend to more domains, including multilingual retrieval, multimodal retrieval, and domain-specific tasks.
-
-\item \textbf{Retriever Combinations}: We only used BM25 and E5-large-v2 combinations, which limits the generalizability of conclusions. Different retriever combinations may produce different fusion effects.
-
-\item \textbf{Method Coverage}: Although we implemented 8 fusion strategies, there are still many other complex methods (such as deep learning-based fusion, reinforcement learning methods, etc.) not included in the comparison.
-\end{enumerate}
-
-\textbf{Other Methodological Limitations}:
-\begin{enumerate}
-\setcounter{enumi}{4}
-\item \textbf{Simple vs Complex Classification}: Our proposed four-dimensional classification criteria, although reasonable, still have certain subjectivity. Some method classifications may be controversial.
-
-\item \textbf{Parameter Tuning Fairness}: Although we tried to provide fair parameter tuning for all methods, different methods may have different optimization spaces and difficulties.
-
-\item \textbf{Evaluation Metrics}: We mainly focused on MRR metrics. Results from other metrics (such as precision, recall) might provide different insights.
-\end{enumerate}
-
-\textbf{Generalizability Considerations}:
-\begin{enumerate}
-\setcounter{enumi}{7}
-\item \textbf{Static Environment Assumptions}: Our experiments are based on static datasets. Dynamic environments in practical applications may affect the relative performance of different methods.
-
-\item \textbf{Domain Specificity}: Our findings may have domain specificity. In some specialized domains (such as medicine, law), complex methods may still have advantages.
-\end{enumerate}
-
-\subsection{Future Research Directions}
-
-Based on our findings and limitations, we identify several important directions for future research:
-
-\textbf{Theoretical Development}:
-\begin{enumerate}
-\item \textbf{Theoretical Framework}: Develop theoretical frameworks that can predict when simple methods will outperform complex ones based on dataset and task characteristics.
-
-\item \textbf{Complexity-Performance Models}: Create mathematical models that quantify the relationship between system complexity and retrieval performance.
-
-\item \textbf{Error Propagation Analysis}: Develop formal methods for analyzing error propagation in multi-component retrieval systems.
-\end{enumerate}
-
-\textbf{Methodological Advances}:
-\begin{enumerate}
-\setcounter{enumi}{3}
-\item \textbf{Automatic Strategy Selection}: Investigate methods for automatically selecting optimal fusion strategies based on dataset features and query distributions.
-
-\item \textbf{Hybrid Approaches}: Explore hybrid approaches that combine the efficiency of simple methods with the adaptability of complex methods.
-
-\item \textbf{Dynamic Adaptation}: Develop methods for simple fusion strategies to adapt to changing query distributions over time.
-
-\item \textbf{Multi-Modal Extension}: Investigate whether our findings extend to multi-modal retrieval scenarios involving text, images, and other data types.
-\end{enumerate}
-
-\textbf{Evaluation and Validation}:
-\begin{enumerate}
-\setcounter{enumi}{7}
-\item \textbf{Cross-Domain Studies}: Extend evaluation to more diverse domains, including specialized fields like medicine, law, and engineering.
-
-\item \textbf{Real-World Validation}: Conduct large-scale studies in production environments to validate laboratory findings.
-
-\item \textbf{Statistical Rigor}: Include comprehensive statistical significance testing and confidence interval reporting.
-
-\item \textbf{Reproducibility Standards}: Establish standardized evaluation protocols with open-source implementations.
-\end{enumerate}
+Future research should develop theoretical frameworks predicting when simple methods outperform complex ones, create complexity-performance models, investigate hybrid approaches combining efficiency with adaptability, and extend evaluation to cross-domain and real-world production environments.
 
 \section{Conclusion}
 
@@ -810,77 +498,25 @@ Based on our findings and limitations, we identify several important directions 
 
 This paper documents our complete research journey from building complex multi-retriever fusion systems to discovering the "Less is More" phenomenon. We initially expected to significantly improve retrieval performance by increasing system complexity, but systematic experimental evaluation revealed a contrary result: simple linear fusion methods can not only achieve, but often exceed the performance of our carefully designed complex adaptive systems, while having significant computational efficiency advantages.
 
-\subsection{Summary of Main Findings}
+\subsection{Main Findings}
 
 \textbf{Transformation from Expectation to Reality}
 
-Our research revealed the following key findings:
+Our research revealed that simple linear fusion methods consistently outperformed complex adaptive systems across 6 datasets, with improvements up to 17.3% when removing complex components. This challenges the "complexity equals better" assumption and demonstrates significant efficiency advantages of simple methods, while revealing error propagation effects in complex systems that degrade overall performance.
 
-\begin{enumerate}
-\item \textbf{Limitations of Complex Systems}: Our complex system containing query analyzer, adaptive router, and dynamic fusion engine generally did not exceed simple linear fusion methods on the tested 6 datasets, overturning our initial assumptions.
-
-\item \textbf{Significant Advantages of Simple Methods}: Simple linear fusion methods significantly outperformed RRF, a medium complexity method, on 5 datasets, achieving 8.2\%, 7.2\%, 10.9\%, 2.2\%, and 0.7\% performance improvements on FIQA, Quora, SciDocs, SciFact, and ArguAna datasets respectively.
-
-\item \textbf{Negative Impact of Complex Components}: Ablation experiments revealed a noteworthy phenomenon—removing our carefully designed complex components (such as query analyzer) not only did not degrade performance, but brought 17.3\% performance improvement on SciDocs dataset.
-
-\item \textbf{Significant Efficiency Advantages}: Simple linear methods have obvious advantages in computational efficiency, while complex adaptive systems have significantly higher computational overhead.
-
-\item \textbf{Error Propagation Effects}: We found that error propagation effects in complex systems are important causes of performance degradation. The query analyzer's incorrect classification cascades to affect entire system performance.
-\end{enumerate}
-
-These findings not only provide strong empirical support for the "Less is More" hypothesis, but more importantly provide important reflection and guidance for information retrieval system design.
-
-\subsection{Theoretical and Practical Significance}
+\subsection{Significance}
 
 \textbf{Valuable Insights Gained from Failure}
 
 Although our complex system design failed, this failure provided valuable insights for the information retrieval field. Our research provides strong empirical evidence that in multi-retriever fusion tasks, simple methods can not only compete with complex methods, but often perform better.
 
-\textbf{Theoretical Contributions}:
-\begin{enumerate}
-\item \textbf{Challenging Complexity Assumptions}: Our research directly challenges the prevalent assumption of "complexity equals better," providing empirical support for applying Occam's Razor principle in the information retrieval field.
+\textbf{Theoretical Contributions}: Our work challenges complexity assumptions in IR, reveals error propagation mechanisms in multi-component systems, quantifies efficiency-performance trade-offs, and establishes dataset-centric design principles over query-type classifications.
 
-\item \textbf{Error Propagation Theory}: Through ablation experiments, we revealed the mechanisms and impacts of error propagation in complex systems.
+\textbf{Practical Guidance}: We recommend a "simplicity first" approach: start with simple linear fusion, add complexity only when necessary, validate each component through ablation studies, and prioritize computational efficiency alongside performance.
 
-\item \textbf{Efficiency-Performance Trade-offs}: We quantified the computational overhead brought by complexity, providing important references for system design.
+\subsection{RAG Implications}
 
-\item \textbf{Dataset-Centric Design Philosophy}: Our findings suggest that dataset characteristics are more important than query type classifications for fusion strategy selection.
-\end{enumerate}
-
-\textbf{Practical Guidance Value}:
-
-Based on our experience learned from failure, we provide clear guidance for practical system design:
-\begin{enumerate}
-\item \textbf{Simplicity First Principle}: When designing multi-retriever fusion systems, simple linear fusion methods should be tried first.
-
-\item \textbf{Cautious Addition of Complexity}: Only consider adding complex components when simple methods are truly insufficient to meet needs.
-
-\item \textbf{Strict Validation of Each Component}: Validate the actual contribution of each complex component through ablation experiments.
-
-\item \textbf{Emphasis on Computational Efficiency}: While pursuing performance improvements, the impact of computational overhead must be considered.
-
-\item \textbf{Dataset-Driven Strategy Selection}: Choose fusion strategies based on specific dataset characteristics rather than generic query type assumptions.
-\end{enumerate}
-
-\subsection{Broader Implications for RAG Systems}
-
-Our findings have implications beyond multi-retriever fusion for the broader RAG ecosystem:
-
-\textbf{Design Principles}:
-\begin{itemize}
-\item Favor modular architectures that allow easy component evaluation and removal
-\item Implement comprehensive ablation testing as standard practice
-\item Prioritize computational efficiency alongside retrieval quality
-\item Design systems with graceful degradation capabilities
-\end{itemize}
-
-\textbf{Evaluation Standards}:
-\begin{itemize}
-\item Include computational efficiency metrics in standard evaluations
-\item Compare against strong simple baselines, not just other complex methods
-\item Conduct systematic ablation studies for all complex systems
-\item Consider real-world deployment constraints in evaluation protocols
-\end{itemize}
+Our findings suggest favoring modular architectures with comprehensive ablation testing, comparing against strong simple baselines, and including efficiency metrics in standard evaluations.
 
 \subsection{Final Recommendations}
 
@@ -894,38 +530,7 @@ Based on our comprehensive study, we recommend the following approach for practi
 
 This "simplicity-first" approach not only leads to better performance in many cases but also results in more maintainable, efficient, and interpretable systems.
 
-\item \textbf{Negative Impact of Complex Components}: Ablation experiments revealed a noteworthy phenomenon—removing our carefully designed complex components (such as query analyzer) not only did not degrade performance, but brought 10.9\% performance improvement on SciDocs dataset.
-
-\item \textbf{Significant Efficiency Advantages}: Simple linear methods have obvious advantages in computational efficiency, while complex adaptive systems have significantly higher computational overhead.
-
-\item \textbf{Harm of Error Propagation}: We found that error propagation effects in complex systems are important causes of performance degradation. The query analyzer's incorrect classification cascades to affect entire system performance.
-\end{enumerate}
-
-These findings not only provide strong empirical support for the "Less is More" hypothesis, but more importantly provide important reflection and guidance for information retrieval system design.
-
-\subsection{Theoretical and Practical Significance}
-
-\textbf{Valuable Insights Gained from Failure}
-
-Although our complex system design failed, this failure provided valuable insights for the information retrieval field. Our research provides strong empirical evidence that in multi-retriever fusion tasks, simple methods can not only compete with complex methods, but often perform better.
-
-\textbf{Theoretical Contributions}:
-\begin{enumerate}
-\item \textbf{Challenging Complexity Assumptions}: Our research directly challenges the prevalent assumption of "complexity equals better," providing empirical support for applying Occam's Razor principle in the information retrieval field
-\item \textbf{Error Propagation Theory}: Through ablation experiments, we revealed the mechanisms and impacts of error propagation in complex systems
-\item \textbf{Efficiency-Performance Trade-offs}: We quantified the computational overhead brought by complexity, providing important references for system design
-\end{enumerate}
-
-\textbf{Practical Guidance Value}:
-Based on our experience learned from failure, we provide clear guidance for practical system design:
-\begin{enumerate}
-\item \textbf{Simplicity First Principle}: When designing multi-retriever fusion systems, simple linear fusion methods should be tried first
-\item \textbf{Cautious Addition of Complexity}: Only consider adding complex components when simple methods are truly insufficient to meet needs
-\item \textbf{Strict Validation of Each Component}: Validate the actual contribution of each complex component through ablation experiments
-\item \textbf{Emphasis on Computational Efficiency}: While pursuing performance improvements, the impact of computational overhead must be considered
-\end{enumerate}
-
-\subsection{Implementation Details and Hyperparameter Analysis}
+\subsection{Implementation Details}
 
 \textbf{BM25 Configuration}: We use standard BM25 parameters ($k_1 = 1.2$, $b = 0.75$) with standard text preprocessing.
 
@@ -933,82 +538,10 @@ Based on our experience learned from failure, we provide clear guidance for prac
 
 \textbf{Hyperparameter Sensitivity}: Linear fusion methods showed stable performance with weights in the 0.3-0.7 range (standard deviation < 0.02), while complex methods were more sensitive to parameter changes.
 
-\subsection{Detailed Ablation Analysis}
+\subsection{Key Findings}
 
-Our ablation study revealed the following performance trajectory on SciDocs dataset:
-\begin{itemize}
-\item Complete complex system: 0.278±0.015
-\item Remove query analyzer: 0.326±0.016 (+17.3\%)
-\item Remove adaptive routing: 0.310±0.014 (+11.5\%)
-\item Use static weights: 0.290±0.010 (+4.3\%)
-\end{itemize}
+Our ablation study on SciDocs dataset shows progressive performance improvement through simplification: removing the query analyzer improved performance by 17.3% (from 0.278 to 0.326), demonstrating that error propagation from the 30%+ misclassification rate degraded overall system performance. Dataset characteristics proved more important than query types, with BM25-dominant fusion optimal for FIQA/Quora and vector-dominant fusion best for scientific literature. Simple linear fusion requires only basic arithmetic operations, while complex systems involve costly NLP processing, feature extraction, and dynamic computation without corresponding quality benefits.
 
-This clearly demonstrates that each simplification step improved performance, with the query analyzer removal providing the largest gain.
-
-\subsection{Error Propagation Analysis}
-
-The serial processing architecture of our complex system created a cascade of errors:
-\begin{enumerate}
-\item Query analyzer misclassification (30\%+ error rate)
-\item Suboptimal retriever combination selection
-\item Inappropriate weight assignment
-\item Overall performance degradation
-\end{enumerate}
-
-Removing the query analyzer eliminated the error source, explaining the performance improvement.
-
-\subsection{Computational Efficiency Breakdown}
-
-\textbf{Simple Linear Fusion}: Requires only basic arithmetic operations for score combination.
-
-\textbf{Complex Adaptive System}: Involves multiple computational stages:
-\begin{itemize}
-\item NLP processing for query analysis
-\item Feature extraction and classification
-\item Dynamic weight computation
-\item Multi-stage fusion processing
-\end{itemize}
-
-The cumulative computational overhead significantly impacts real-time performance without corresponding quality benefits.
-
-\subsection{Dataset-Specific Findings}
-
-Our analysis revealed that dataset characteristics matter more than query types:
-\begin{itemize}
-\item \textbf{FIQA \& Quora}: BM25-dominant fusion performed best despite different query types
-\item \textbf{SciDocs}: Vector-dominant fusion was optimal for scientific literature
-\item \textbf{NFCorpus}: RRF showed slight advantage in nutrition domain
-\item \textbf{ArguAna}: Minimal differences between strategies
-\end{itemize}
-
-\subsection{Practical Implementation Guidelines}
-
-Based on our findings, we recommend the following implementation strategy:
-
-\textbf{Phase 1 - Simple Baseline}:
-\begin{enumerate}
-\item Implement basic linear fusion with equal weights
-\item Test BM25-dominant and vector-dominant variants
-\item Measure baseline performance and efficiency
-\end{enumerate}
-
-\textbf{Phase 2 - Optimization}:
-\begin{enumerate}
-\item Optimize weights using grid search
-\item Consider RRF if linear methods are insufficient
-\item Validate improvements through statistical testing
-\end{enumerate}
-
-\textbf{Phase 3 - Complexity (if needed)}:
-\begin{enumerate}
-\item Add complexity only if simple methods fail to meet requirements
-\item Implement rigorous ablation testing
-\item Monitor computational overhead carefully
-\end{enumerate}
-
-\section*{Acknowledgments}
-
-We thank the anonymous reviewers for their valuable feedback and suggestions. This work was supported by [funding information will be added in camera-ready version].
 
 \bibliography{aaai2026}
 
